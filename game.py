@@ -1009,11 +1009,11 @@ class Game:
         for s in self.player.weapon_skills:
             if s in current_weapons:
                 if s==right_hand_weapon or len(current_weapons)==1:
-                    self.c.text(29,self.player.weapon_skills.keys().index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skill),10)
+                    self.c.text(29, list(self.player.weapon_skills.keys()).index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skill),10)
                 else:
-                    self.c.text(29,self.player.weapon_skills.keys().index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skills[s]),10)
+                    self.c.text(29, list(self.player.weapon_skills.keys()).index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skills[s]),10)
             else:
-                self.c.text(29,self.player.weapon_skills.keys().index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skills[s]),7)
+                self.c.text(29, list(self.player.weapon_skills.keys()).index(s)+5,'%-12s:%6.2f' %(s,self.player.weapon_skills[s]),7)
         self.c.text(49,1,'NATURE %17.2f' %self.player.forces['Nature']+'%',10)
         the_line=3
         for race in races['Nature']:
