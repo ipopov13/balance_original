@@ -170,7 +170,7 @@ class Player(Living_thing):
                     else:
                         if a.t=='sentient' and not self.possessed:
                             self.game.message.creature('talk',a)
-                            answer=msvcrt.getch()
+                            answer=msvcrt.getch().decode()
                             if answer.lower()=='y':
                                 xy[0] = x
                                 xy[1] = y
@@ -180,7 +180,7 @@ class Player(Living_thing):
                                 self.game.message.message('')
                                 if 'goblin1' in self.tool_tags:
                                     self.game.message.creature('steal',a)
-                                    answer=msvcrt.getch()
+                                    answer=msvcrt.getch().decode()
                                     if answer.lower()=='y':
                                         self.game.effect('force',{'Chaos':{'force':0.02,'goblin':0.02},'Nature':{'all':-.01},'Order':{'all':-.01}})
                                         xy[0] = x
@@ -192,7 +192,7 @@ class Player(Living_thing):
                         elif 'tame' in a.attr and 'tame' not in a.name and 'human2' in self.tool_tags\
                               and not self.possessed:
                             self.game.message.creature('tame',a)
-                            answer=msvcrt.getch()
+                            answer=msvcrt.getch().decode()
                             if answer.lower()=='y':
                                 self.game.effect('force',{'Order':{'force':0.02,'human':0.02}})
                                 self.game.tame(a)
@@ -204,7 +204,7 @@ class Player(Living_thing):
                         elif a in self.followers and 'human2' in self.tool_tags\
                               and not self.possessed:
                             self.game.message.creature('tamed_use',a)
-                            answer=msvcrt.getch()
+                            answer=msvcrt.getch().decode()
                             if answer.lower()=='y':
                                 self.game.effect('force',{'Order':{'force':0.01,'human':0.01}})
                                 self.game.command_tamed(a)
@@ -215,7 +215,7 @@ class Player(Living_thing):
                                 self.game.message.message('')
                         elif 'spirit of nature2' in self.tool_tags and not self.possessed and not self.ride:
                             self.game.message.creature('possess',a)
-                            answer=msvcrt.getch()
+                            answer=msvcrt.getch().decode()
                             if answer.lower()=='y':
                                 self.game.effect('force',{'Nature':{'force':0.03,'spirit of nature':0.03}})
                                 self.game.possess(a)
@@ -226,7 +226,7 @@ class Player(Living_thing):
                                 self.game.message.message('')
                         if not self.ride:
                             self.game.message.creature('attack',a)
-                            answer=msvcrt.getch()
+                            answer=msvcrt.getch().decode()
                             if answer.lower()=='y':
                                 a.mode='hostile'
                                 for each_other in self.game.all_creatures:
@@ -326,7 +326,7 @@ class Player(Living_thing):
             i1 = ' '
             while 1:
                 if msvcrt.kbhit():
-                    i1 = msvcrt.getch()
+                    i1 = msvcrt.getch().decode()
                     break
             self.game.c.rectangle((0,0,60,2))
         elif len(pile) == 1:
@@ -339,7 +339,7 @@ class Player(Living_thing):
                     a = ''
                     i = ' '
                     while ord(i) != 13:
-                        i = msvcrt.getch()
+                        i = msvcrt.getch().decode()
                         if ord(i) in range(48,58):
                             self.game.c.write(i)
                             a += i
@@ -410,7 +410,7 @@ class Player(Living_thing):
         else:
             drop = self.equipment[self.equip_tags[item]].duplicate(self.equipment[self.equip_tags[item]].qty)
             print(' There\'s no place in your backpack so you drop\n the %s to the ground!' %drop.name)
-            msvcrt.getch()
+            msvcrt.getch().decode()
             for i in self.game.ground_items:
                 if i[:2] == self.xy and i[2].id == drop.id and i[2].name == drop.name and i[2].stackable:
                     i[2].qty += drop.qty
@@ -525,7 +525,7 @@ class Player(Living_thing):
         if 'weapon' in item.type:
             if self.equiped_weaps==1 and item.weight>self.max_weaps:
                 print(' You are not strong enough to wield this weapon with your current one!')
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 return 0
             else:
                 self.max_weaps -= item.weight
@@ -613,7 +613,7 @@ class Player(Living_thing):
                 drop = self.inventory[0].drop_item(forced=True)
                 dropped = 0
                 print(' There\'s no place in your backpack for the %s so you drop it to the ground!\n' %drop.name)
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 for i in self.game.ground_items:
                     if i[:2] == self.xy and i[2].id == drop.id and i[2].name == drop.name and i[2].stackable:
                         i[2].qty += drop.qty
@@ -641,12 +641,12 @@ class Player(Living_thing):
                 items += chr(self.inventory.index(i)+97)
         if not found:
             print(' You have nothing usefull to equip.')
-            i1 = msvcrt.getch()
+            i1 = msvcrt.getch().decode()
             return 0
         else:
             self.game.c.pos(0,1)
             print(' What do you want to equip?')
-            i1 = msvcrt.getch()
+            i1 = msvcrt.getch().decode()
             if i1 in items:
                 self.equip(self.inventory[ord(i1)-97],slot)
             return 0

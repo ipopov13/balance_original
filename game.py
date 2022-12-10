@@ -335,7 +335,7 @@ class Game:
                     else:
                         self.c.text(29,line+6,"Press 'B' to build!",10)
                     line+=2
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
         if the_build and i=='B':
             self.redraw_screen()
             building=self.build_terr(the_build)
@@ -408,7 +408,7 @@ class Game:
             for x in range(len(gems)):
                 self.c.write('  %s) %-12s (gives %d %s)' %(chr(97+x),gems[x].name.capitalize(),gems[x].effect['talisman']['temp_attr'][0][1],
                                                     gems[x].effect['talisman']['temp_attr'][0][0]))
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
             if ord(i)-97 in range(len(gems)):
                 x=ord(i)-97
                 creation.name=gems[x].name+' '+creation.name
@@ -482,7 +482,7 @@ class Game:
                 self.c.text(64,offset+3,'50',12)
                 if len(flowers)==5:
                     possible['6']=[{'fairyland':1},'dress of the fae']
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
             if i in possible:
                 if i!='6':
                     creation.color=flowers[i].color
@@ -525,7 +525,7 @@ class Game:
    b) Copper
    c) Silver
    d) Gold''')
-            metal_chosen=msvcrt.getch()
+            metal_chosen=msvcrt.getch().decode()
         if -1<ord(metal_chosen)-97<4:
             metal_chosen=['iron','copper','silver','gold'][ord(metal_chosen)-97]
         else:
@@ -595,7 +595,7 @@ class Game:
                 for r in the_keys:
                     self.c.text(28,line+5,'%d) %s' %(line/2+1,r.capitalize()))
                     line+=2
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
             try:
                 craft_group=the_keys[int(i)-1]
                 break
@@ -622,7 +622,7 @@ class Game:
                 else:
                     self.c.text(29,line+6,"Press %d to build!" %(line/2+1),10)
                 line+=2
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
             if '0'<i<='9' and int(i)<=len(the_keys):
                     break
         if '0'<i<='9' and not selected_recipes[craft_group][the_keys[int(i)-1]]:
@@ -677,7 +677,7 @@ class Game:
 
   1) Weapons and ammunition
   2) Living wood armour''')
-                i=msvcrt.getch()
+                i=msvcrt.getch().decode()
                 if i in ['1','2']:
                     si[0]=int(i)-1
                     break
@@ -694,7 +694,7 @@ class Game:
   1) A totem staff
   2) A dryad bow
   3) 20 living wood arrows''')
-                    i1=msvcrt.getch()
+                    i1=msvcrt.getch().decode()
                     if i1 in ['1','2','3']:
                         si[1]=int(i1)-1
                         break
@@ -711,14 +711,14 @@ class Game:
   5) Living wood gloves
   6) Living wood helm
   7) Living wood belt''')
-                    i1=msvcrt.getch()
+                    i1=msvcrt.getch().decode()
                     if int(i1) in range(1,8):
                         si[1]=int(i1)-1
                         break
             if si[0]!=None and si[1]!=None:
                 self.c.write('''\n\n  The bark breaks open and you take the item. You will need to repay
   Nature for this gift and restore your standing as a dryad.''')
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 make_list=[[50,56,1318],[604,606,600,601,603,605,602]]
                 if si==[0,2]:
                     amount=20
@@ -733,7 +733,7 @@ class Game:
                 self.effect('force',{'Nature':{'dryad':-1.}})
         else:
             self.message.message('dryad_song')
-            msvcrt.getch()
+            msvcrt.getch().decode()
             if self.player.energy>100:
                 self.effect('dryad song',1)
                 self.player.energy=0
@@ -854,18 +854,18 @@ class Game:
         print('\n Carrying: %s/%s. You can fit %s more in your bag.' %(str(self.player.weight), str(self.player.max_weight),
                                                                        str(self.player.backpack)))
         i1 = ' '
-        i1 = msvcrt.getch()
+        i1 = msvcrt.getch().decode()
         try:
             if put_in and self.player.inventory[ord(i1)-97] != container:
                 space = self.I[container.id].weight*7 - container.weight
                 drop = self.player.inventory[ord(i1)-97].drop_item(space)
                 if not drop:
                     self.message.message('cant_fit_in_container')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                 return drop
             elif put_in and self.player.inventory[ord(i1)-97] == container:
                 self.message.message('cant_fit_container')
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 return None
         except IndexError:
             return None
@@ -875,7 +875,7 @@ class Game:
             self.c.write(' What do you want to eat or drink?')
             while 1:
                 if msvcrt.kbhit():
-                    eat = msvcrt.getch()
+                    eat = msvcrt.getch().decode()
                     break
             self.c.rectangle((0,0,79,1))
             try:
@@ -887,7 +887,7 @@ class Game:
             self.message.message('what_to_drop')
             while 1:
                 if msvcrt.kbhit():
-                    dr = msvcrt.getch()
+                    dr = msvcrt.getch().decode()
                     break
             self.c.rectangle((0,0,79,1))
             drop = self.player.inventory[ord(dr)-97].drop_item()
@@ -907,7 +907,7 @@ class Game:
             self.c.rectangle((0,0,79,1))
             self.c.pos(0,0)
             self.c.write(' Which item do you want to use?')
-            use = msvcrt.getch()
+            use = msvcrt.getch().decode()
             self.c.rectangle((0,0,79,1))
             try:
                 ty = self.player.inventory[ord(use)-97].type
@@ -948,7 +948,7 @@ class Game:
             else:
                 print(' '+chr(i+97)+')  ', self.player.equip_tags[i]+':')
         i1 = ' '
-        i1 = msvcrt.getch()
+        i1 = msvcrt.getch().decode()
         if i1 == '1':
             self.draw_inv()
             return 1
@@ -968,7 +968,7 @@ class Game:
             else:
                 if self.player.equip_tags[ord(i1)-97] == 'Backpack':
                     print(' Do you really want to drop your bag to the ground?\n You will be able to carry only one item per free hand at most! (y/n)')
-                    b1 = msvcrt.getch()
+                    b1 = msvcrt.getch().decode()
                     if b1.lower() != 'y':
                         self.draw_equip()
                         return
@@ -1074,7 +1074,7 @@ class Game:
                     colour = 12
                 sign = 'DYING OF THIRST!'
             self.c.text(2,22,sign,colour)
-        waiting=msvcrt.getch()
+        waiting=msvcrt.getch().decode()
         if ord(waiting) in range(97,len(all_races)+97):
             self.player.locked_race=all_races[ord(waiting)-97]
             self.character()
@@ -1136,7 +1136,7 @@ class Game:
                 col=7
             self.c.text(50,the_line,'%s) %-16s:%6.2f' %(chr(all_races.index(race)+97),race.capitalize(),self.player.research_races['Chaos'][race])+'%',col)
             the_line+=1
-        waiting=msvcrt.getch()
+        waiting=msvcrt.getch().decode()
         if ord(waiting) in range(97,len(all_races)+97):
             self.player.research_race=all_races[ord(waiting)-97]
             for r in races:
@@ -1180,11 +1180,11 @@ class Game:
     def command_tamed(self,animal):
         self.message.message('')
         self.c.text(1,0,'Choose command:   a)change mode   b)manipulate',7)
-        choice=msvcrt.getch()
+        choice=msvcrt.getch().decode()
         if choice.lower()=='a':
             self.message.message('')
             self.c.text(1,0,'Choose mode:   a)follow   b)stay   c)guard',7)
-            ch_mode=msvcrt.getch()
+            ch_mode=msvcrt.getch().decode()
             if ch_mode.lower()=='a':
                 self.message.message('')
                 animal.mode='follow'
@@ -1206,7 +1206,7 @@ class Game:
         elif choice.lower()=='b':
             self.message.message('')
             self.c.text(1,0,'Choose action:   a)feed   b)farm   c)ride',7)
-            ch_action=msvcrt.getch()
+            ch_action=msvcrt.getch().decode()
             self.message.message('')
             if ch_action.lower()=='a':
                 chosen_food=0
@@ -1429,7 +1429,7 @@ class Game:
         self.c.write('''1) Learning how to be a %s
   2) Trade
   3) Rumours\n\n''' %(target.race))
-        i=msvcrt.getch()
+        i=msvcrt.getch().decode()
         if i=='1':
             if target.race in race_answers:
                 dirs=''
@@ -1489,7 +1489,7 @@ class Game:
                     self.c.text(2,22,'a..z/A..Z - select items; trade with SPACE; exit with !; reset with 0.')
                     self.c.text(2,23,'Trade balance: %.2f' %(balance),[10,12,10][cmp(0,balance)])
                     self.c.pos(72,22)
-                    i=msvcrt.getch()
+                    i=msvcrt.getch().decode()
                     if 'A'<=i<chr(65+len(getting)):
                         old=chosen.get(getting[ord(i)-65],0)
                         chosen[getting[ord(i)-65]]=min([chosen.get(getting[ord(i)-65],0)+1,getting[ord(i)-65].qty])
@@ -1528,7 +1528,7 @@ class Game:
                         else:
                             i=''
         if i=='1':
-            msvcrt.getch()
+            msvcrt.getch().decode()
         self.redraw_screen()
 
     def get_price(self,x,merch,sell):
@@ -1585,7 +1585,7 @@ class Game:
         i = ''
         while 1:
             if msvcrt.kbhit():
-                i = msvcrt.getch()
+                i = msvcrt.getch().decode()
                 if i == 'q' or i == 'Q':
                     return 0
 
@@ -1675,7 +1675,7 @@ class Game:
                 return success
         else:
             self.message.message('which_open')
-            i = msvcrt.getch()
+            i = msvcrt.getch().decode()
             try:
                 self.message.message('')
                 try:
@@ -1718,18 +1718,18 @@ class Game:
                         self.player.skills['lockpicking'] += 0.1
                     chest.type.remove('locked')
                     self.message.message('success_lockpick')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                 else:
                     if self.player.skills['lockpicking'] < chest.effect['lock_strength']/10:
                         learn = random.uniform(0,100)
                         if learn <= (lock_atts - self.player.skills['lockpicking']/5)/lock_atts*100:
                             self.player.skills['lockpicking'] += 0.01
                     self.message.message('failed_lockpick')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     return 0
             else:
                 self.message.use('no_lockpick',chest)
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 return 0
         self.c.page()
         print(' You open the %s and look inside.\n (t) take item (p) put item\n' %(chest.name))
@@ -1739,7 +1739,7 @@ class Game:
             self.c.text(4,i+3,chest.effect['contains'][i].tag,chest.effect['contains'][i].color)
         print('\n You can carry %s more stones, %s more will fit in your backpack.' %(str(self.player.max_weight-self.player.weight),
                                                                                       str(self.player.backpack)))
-        i1 = msvcrt.getch()
+        i1 = msvcrt.getch().decode()
         i1 = i1.lower()
         if i1 == 't' and len(chest.effect['contains']):
             self.c.rectangle((0,0,79,1))
@@ -1747,7 +1747,7 @@ class Game:
             self.c.write(' Which item do you want to take out?')
             while 1:
                 if msvcrt.kbhit():
-                    take = msvcrt.getch()
+                    take = msvcrt.getch().decode()
                     break
             self.c.rectangle((0,0,79,1))
             try:
@@ -1757,7 +1757,7 @@ class Game:
                     a = ''
                     i = ' '
                     while ord(i) != 13:
-                        i = msvcrt.getch()
+                        i = msvcrt.getch().decode()
                         if ord(i) in range(48,58):
                             self.c.write(i)
                             a += i
@@ -1786,7 +1786,7 @@ class Game:
                                 chest.effect[tal].remove(tal_add)
                 elif self.player.weight+item.weight*a > self.player.max_weight:
                     self.message.use('cant_carry', item)
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                 elif item.weight*a > self.player.backpack:
                     if self.player.equipment['Backpack'] == []:
                         if 'two_handed' in item.type:
@@ -1804,10 +1804,10 @@ class Game:
                             self.player.backpack = 0
                         else:
                             self.message.message('drop_first')
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                     else:
                         self.message.use('cant_fit_in_backpack', item)
-                        msvcrt.getch()
+                        msvcrt.getch().decode()
             except IndexError:
                 pass
             self.open_container(chest)
@@ -1888,7 +1888,7 @@ class Game:
                     else:
                         self.c.text(40,line+7,' Press SPACE to make!')
                     line+=2
-            i=msvcrt.getch()
+            i=msvcrt.getch().decode()
             if ord(i)-97 in range(len(mats)):
                 if mats[ord(i)-97].qty>0:
                     selected_mats[ord(i)-97].qty+=1
@@ -1958,7 +1958,7 @@ class Game:
                 self.c.scroll((self.player.target[0],self.player.target[1],self.player.target[0]+1,self.player.target[1]+1),1,1,236,'X')
                 self.c.pos(*xy)
             if msvcrt.kbhit():
-                key = msvcrt.getch()
+                key = msvcrt.getch().decode()
                 if key=='t':
                     changed=1
                     self.player.target=xy[:]
@@ -1996,7 +1996,7 @@ class Game:
                                    (n)ew game
                              (l)oad a previous game
                             ''')
-            i = msvcrt.getch()
+            i = msvcrt.getch().decode()
             if i == 'n':
                 input('OK')
                 self.create_character(fl)
@@ -2006,7 +2006,7 @@ class Game:
                 a = ''
                 i = ' '
                 while ord(i) != 13:
-                    i = msvcrt.getch()
+                    i = msvcrt.getch().decode()
                     if ord(i) in range(65,91) or ord(i) in range(97,123) or ord(i) == 46:
                         self.c.write(i)
                         a += i
@@ -2045,7 +2045,7 @@ class Game:
            d) Dryad                                      m) Goblin
      e) Water Elemental                                  n) Kraken
            f) Fairy                                       o) Imp""")
-            i = msvcrt.getch()
+            i = msvcrt.getch().decode()
         race = races[i]
         if i < 'g':
             force='Nature'
@@ -2082,15 +2082,15 @@ class Game:
   h) Village destroyer: a big club for breaking stuff. Oh, and food...
   i) Pillager: a couple of weapons and a lot of armour.
   j) Shaman: a book of magic and a herb set.''')
-            i = msvcrt.getch()
+            i = msvcrt.getch().decode()
             try:
                 if heaviness[i][0] > self.player.attr['Str']:
                     self.c.write('''\n\n  This set is too heavy for you to use!''')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     too_heavy = 1
                 elif force not in heaviness[i][1]:
                     self.c.write('''\n\n  This set is only for %s characters!''' %(heaviness[i][1][0]))
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     too_heavy = 1
                 else:
                     too_heavy = 0
@@ -2104,7 +2104,7 @@ class Game:
             a = ''
             i = ' '
             while ord(i) != 13:
-                i = msvcrt.getch()
+                i = msvcrt.getch().decode()
                 if ord(i) in range(65,91) or ord(i) in range(97,123) or ord(i) == 46:
                     self.c.write(i)
                     a += i
@@ -2112,7 +2112,7 @@ class Game:
             self.player.name = a
             if self.player.name in fl:
                 print('\n  Character savefile already exists!')
-                msvcrt.getch()
+                msvcrt.getch().decode()
             else:
                 break
         os.mkdir(os.curdir+'//%s_dir' %(a))
@@ -2136,7 +2136,7 @@ class Game:
                 chance = 50.0*character_run/difficulty
                 if random.randint(1,100) < chance:
                     self.message.message('ran_away')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                 else:
                     self.message.creature('no_escape',0)
         if area != 'area0':
@@ -2517,7 +2517,7 @@ class Game:
             terr = open(f, 'r')
         except:
             print('No such file!')
-            terr = msvcrt.getch()
+            terr = msvcrt.getch().decode()
             return 0
         self.c.page()
         for i in range(23):
@@ -3454,7 +3454,7 @@ class Game:
                     del(self.player.effects['waterform'])
                     del(self.player.effects['invisible'])
                     self.message.message('reform_waterform')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
             if (self.current_place['Nature']>=33 and self.current_place['Temperature']>=33 and 'elf2' in self.player.tool_tags) \
                or ('goblin1' in self.player.tool_tags and self.player.turn%2400>1200):
                 if 'stealthy' not in self.player.tool_tags:
@@ -3471,7 +3471,7 @@ class Game:
                     self.player.effects[x] -= 1
                 if self.player.effects[x]==0:
                     if x=='waterform':
-                        msvcrt.getch()
+                        msvcrt.getch().decode()
                         over = self.game_over()
                         return over
                     del(self.player.effects[x])
@@ -3508,7 +3508,7 @@ class Game:
                     if self.player.land_effects[x][1]=='mass destruction':
                         self.combat_buffer+=' You unleash the power of the chaos rock! The world crumbles around you!'
                         self.message.combat_buffer()
-                        msvcrt.getch()
+                        msvcrt.getch().decode()
                         for i1 in range(8):
                             self.effect('force',{'Chaos':{'terrain':1}})
                             for i2 in range(100):
@@ -3518,7 +3518,7 @@ class Game:
                                     dest='.'
                                 self.land[place[1]-1] = self.land[place[1]-1][:place[0]-21]+dest+self.land[place[1]-1][place[0]-20:]
                                 self.c.scroll((place[0],place[1],place[0]+1,place[1]+1), 1, 1, T[self.land[place[1]-1][place[0]-21]].colour, T[self.land[place[1]-1][place[0]-21]].char)
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                     if self.player.land_effects[x][1]=='dryad song':
                         self.effect('force',{'Nature':{'dryad':.01,'terrain':.4,'force':.01},'Chaos':{'all':-0.02},'Order':{'all':-0.01}})
                         self.combat_buffer+=' Leaves rustle, wood creaks, in your steps the grass grows higher!'
@@ -3573,7 +3573,7 @@ class Game:
                 elif 'waterform' in self.player.effects:
                     self.message.emotion('gain_waterform',self.player.effects['waterform'])
                 else:
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     over = self.game_over()
                     return over
         else:
@@ -3728,7 +3728,7 @@ class Game:
                         chance=max(self.player.races['Nature'].values())+self.player.forces['Nature']-v[x][y]
                         check=random.randint(0,100)
                         if check<chance:
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             self.combat_buffer+=' The lava recedes down in the earth. With a last flicker a spark flies up and   lands near your feet. You have received a Seed of Life!'
                             self.land[xy[1]-1] = self.land[xy[1]-1][:xy[0]-21]+'.'+self.land[xy[1]-1][xy[0]-20:]
                             self.put_loot([[1307,100,1,1]], xy)
@@ -3737,11 +3737,11 @@ class Game:
                         chance=max(self.player.races['Order'].values())+self.player.forces['Order']-v[x][y]
                         check=random.randint(0,100)
                         if check<chance:
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             self.combat_buffer+=' The lava bubles and dances, and then slowly turns darker - you managed to tame the power of the fire! With a last "BLOP!" the nearly black surface breaks and  in the last flickers you see something shiny. Maybe you can pry it out?'
                             self.land[xy[1]-1] = self.land[xy[1]-1][:xy[0]-21]+'A'+self.land[xy[1]-1][xy[0]-20:]
                         else:
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             self.combat_buffer+=' The lava errupts violently!'
                             for x1 in range(max([1,xy[1]-6]),min([24,xy[1]+6])):
                                 for y1 in range(max([21,xy[0]-6]),min([79,xy[0]+6])):
@@ -3752,7 +3752,7 @@ class Game:
                         chance=max(self.player.races['Chaos'].values())+self.player.forces['Chaos']-v[x][y]
                         check=random.randint(0,100)
                         if check<chance:
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             self.combat_buffer+=' The lava bursts out of the earth and sprays the space around you! On the bottom of the smoking hole lies a small piece of black rock, emanating dread and      coldness.'
                             self.land[xy[1]-1] = self.land[xy[1]-1][:xy[0]-21]+'.'+self.land[xy[1]-1][xy[0]-20:]
                             self.put_loot([[1309,100,1,1]], xy)
@@ -3761,7 +3761,7 @@ class Game:
                                     if random.choice([0,1,2,3]):
                                         self.effect('force',{'Chaos':{'lava_fire':15}},[y1,x1])
                         else:
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             self.combat_buffer+=' The lava errupts violently!'
                             for x1 in range(max([1,xy[1]-14]),min([24,xy[1]+14])):
                                 for y1 in range(max([21,xy[0]-14]),min([79,xy[0]+14])):
@@ -3842,7 +3842,7 @@ class Game:
                 self.I[v[self.land[self.player.xy[1]-1][self.player.xy[0]-21]]].create_item()
             except KeyError:
                 self.message.message('no_fill')
-                i = msvcrt.getch()
+                i = msvcrt.getch().decode()
                 return 0
         elif k == 'gather':
             try:
@@ -3853,10 +3853,10 @@ class Game:
                     choice.create_item()
                 else:
                     self.message.message('failed_gather')
-                    i = msvcrt.getch()
+                    i = msvcrt.getch().decode()
             except KeyError:
                 self.message.message('no_gather')
-                i = msvcrt.getch()
+                i = msvcrt.getch().decode()
                 return 0
         elif k=='transform':
             self.possess(v,'trans')
@@ -3893,10 +3893,10 @@ class Game:
                     self.message.message('found_gem')
                 else:
                     self.message.message('break_rock')
-                msvcrt.getch()
+                msvcrt.getch().decode()
             else:
                 self.message.tool_msg('no_tool',['hammer'])
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 return 0
         elif k=='smelt_ore':
             if 'hammer' in self.player.tool_tags:
@@ -3914,20 +3914,20 @@ class Game:
                             else:
                                 self.player.land_effects[the_turn]=[50,'plant',self.current_area,v[0],self.player.xy[:]]
                             self.message.message('found_metal')
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                         else:
                             self.message.message('failed_smelt')
-                            msvcrt.getch()
+                            msvcrt.getch().decode()
                             return 0
                         smelted=1
                         break
                 if not smelted:
                     self.message.tool_msg('no_tool',['forge'])
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     return 0
             else:
                 self.message.tool_msg('no_tool',['hammer'])
-                msvcrt.getch()
+                msvcrt.getch().decode()
                 return 0
         elif k=='gnome_gem':
             if T[self.land[self.player.xy[1]-1][self.player.xy[0]-21]].id in v[0] and 'gnome2' in self.player.tool_tags:
@@ -4530,7 +4530,7 @@ if __name__=='__main__':
         while i:
             if msvcrt.kbhit():
                 the_game.message.message('')
-                i = msvcrt.getch()
+                i = msvcrt.getch().decode()
                 if the_game.player.ride and the_game.player.ride[0].food>24 and i in ['1','2','3','4','5','6','7','8','9']:
                     if riding:
                         the_game.player.move(i)
@@ -4543,7 +4543,7 @@ if __name__=='__main__':
                     i = '-1'
                 if i == 'S':
                     the_game.message.message('q')
-                    i = msvcrt.getch()
+                    i = msvcrt.getch().decode()
                     if i == 'y' or i == 'Y':
                         if the_game.save():
                             the_game.redraw_screen()
@@ -4585,7 +4585,7 @@ if __name__=='__main__':
                                 if not dropped:
                                     the_game.ground_items.append([the_game.player.xy[0], the_game.player.xy[1],drop])
                                 the_game.message.use('create_drop',drop)
-                                msvcrt.getch()
+                                msvcrt.getch().decode()
                             the_game.player.followers.append(the_game.player.ride[0])
                             the_game.player.ride=[]
                             i='0'
@@ -4715,7 +4715,7 @@ if __name__=='__main__':
                             i = ''
                             while not i:
                                 if msvcrt.kbhit():
-                                    i = msvcrt.getch()
+                                    i = msvcrt.getch().decode()
                             the_game.work(i)
                             continue
                             i = '0'
@@ -4728,11 +4728,11 @@ if __name__=='__main__':
                             continue
                     elif i in 'rwp+bkeiCt':
                         the_game.message.message('not_when_possessed')
-                        msvcrt.getch()
+                        msvcrt.getch().decode()
                         i='0'
                 elif i in 'rwmp+bkqseiCt':
                     the_game.message.message('not_in_waterform')
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     i='0'
         ##        if i == '<':
         ##            the_game.player.sit = False

@@ -293,7 +293,7 @@ class Message_system:
         self.game.c.pos(0,0)
         try:
             print(md[x])
-            answer = msvcrt.getch()
+            answer = msvcrt.getch().decode()
             if answer == 'y' or answer == 'Y':
                 return 1
             else:
@@ -314,5 +314,5 @@ class Message_system:
                 self.game.c.text(0,0,self.game.combat_buffer[:79],7)
                 self.game.combat_buffer = self.game.combat_buffer[79:]
                 if pause:
-                    msvcrt.getch()
+                    msvcrt.getch().decode()
                     self.game.c.rectangle((0,0,80,1))
