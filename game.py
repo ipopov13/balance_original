@@ -218,9 +218,9 @@ class Game:
     def redraw_screen(self):
         self.c.page()
         for x in range(1,24):
-            self.c.pos(21, x)
             for y in range(21,79):
-                self.c.scroll((y,x,y+1,x+1), 1, 1, T[self.land[x-1][y-21]].colour, T[self.land[x-1][y-21]].char)
+                with self.c.location(21, x):
+                    self.c.scroll((y,x,y+1,x+1), 1, 1, T[self.land[x-1][y-21]].colour, T[self.land[x-1][y-21]].char)
         for x in self.player.land_effects.keys():
             if self.player.land_effects[x][1]=='on_fire':
                 fxy=self.player.land_effects[x][3]
@@ -236,15 +236,14 @@ class Game:
                                                   (self.current_place['Nature']>=33 and self.current_place['Temperature']>=33 and 'elf2' in self.player.tool_tags)):
                 self.draw_move(creature, creature.xy[0], creature.xy[1])
         self.draw_move(self.player, self.player.xy[0], self.player.xy[1])
-        self.c.pos(*self.player.xy)
 
     def draw_move(self,mover, x, y):
         self.c.scroll((x, y, x+1, y+1), 1, 1, T[self.land[y-1][x-21]].colour, T[self.land[y-1][x-21]].char)
-        self.c.pos(*mover.xy)
-        if mover.tag=='@' and mover.possessed:
-            self.c.scroll((mover.xy[0], mover.xy[1], mover.xy[0]+1, mover.xy[1]+1), 1, 1, mover.possessed[0].emotion, mover.possessed[0].tag)
-        else:
-            self.c.scroll((mover.xy[0], mover.xy[1], mover.xy[0]+1, mover.xy[1]+1), 1, 1, mover.emotion, mover.tag)
+        with self.c.location(*mover.xy):
+            if mover.tag=='@' and mover.possessed:
+                self.c.scroll((mover.xy[0], mover.xy[1], mover.xy[0]+1, mover.xy[1]+1), 1, 1, mover.possessed[0].emotion, mover.possessed[0].tag)
+            else:
+                self.c.scroll((mover.xy[0], mover.xy[1], mover.xy[0]+1, mover.xy[1]+1), 1, 1, mover.emotion, mover.tag)
 
     def hide(self,to_hide):
         x = to_hide.xy[0]
@@ -318,12 +317,12 @@ class Game:
         i=''
         while i!=' ' and i!='B':
             self.c.page()
-            self.c.pos(1,0)
-            self.c.write('''These are the structures you can build. YOU MUST PUT ALL THE NEEDED MATERIALS
- ON THE GROUND AT THE SPOT YOU WANT TO BUILD ON, AND HAVE THE TOOLS IN YOUR
- INVENTORY! ('B' to build, SPACE to exit)
-
- You have:                  You can build:\n''')
+            with self.c.location(1, 0):
+                self.c.write('''These are the structures you can build. YOU MUST PUT ALL THE NEEDED MATERIALS
+     ON THE GROUND AT THE SPOT YOU WANT TO BUILD ON, AND HAVE THE TOOLS IN YOUR
+     INVENTORY! ('B' to build, SPACE to exit)
+    
+     You have:                  You can build:\n''')
             for i1 in range(len(mat_keys)):
                 print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
             if selected_recipes:
@@ -340,8 +339,8 @@ class Game:
             self.redraw_screen()
             building=self.build_terr(the_build)
             if building == 1:
-                self.c.pos(1,0)
-                self.c.write('You build a %s.' %(the_build))
+                with self.c.location(1, 0):
+                    self.c.write('You build a %s.' %(the_build))
                 new_ground_items=[]
                 for m in self.ground_items:
                     if m[:2]!=self.player.xy or (inventory.build_recipes[the_build][2] in self.I and\
@@ -582,12 +581,12 @@ class Game:
         the_keys=selected_recipes.keys()
         while i!=' ':# and not '0'<i<=str(len(the_keys)):
             self.c.page()
-            self.c.pos(1,0)
-            self.c.write('''These are the items you can craft. YOU MUST PUT ALL THE NEEDED MATERIALS
- ON THE GROUND AT THE SPOT YOU WANT TO CRAFT ON, AND HAVE THE TOOLS IN YOUR
- INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
-
- You have:                  You can build:\n''')
+            with self.c.location(1, 0):
+                self.c.write('''These are the items you can craft. YOU MUST PUT ALL THE NEEDED MATERIALS
+     ON THE GROUND AT THE SPOT YOU WANT TO CRAFT ON, AND HAVE THE TOOLS IN YOUR
+     INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
+    
+     You have:                  You can build:\n''')
             for i1 in range(len(mat_keys)):
                 print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
             if selected_recipes:
@@ -606,12 +605,12 @@ class Game:
         the_keys=selected_recipes[craft_group].keys()
         while i!=' ':
             self.c.page()
-            self.c.pos(1,0)
-            self.c.write('''These are the items you can craft. YOU MUST PUT ALL THE NEEDED MATERIALS
- ON THE GROUND AT THE SPOT YOU WANT TO CRAFT ON, AND HAVE THE TOOLS IN YOUR
- INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
- May need:%s
- You have:                  You can build:\n''' %(', '.join(tools_needed[craft_group])))
+            with self.c.location(1, 0):
+                self.c.write('''These are the items you can craft. YOU MUST PUT ALL THE NEEDED MATERIALS
+     ON THE GROUND AT THE SPOT YOU WANT TO CRAFT ON, AND HAVE THE TOOLS IN YOUR
+     INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
+     May need:%s
+     You have:                  You can build:\n''' %(', '.join(tools_needed[craft_group])))
             for i1 in range(len(mat_keys)):
                 print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
             line=0
@@ -629,8 +628,8 @@ class Game:
             building,build_name=self.craft_item(craft_group,the_keys[int(i)-1])
             self.redraw_screen()
             if building == 1:
-                self.c.pos(1,0)
-                self.c.write('You craft a %s.' %(build_name))
+                with self.c.location(1, 0):
+                    self.c.write('You craft a %s.' %(build_name))
                 if the_keys[int(i)-1].split()[0] in ['copper','silver','gold']:
                     used_mats=inventory.craft_recipes[craft_group][' '.join(the_keys[int(i)-1].split()[1:])][3].copy()
                 else:
@@ -670,13 +669,13 @@ class Game:
             i=''
             i1=''
             while i!=' ':
-                self.c.pos(0,0)
-                self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
-  chanting a new branch grows out of the trunk and forms into the shape
-  of your choosing (SPACE to exit):
-
-  1) Weapons and ammunition
-  2) Living wood armour''')
+                with self.c.location(0, 0):
+                    self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
+      chanting a new branch grows out of the trunk and forms into the shape
+      of your choosing (SPACE to exit):
+    
+      1) Weapons and ammunition
+      2) Living wood armour''')
                 i=msvcrt.getch().decode()
                 if i in ['1','2']:
                     si[0]=int(i)-1
@@ -686,31 +685,31 @@ class Game:
             while i1!=' ':
                 self.c.page()
                 if i=='1':
-                    self.c.pos(0,0)
-                    self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
-  chanting a new branch grows out of the trunk and forms into the shape
-  of your choosing (SPACE to exit):
-
-  1) A totem staff
-  2) A dryad bow
-  3) 20 living wood arrows''')
+                    with self.c.location(0, 0):
+                        self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
+      chanting a new branch grows out of the trunk and forms into the shape
+      of your choosing (SPACE to exit):
+    
+      1) A totem staff
+      2) A dryad bow
+      3) 20 living wood arrows''')
                     i1=msvcrt.getch().decode()
                     if i1 in ['1','2','3']:
                         si[1]=int(i1)-1
                         break
                 elif i=='2':
-                    self.c.pos(0,0)
-                    self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
-  chanting a new branch grows out of the trunk and forms into the shape
-  of your choosing (SPACE to exit):
-
-  1) Cloak of leaves
-  2) Living wood boots
-  3) Living wood chestplate
-  4) Living wood pants
-  5) Living wood gloves
-  6) Living wood helm
-  7) Living wood belt''')
+                    with self.c.location(0, 0):
+                        self.c.write('''\n  You touch the tree next to you and feel it shudder. Under your quiet
+      chanting a new branch grows out of the trunk and forms into the shape
+      of your choosing (SPACE to exit):
+    
+      1) Cloak of leaves
+      2) Living wood boots
+      3) Living wood chestplate
+      4) Living wood pants
+      5) Living wood gloves
+      6) Living wood helm
+      7) Living wood belt''')
                     i1=msvcrt.getch().decode()
                     if int(i1) in range(1,8):
                         si[1]=int(i1)-1
@@ -842,11 +841,11 @@ class Game:
 
     def draw_inv(self,put_in=None, container=None):
         self.c.page()
-        self.c.pos(0,0)
-        if put_in:
-            self.c.write('\n What do you want to put in the container?\n\n\n')
-        else:
-            self.c.write('\n You open your backpack:\n (e)view equipment (q)eat/drink (d)drop item (u)use item\n\n')
+        with self.c.location(0, 0):
+            if put_in:
+                self.c.write('\n What do you want to put in the container?\n\n\n')
+            else:
+                self.c.write('\n You open your backpack:\n (e)view equipment (q)eat/drink (d)drop item (u)use item\n\n')
         for i in range(len(self.player.inventory)):
             print(' '+chr(i+97)+')  ', self.player.inventory[i].name.capitalize()+', %d x %s stones' %(self.player.inventory[i].qty,
                                                                                       str(self.player.inventory[i].weight)))
@@ -871,8 +870,8 @@ class Game:
             return None
         if i1 == 'q':
             self.c.rectangle((0,0,79,1))
-            self.c.pos(0,0)
-            self.c.write(' What do you want to eat or drink?')
+            with self.c.location(0, 0):
+                self.c.write(' What do you want to eat or drink?')
             while 1:
                 if msvcrt.kbhit():
                     eat = msvcrt.getch().decode()
@@ -905,8 +904,8 @@ class Game:
             return 1
         if i1 == 'u':
             self.c.rectangle((0,0,79,1))
-            self.c.pos(0,0)
-            self.c.write(' Which item do you want to use?')
+            with self.c.location(0, 0):
+                self.c.write(' Which item do you want to use?')
             use = msvcrt.getch().decode()
             self.c.rectangle((0,0,79,1))
             try:
@@ -923,8 +922,8 @@ class Game:
 
     def draw_equip(self):
         self.c.page()
-        self.c.pos(0,0)
-        self.c.write('\n You check your equipment:\n (a-p)take off/equip item (1)view inventory\n\n')
+        with self.c.location(0, 0):
+            self.c.write('\n You check your equipment:\n (a-p)take off/equip item (1)view inventory\n\n')
         for i in range(len(self.player.equipment)):
             if self.player.equipment[self.player.equip_tags[i]] != []:
                 try:
@@ -983,7 +982,6 @@ class Game:
         all_races = ['elf','gnome','spirit of nature','dryad','water elemental','fairy','human','dwarf','spirit of order',
                   'ork','troll','spirit of chaos','goblin','kraken','imp']
         self.c.page()
-        self.c.pos(0,0)
         self.c.text(2,1,'%s' %(self.player.name),7)
         i = 10
         if (self.player.life < (self.player.max_life*0.7)) and (self.player.life > (self.player.max_life*0.2)):
@@ -1043,7 +1041,6 @@ class Game:
                 col=7
             self.c.text(50,the_line,'%s) %-16s:%6.2f' %(chr(all_races.index(race)+97),race.capitalize(),self.player.races['Chaos'][race])+'%',col)
             the_line+=1
-        self.c.pos(2,15)
         if self.player.emotion == 2:
             self.c.text(2,20,'Tired',7)
         if self.player.sit == True:
@@ -1086,27 +1083,27 @@ class Game:
         all_races = ['elf','gnome','spirit of nature','dryad','water elemental','fairy','human','dwarf','spirit of order',
                   'ork','troll','spirit of chaos','goblin','kraken','imp']
         self.c.page()
-        self.c.pos(1,1)
-        self.c.write('''      RESEARCHING FORCES AND RACES
-
- As a highly attuned human you have the ability
- to study the world that surrounds you. This
- gives you the chance to learn skills and
- abilities that belong to the other races of
- Order, and even the races of Nature and Chaos!
- To begin studying a race you need to select
- them to the right, and then spend time in the
- respective environment observing it.
- Take note that the maximum total force
- knowledge of all three forces can be 100%,
- and the maximum total race knowledge in a
- force can't be more than the force knowledge
- itself (like your own attunement). If you want
- to stop studying and fix the numbers the way
- they are, simply select human as a study race.
-
- IF YOU LOSE YOUR HIGH HUMAN ATTUNEMENT (90%)
- YOU WILL LOSE ALL COLLECTED KNOWLEDGE!''')
+        with self.c.location(1, 1):
+            self.c.write('''      RESEARCHING FORCES AND RACES
+    
+     As a highly attuned human you have the ability
+     to study the world that surrounds you. This
+     gives you the chance to learn skills and
+     abilities that belong to the other races of
+     Order, and even the races of Nature and Chaos!
+     To begin studying a race you need to select
+     them to the right, and then spend time in the
+     respective environment observing it.
+     Take note that the maximum total force
+     knowledge of all three forces can be 100%,
+     and the maximum total race knowledge in a
+     force can't be more than the force knowledge
+     itself (like your own attunement). If you want
+     to stop studying and fix the numbers the way
+     they are, simply select human as a study race.
+    
+     IF YOU LOSE YOUR HIGH HUMAN ATTUNEMENT (90%)
+     YOU WILL LOSE ALL COLLECTED KNOWLEDGE!''')
 
         self.c.text(1,22,'Researching: %s -> %s' %(self.player.research_force,self.player.research_race.capitalize()))
         self.c.text(49,1,'NATURE %17.2f' %self.player.research_forces['Nature']+'%',10)
@@ -1488,7 +1485,6 @@ class Game:
                             self.c.text(39,6+getting.index(x),str(chosen[x]))
                     self.c.text(2,22,'a..z/A..Z - select items; trade with SPACE; exit with !; reset with 0.')
                     self.c.text(2,23,'Trade balance: %.2f' %(balance),[10,12,10][cmp(0,balance)])
-                    self.c.pos(72,22)
                     i=msvcrt.getch().decode()
                     if 'A'<=i<chr(65+len(getting)):
                         old=chosen.get(getting[ord(i)-65],0)
@@ -1579,8 +1575,8 @@ class Game:
 
     def game_over(self):
         self.c.page()
-        self.c.pos(30,14)
-        self.c.write('Your life is 0! GAME OVER!')
+        with self.c.location(30, 14):
+            self.c.write('Your life is 0! GAME OVER!')
         self.c.text(35,17,'(q)uit',7)
         i = ''
         while 1:
@@ -1743,8 +1739,8 @@ class Game:
         i1 = i1.lower()
         if i1 == 't' and len(chest.effect['contains']):
             self.c.rectangle((0,0,79,1))
-            self.c.pos(0,0)
-            self.c.write(' Which item do you want to take out?')
+            with self.c.location(0, 0):
+                self.c.write(' Which item do you want to take out?')
             while 1:
                 if msvcrt.kbhit():
                     take = msvcrt.getch().decode()
@@ -1869,12 +1865,12 @@ class Game:
         i=''
         while i!=' ':
             self.c.page()
-            self.c.pos(1,1)
-            self.c.write('''You have the following ingredients for cooking. Select the ones you want to
- use and take note of the other things you need for the desired meal on the
- right. (exit with SPACE, decrease with SHIFT)
-
- You have:                   Using:     You can make:\n''')
+            with self.c.location(1, 1):
+                self.c.write('''You have the following ingredients for cooking. Select the ones you want to
+     use and take note of the other things you need for the desired meal on the
+     right. (exit with SPACE, decrease with SHIFT)
+    
+     You have:                   Using:     You can make:\n''')
             for i in range(len(mats)):
                 print(' %s)   %s x %d' %(chr(i+97),mats[i].name,mats[i].qty))
                 self.c.text(4,i+6,mats[i].tag,mats[i].color)
@@ -1943,11 +1939,9 @@ class Game:
             self.ground_items.append([self.player.xy[0],self.player.xy[1],creation])
             self.player.pick_up(self.ground_items)
             self.c.rectangle((0,0,80,1))
-            self.c.pos(1,0)
 
     def look(self):
         key = ' '
-        self.c.pos(*self.player.xy)
         xy = self.player.xy[:]
         changed=1
         while ord(key) != 13:
@@ -1956,7 +1950,6 @@ class Game:
                 self.redraw_screen()
                 self.highlight_path(self.direct_path(self.player.xy,self.player.target))
                 self.c.scroll((self.player.target[0],self.player.target[1],self.player.target[0]+1,self.player.target[1]+1),1,1,236,'X')
-                self.c.pos(*xy)
             if msvcrt.kbhit():
                 key = msvcrt.getch().decode()
                 if key=='t':
@@ -1972,9 +1965,7 @@ class Game:
                         xy[0] -= md[key][0]
                         xy[1] -= md[key][1]
                     self.message.message('')
-                    self.c.pos(*xy)
                     self.message.look(xy,T)
-                    self.c.pos(*xy)
                 except:
                     pass
 
@@ -2011,7 +2002,6 @@ class Game:
                         a += i
                 t=self.load_terr(a)
         self.redraw_screen()
-        self.c.pos(*self.player.xy)
 
     def create_character(self,fl):
         races = {'a':'elf','b':'gnome','c':'spirit of nature','d':'dryad','e':'water elemental','f':'fairy','g':'human',
@@ -2174,7 +2164,6 @@ class Game:
             for x in self.all_creatures:
                 if x not in self.hidden and self.clear_los(self.direct_path(self.player.xy,x.xy)):
                     self.draw_move(x, x.xy[0], x.xy[1])
-            self.c.pos(*self.player.xy)
             return 1
         else:
             return 0
@@ -2523,7 +2512,6 @@ class Game:
             self.land.append(terr.read(58))
             terr.read(1)
         for x in range(1,24):
-            self.c.pos(21, x)
             for y in range(21,79):
                 self.c.scroll((y,x,y+1,x+1), 1, 1, T[self.land[x-1][y-21]].colour, T[self.land[x-1][y-21]].char)
         self.player = pickle.load(terr)
@@ -4644,9 +4632,7 @@ if __name__=='__main__':
                         elif the_game.player.mode == 'Chaos':
                             the_game.player.mode = 'Nature'
                         the_game.draw_mode()
-                        the_game.c.pos(*the_game.player.xy)
                         continue
-                        i = '0'
                     if i == 'q':
                         the_game.drink(the_game.player.xy)
                         i = '0'
@@ -4763,7 +4749,6 @@ if __name__=='__main__':
                 clock = the_game.game_time(i)
                 if clock == 0:
                     break
-                the_game.c.pos(*the_game.player.xy)
         ## area files clean-up
         new_files=glob(r'%s_dir\new_area*.dat' %(the_game.player.name))
         all_files=glob(r'%s_dir\*' %(the_game.player.name))

@@ -1,9 +1,12 @@
-# import console
+import console
 from console.utils import cls, set_title
 
 
 class Console:
     """Adapter class for Console"""
+
+    location = console.screen.sc.location
+
     @staticmethod
     def getconsole():
         return Console()
@@ -23,6 +26,14 @@ class Console:
     @staticmethod
     def write(text):
         print(text)
+
+    @staticmethod
+    def rectangle(coords):
+        x_start, y_start, x_end, y_end = coords
+        line_length = x_end - x_start - 1
+        for y in range(y_start, y_end):
+            with Console.location(y, x_start):
+                print(' ' * line_length)
 
 # cls()
 # with console.screen.sc.location(0, 0):

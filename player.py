@@ -627,29 +627,29 @@ class Player(Living_thing):
 
     def find_equipment(self,slot):
         self.game.c.page()
-        self.game.c.pos(0,3)
         found = 0
         items = ''
-        for i in self.inventory:
-            if self.equip_tags[slot] in ['Right hand','Left hand']:
-                print(' '+chr(self.inventory.index(i)+97)+')', i.name.capitalize()+', %d x %s stones' %(i.qty,str(i.weight)))
-                found += 1
-                items += chr(self.inventory.index(i)+97)
-            elif self.equip_tags[slot] in i.type:
-                print(' '+chr(self.inventory.index(i)+97)+')', i.name.capitalize()+', %d x %s stones' %(i.qty,str(i.weight)))
-                found += 1
-                items += chr(self.inventory.index(i)+97)
-        if not found:
-            print(' You have nothing usefull to equip.')
-            i1 = msvcrt.getch().decode()
-            return 0
-        else:
-            self.game.c.pos(0,1)
-            print(' What do you want to equip?')
-            i1 = msvcrt.getch().decode()
-            if i1 in items:
-                self.equip(self.inventory[ord(i1)-97],slot)
-            return 0
+        with self.game.c.location(0, 3):
+            for i in self.inventory:
+                if self.equip_tags[slot] in ['Right hand','Left hand']:
+                    print(' '+chr(self.inventory.index(i)+97)+')', i.name.capitalize()+', %d x %s stones' %(i.qty,str(i.weight)))
+                    found += 1
+                    items += chr(self.inventory.index(i)+97)
+                elif self.equip_tags[slot] in i.type:
+                    print(' '+chr(self.inventory.index(i)+97)+')', i.name.capitalize()+', %d x %s stones' %(i.qty,str(i.weight)))
+                    found += 1
+                    items += chr(self.inventory.index(i)+97)
+            if not found:
+                print(' You have nothing usefull to equip.')
+                i1 = msvcrt.getch().decode()
+                return 0
+            else:
+                with self.game.c.location(0, 1):
+                    print(' What do you want to equip?')
+                i1 = msvcrt.getch().decode()
+                if i1 in items:
+                    self.equip(self.inventory[ord(i1)-97],slot)
+                return 0
 
     def force_attack(self,defender):
         ## Force effects based on mode and enemy

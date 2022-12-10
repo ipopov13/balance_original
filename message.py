@@ -116,7 +116,6 @@ class Message_system:
               'ruby_mess':"The ruby reflects the fire's light and emits a wave of heat! ",
               'lapis_mess':'The stone sucks you in and you are transported somewhere else!',
               'amethyst0':"You remove the mark from the stone.",'amethyst1':"The amethyst shines brightly and marks the stone around you"}
-        self.game.c.pos(0,0)
         try:
             if x not in ['work','no_fill','which_open','how_much','q','pickup','look','ran_away','need_human1&dwarf1','need_dryad3',
                          'no_riding_fighting','save_failed','break_rock','found_gem','found_metal','failed_smelt','clear_build_site',
@@ -124,15 +123,16 @@ class Message_system:
                          'what_to_drop']:
                 self.game.combat_buffer+=' '+md[x]
             else:
-                self.game.c.write(md[x])
+                with self.game.c.location(0, 0):
+                    self.game.c.write(md[x])
         except:
             self.game.c.rectangle((0,0,80,1))
 
     def tool_msg(self,x,t):
         md={'no_tool':'You don\'t have the appropriate tool! (%s)',}
-        self.game.c.pos(0,0)
         try:
-            self.game.c.write(md[x] %(', '.join(t)))
+            with self.game.c.location(0, 0):
+                self.game.c.write(md[x] %(', '.join(t)))
         except:
             self.game.c.rectangle((0,0,80,1))
 
@@ -142,12 +142,12 @@ class Message_system:
               'not_tough':'You are not tough enough to work effectively, increase your endurance!',
               'hostiles':"You can't focus on this, you are under attack!",
               'gain_waterform':'You drain in the ground! You have %d turns to find magic water to reform!'}
-        self.game.c.pos(0,0)
         try:
-            if x=='gain_waterform':
-                print(md[x] %(t))
-            else:
-                print(md[x])
+            with self.game.c.location(0, 0):
+                if x=='gain_waterform':
+                    print(md[x] %(t))
+                else:
+                    print(md[x])
         except:
             self.game.c.rectangle((0,0,80,1))
 
@@ -173,43 +173,42 @@ class Message_system:
               'transform_into':'You turn into a %s!','transform_outof':'You reform back and no longer resemble a %s.',
               'sapphired':{0:'The %s is covered with ice!',1:'The %s is covered with frost!',2:'The %s starts trembling from the cold!'},
               'rubied':{0:'The %s is lit on fire!',1:"The %s's clothes turn to cinders!",2:'The %s screams in pain as the wave engulfs it!'}}
-        self.game.c.pos(0,0)
         try:
-            if x == 'hit' or x == 'crit' or x == 'creature_hit' or x == 'spell_damage' or x=='fairyland_hit':
-                mess = md[x] %(a.race,dmg)
-                self.game.combat_buffer += mess+' '
-            elif  x == 'kill' or x == 'elf_kill' or x == 'crit_kill' or x == 'miss' or x == 'creature_miss':
-                mess = md[x] %(a.race)
-                self.game.combat_buffer += mess+' '
-            elif x == 'no_escape':
-                self.game.combat_buffer += md[x]
-            elif x == 'creature_hits_creature':
-                self.game.combat_buffer += md[x] %(a.race,d.name,dmg)
-            elif x in ['talk','attack','tame','tamed_use','command_follow','command_stay','command_guard','steal','possess']:
-                print(md[x] %(a.race))
-            elif x == 'sapphired':
-                if a.life<1:
-                    self.game.combat_buffer += 'The %s falls frozen to the ground!' %(a.race)+' '
-                elif a.life/5>2:
-                    self.game.combat_buffer += 'The %s shrugs off the cold wave.' %(a.race)+' '
+            with self.game.c.location(0, 0):
+                if x == 'hit' or x == 'crit' or x == 'creature_hit' or x == 'spell_damage' or x=='fairyland_hit':
+                    mess = md[x] %(a.race,dmg)
+                    self.game.combat_buffer += mess+' '
+                elif  x == 'kill' or x == 'elf_kill' or x == 'crit_kill' or x == 'miss' or x == 'creature_miss':
+                    mess = md[x] %(a.race)
+                    self.game.combat_buffer += mess+' '
+                elif x == 'no_escape':
+                    self.game.combat_buffer += md[x]
+                elif x == 'creature_hits_creature':
+                    self.game.combat_buffer += md[x] %(a.race,d.name,dmg)
+                elif x in ['talk','attack','tame','tamed_use','command_follow','command_stay','command_guard','steal','possess']:
+                    print(md[x] %(a.race))
+                elif x == 'sapphired':
+                    if a.life<1:
+                        self.game.combat_buffer += 'The %s falls frozen to the ground!' %(a.race)+' '
+                    elif a.life/5>2:
+                        self.game.combat_buffer += 'The %s shrugs off the cold wave.' %(a.race)+' '
+                    else:
+                        self.game.combat_buffer += md[x][int(a.life/5)] %(a.race)+' '
+                elif x == 'rubied':
+                    if a.life<1:
+                        self.game.combat_buffer += 'The %s falls to the ground charred!' %(a.race)+' '
+                    elif a.life/5>2:
+                        self.game.combat_buffer += 'The %s grunts as the heat washes over it.' %(a.race)+' '
+                    else:
+                        self.game.combat_buffer += md[x][int(a.life/5)] %(a.race)+' '
                 else:
-                    self.game.combat_buffer += md[x][int(a.life/5)] %(a.race)+' '
-            elif x == 'rubied':
-                if a.life<1:
-                    self.game.combat_buffer += 'The %s falls to the ground charred!' %(a.race)+' '
-                elif a.life/5>2:
-                    self.game.combat_buffer += 'The %s grunts as the heat washes over it.' %(a.race)+' '
-                else:
-                    self.game.combat_buffer += md[x][int(a.life/5)] %(a.race)+' '
-            else:
-                self.game.combat_buffer += md[x] %a.name
+                    self.game.combat_buffer += md[x] %a.name
         except:
             self.game.c.rectangle((0,0,80,1))
 
     def creatures(self,x, a, b, dmg=0):
         md = {'miss_attack':'The %s jumps at the %s and misses!','good_attack':'The %s hits the %s for %d!',
               'kill':'The %s finishes the %s off!'}
-        self.game.c.pos(0,0)
         try:
             if x=='miss_attack' or x=='kill':
                 self.game.combat_buffer += md[x] %(a.race, b.race)
@@ -226,27 +225,27 @@ class Message_system:
               'taming_item':'You need some %ss to try and tame that animal.','feed_item':'You need some %ss to feed that animal.',
               'farm_harvest':'You get some %s.','needed_container':'You need a %s to do that!','craft_item':'You craft a %s.',
               'pickup_melt':'The %s melts as you pick it up!','pickup_dry':'The %s withers as you pick it up!'}
-        self.game.c.pos(0,0)
         try:
-            if x == 'gr_item':
-                items = []
-                for item in self.game.ground_items:
-                    if item[:2] == xy:
-                        items.append(item[2:])
-                if len(items) > 1:
-                    print('You see several items on the ground.')
-                else:
-                    self.message('')
-                    if qty == 1 and a.name[0].lower() in 'aieo':
-                        print(md[x] %('an ' + a.name))
-                    elif qty == 1 and a.name[0].lower() not in 'aieo':
-                        print(md[x] %('a ' + a.name))
+            with self.game.c.location(0, 0):
+                if x == 'gr_item':
+                    items = []
+                    for item in self.game.ground_items:
+                        if item[:2] == xy:
+                            items.append(item[2:])
+                    if len(items) > 1:
+                        print('You see several items on the ground.')
                     else:
-                        print(md[x] %(a.name+'('+str(qty)+')'))
-            elif x == 'craft_item':
-                self.game.combat_buffer += md[x] %(a.name)
-            else:
-                print(md[x] %a.name)
+                        self.message('')
+                        if qty == 1 and a.name[0].lower() in 'aieo':
+                            print(md[x] %('an ' + a.name))
+                        elif qty == 1 and a.name[0].lower() not in 'aieo':
+                            print(md[x] %('a ' + a.name))
+                        else:
+                            print(md[x] %(a.name+'('+str(qty)+')'))
+                elif x == 'craft_item':
+                    self.game.combat_buffer += md[x] %(a.name)
+                else:
+                    print(md[x] %a.name)
         except:
             self.game.c.rectangle((0,0,80,1))
 
@@ -290,9 +289,9 @@ class Message_system:
 
     def choice(self,x):
         md = {'leave_area':'Do you wish to leave this area? (y/n)'}
-        self.game.c.pos(0,0)
         try:
-            print(md[x])
+            with self.game.c.location(0, 0):
+                print(md[x])
             answer = msvcrt.getch().decode()
             if answer == 'y' or answer == 'Y':
                 return 1
