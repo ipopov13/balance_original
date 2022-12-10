@@ -1,4 +1,4 @@
-from console import Console
+from myconsole.myconsole import Console
 import random
 import os
 import msvcrt

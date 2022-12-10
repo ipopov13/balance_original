@@ -1,16 +1,25 @@
-# This is a sample Python script.
+import console
+from console.utils import cls
+import msvcrt
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+screen_content = '''
+               ___      _   _         _   _    _   ___   ____
+              |   \    / |  |        / |  |\   |  /   \ |
+              |___/   /  |  |       /  |  | \  |  |     |___
+              |   \  /---|  |      /---|  |  \ |  |     |
+              |___/ /    |  |___| /    |  |   \|  \___/ |____
 
+                                    ver 0.6
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+                                   (n)ew game
+                             (l)oad a previous game
+                            '''
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+cls()
+with console.screen.sc.location(0, 0):
+    print(screen_content)
+inputs = 0
+while str(inputs) != '1':
+    inputs = msvcrt.getch().decode()
+    with console.screen.sc.location(0, 0):
+        print(f'{console.fg.red+console.bg.green}{str(inputs)}{console.fx.end}')
