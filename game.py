@@ -2146,7 +2146,7 @@ class Game:
                     self.message.creature('no_escape',0)
         if area != 'area0':
             old_temp=self.current_place['Temperature']
-            places = open('%s//%s_dir//new_%s.dat'%(os.curdir,self.player.name,self.current_area), 'w')
+            places = open('%s//%s_dir//new_%s.dat'%(os.curdir,self.player.name,self.current_area), 'wb')
             pickle.dump(self.ground_items, places)
             pickle.dump(self.current_place, places)
             pickle.dump(self.terrain_type, places)
@@ -2440,9 +2440,9 @@ class Game:
             ## Uchi se orujieto ako umenieto e pod 100. Pri Atribut = 20 shansa da se vdigne poveche ot 100 e 0.
             ## Pri Atribut = 1 max-skill=5 => po 5 tochki na tochka Atribut
             ## Ako se bie s dve orujiq tova v lqvata ruka se uchi dva puti po-bavno
-            if pc.tag=='@':
-                learn = random.uniform(0,100)
-                if learn <= (pc.battle_att - pc.weapon_skill/5)/pc.battle_att*100:
+            if pc.tag == '@':
+                learn = random.uniform(0, 100)
+                if learn <= (pc.battle_att - pc.weapon_skill/5) / (pc.battle_att + 0.01) * 100:
                     pc.weapon_skill += 0.1*max([float(other.weapon_skill)/pc.weapon_skill,0.1])
                 if pc.equiped_weaps == 2:
                     learn = random.uniform(1,100)

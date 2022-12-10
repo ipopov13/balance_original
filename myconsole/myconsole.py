@@ -35,6 +35,16 @@ class Console:
             with Console.location(y, x_start):
                 print(' ' * line_length)
 
+    @staticmethod
+    def scroll(coords, i0, i1, color, char):
+        with Console.location(coords[1], coords[0]):
+            print(char)
+
+    @staticmethod
+    def text(x, y, text, color):
+        with Console.location(y, x):
+            print(text)
+
 # cls()
 # with console.screen.sc.location(0, 0):
 #     print(screen_content)
