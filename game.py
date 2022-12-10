@@ -1998,7 +1998,6 @@ class Game:
                             ''')
             i = msvcrt.getch().decode()
             if i == 'n':
-                input('OK')
                 self.create_character(fl)
                 t = self.draw_terr(self.player.start_force)
             if i == 'l':
