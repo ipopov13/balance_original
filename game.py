@@ -4774,8 +4774,8 @@ if __name__=='__main__':
             for f in all_files:
                 os.system('del %s' %(f))
             os.system('rd %s_dir' %(the_game.player.name))
-        raw_input("\nIf you got an error, please send it to the creator!\nOtherwise press ENTER to exit (no pun intended).")
+        input("\nIf you got an error, please send it to the creator!\nOtherwise press ENTER to exit (no pun intended).")
         os._exit(0)
     except Exception as e:
         print(e.message)
-        raw_input()
+        input()
