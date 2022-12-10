@@ -3090,10 +3090,10 @@ class Game:
             except IOError:
                 f = os.curdir+'//%s_dir//%s.dat' %(self.player.name,area)
                 try:
-                    terr = open(f, 'r')
+                    terr = open(f, 'rb')
                 except IOError:
                     self.player.known_areas.remove(area)
-                    self.new_terr(area,direction)
+                    self.new_terr(area, direction)
                     return 0
             self.ground_items = pickle.load(terr)
             self.current_place = pickle.load(terr)
