@@ -71,7 +71,7 @@ class Game:
         self.fish = player.Animal([30, 20],[],[],".,+><aAbBdDfFgiIJlLmnoOpsST%#`'~:",1,'f','fish','wander',100,5,{'Str':1,'End':4,'Dex':5,'Int':2,'Cre':1,'Mnd':1,'loot':[[1310,100,1,1]]},5,20,'Nature','fish')
         self.game_creatures=player.NPC.__refs__[:]
 
-    def draw_items(self,the_spot=[]):
+    def draw_items(self, the_spot=()):
         for x in self.ground_items:
             if the_spot and x[:2]!=the_spot:
                 continue
@@ -155,11 +155,11 @@ class Game:
                 day_tag=step_names[s]
                 day_color=step_colors[s]
                 if steps[s]==200:
-                    passed=daytime/20
+                    passed=daytime//20
                 else:
-                    passed=(daytime-steps[s-1])/((steps[s]-steps[s-1])/10)
+                    passed=(daytime-steps[s-1])//((steps[s]-steps[s-1])//10)
                 break
-        self.c.text((20-len(day_tag))/2+1,14,day_tag,day_color)
+        self.c.text((20-len(day_tag))//2+1,14,day_tag,day_color)
         self.c.text(4,15,'['+'*'*passed+'-'*(10-passed)+']',day_color)
         self.c.text(0,16,'Nature %6.2f' %(self.player.forces['Nature'])+'%',10)
         self.c.text(0,17,'Order  %6.2f' %(self.player.forces['Order'])+'%',9)
@@ -232,7 +232,7 @@ class Game:
         self.draw_hud()
         self.draw_items()
         for creature in self.all_creatures:
-            if creature not in self.hidden and (self.clear_los(self.direct_path(self.player.xy,creature.xy)) or \
+            if creature not in self.hidden and (self.clear_los(self.direct_path(self.player.xy,creature.xy)) or
                                                   (self.current_place['Nature']>=33 and self.current_place['Temperature']>=33 and 'elf2' in self.player.tool_tags)):
                 self.draw_move(creature, creature.xy[0], creature.xy[1])
         self.draw_move(self.player, self.player.xy[0], self.player.xy[1])
@@ -323,8 +323,8 @@ class Game:
      INVENTORY! ('B' to build, SPACE to exit)
     
      You have:                  You can build:\n''')
-            for i1 in range(len(mat_keys)):
-                print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
+            for mat_key in mat_keys:
+                print('   %s x %d' %(mat_key.capitalize(), mats[mat_key]))
             if selected_recipes:
                 line=0
                 for r in selected_recipes:
@@ -343,7 +343,7 @@ class Game:
                     self.c.write('You build a %s.' %(the_build))
                 new_ground_items=[]
                 for m in self.ground_items:
-                    if m[:2]!=self.player.xy or (inventory.build_recipes[the_build][2] in self.I and\
+                    if m[:2]!=self.player.xy or (inventory.build_recipes[the_build][2] in self.I and
                        m[2].id==self.I[inventory.build_recipes[the_build][2]].id):
                         new_ground_items.append(m)
                 self.ground_items=new_ground_items[:]
@@ -578,7 +578,7 @@ class Game:
                     else:
                         selected_recipes[recipe_group][r]=''.join(['%s ' %(x) *needed_mats[x] for x in needed_mats]).strip().split()
         i=''
-        the_keys=selected_recipes.keys()
+        the_keys = list(selected_recipes.keys())
         while i!=' ':# and not '0'<i<=str(len(the_keys)):
             self.c.page()
             with self.c.location(1, 0):
@@ -587,12 +587,12 @@ class Game:
      INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
     
      You have:                  You can build:\n''')
-            for i1 in range(len(mat_keys)):
-                print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
+            for mat_key in mat_keys:
+                print('   %s x %d' %(mat_key.capitalize(),mats[mat_key]))
             if selected_recipes:
                 line=0
                 for r in the_keys:
-                    self.c.text(28,line+5,'%d) %s' %(line/2+1,r.capitalize()))
+                    self.c.text(28,line+5,'%d) %s' %(line//2+1,r.capitalize()))
                     line+=2
             i=msvcrt.getch().decode()
             try:
@@ -602,7 +602,7 @@ class Game:
                 self.redraw_screen()
                 return 1
         i=''
-        the_keys=selected_recipes[craft_group].keys()
+        the_keys=list(selected_recipes[craft_group].keys())
         while i!=' ':
             self.c.page()
             with self.c.location(1, 0):
@@ -611,15 +611,15 @@ class Game:
      INVENTORY (not the forge and anvil...)! (1-9 to craft, SPACE to exit)
      May need:%s
      You have:                  You can build:\n''' %(', '.join(tools_needed[craft_group])))
-            for i1 in range(len(mat_keys)):
-                print('   %s x %d' %(mat_keys[i1].capitalize(),mats[mat_keys[i1]]))
+            for mat_key in mat_keys:
+                print('   %s x %d' %(mat_key.capitalize(),mats[mat_key]))
             line=0
             for r in the_keys:
-                self.c.text(28,line+5,'%d) %s' %(line/2+1,r.capitalize()))
+                self.c.text(28,line+5,'%d) %s' %(line//2+1,r.capitalize()))
                 if selected_recipes[craft_group][r]:
                     self.c.text(29,line+6,'%s' %(','.join(['%d %s' %(selected_recipes[craft_group][r].count(x),x.capitalize()) for x in set(selected_recipes[craft_group][r])])),12)
                 else:
-                    self.c.text(29,line+6,"Press %d to build!" %(line/2+1),10)
+                    self.c.text(29,line+6,"Press %d to build!" %(line//2+1),10)
                 line+=2
             i=msvcrt.getch().decode()
             if '0'<i<='9' and int(i)<=len(the_keys):
@@ -1432,15 +1432,31 @@ class Game:
                 dirs=''
                 if target.race=='fairy':
                     town=self.find_place('Order','Population')
-                    curr_coords=[int(self.current_area[4:])/self.map_size,int(self.current_area[4:])%self.map_size]
-                    NS=cmp(curr_coords[0],town[0])
-                    WE=cmp(curr_coords[1],town[1])
+                    curr_coords=[int(self.current_area[4:])//self.map_size,int(self.current_area[4:])%self.map_size]
+                    if curr_coords[0] < town[0]:
+                        NS = -1
+                    elif curr_coords[0] > town[0]:
+                        NS = 1
+                    else:
+                        NS = 0
+                    if curr_coords[1] < town[1]:
+                        WE = -1
+                    elif curr_coords[1] > town[1]:
+                        WE = 1
+                    else:
+                        WE = 0
+                    if abs(curr_coords[0]-town[0]) < 1:
+                        internal_index = -1
+                    elif abs(curr_coords[0]-town[0]) > 1:
+                        internal_index = 1
+                    else:
+                        internal_index = 0
                     if NS:
-                        dirs+='%d hour%s %s' %(abs(curr_coords[0]-town[0]),['','s'][cmp(abs(curr_coords[0]-town[0]),1)],['south','north'][max([NS,0])])
+                        dirs+='%d hour%s %s' %(abs(curr_coords[0]-town[0]),['','s'][internal_index], ['south','north'][max([NS,0])])
                     if WE:
                         if dirs:
                             dirs+=' and '
-                        dirs+='%d hour%s %s' %(abs(curr_coords[1]-town[1]),['','s'][cmp(abs(curr_coords[0]-town[0]),1)],['east','west'][max([NS,0])])
+                        dirs+='%d hour%s %s' %(abs(curr_coords[1]-town[1]),['','s'][internal_index],['east','west'][max([NS,0])])
                 self.c.write('%s' %(race_answers[target.race]['learn']) %(dirs))
         elif i=='2':
             if target.race in race_answers:
@@ -1484,7 +1500,7 @@ class Game:
                         if x in chosen:
                             self.c.text(39,6+getting.index(x),str(chosen[x]))
                     self.c.text(2,22,'a..z/A..Z - select items; trade with SPACE; exit with !; reset with 0.')
-                    self.c.text(2,23,'Trade balance: %.2f' %(balance),[10,12,10][cmp(0,balance)])
+                    self.c.text(2, 23,'Trade balance: %.2f' % balance, 12 if balance > 0 else 10)
                     i=msvcrt.getch().decode()
                     if 'A'<=i<chr(65+len(getting)):
                         old=chosen.get(getting[ord(i)-65],0)
@@ -1535,7 +1551,7 @@ class Game:
                    'tourmaline':500,'garnet':500,'aquamarine':500,'opal':750,'turquoise':500,'lapis lazuli':500,
                    'paper':100,'feather':5,'bone':5}
         price=max([x.weight,0.01])*max([materials.get(y,1) for y in x.type])*max([item_types.get(z,1) for z in x.type])
-        m=(float(merch.attr['Int']+merch.attr['Cre'])/(merch.attr['Int']+merch.attr['Cre']+self.player.attr['Int']+self.player.attr['Cre'])-.5)/2
+        m=(float(merch.attr['Int']+merch.attr['Cre'])//(merch.attr['Int']+merch.attr['Cre']+self.player.attr['Int']+self.player.attr['Cre'])-.5)//2
         if sell:
             price-=price*m
         else:
@@ -2173,9 +2189,9 @@ class Game:
         dif=[abs(a[0]-b[0]),abs(a[1]-b[1])]
         dirxy=[0,0]
         if abs(a[0]-b[0]):
-            dirxy[0]=(b[0]-a[0])/abs(a[0]-b[0])
+            dirxy[0]=(b[0]-a[0])//abs(a[0]-b[0])
         if abs(a[1]-b[1]):
-            dirxy[1]=(b[1]-a[1])/abs(a[1]-b[1])
+            dirxy[1]=(b[1]-a[1])//abs(a[1]-b[1])
         longer=dif.index(max(dif))
         shorter=[0,1]
         shorter.remove(longer)
@@ -2254,7 +2270,7 @@ class Game:
             if chance<=shot_chance:
                 fall_spot=attacker.target[:]
             else:
-                fall_spot=[x+random.randint(1,max([1,(chance-int(shot_chance))/20]))*random.choice([-1,1]) for x in attacker.target]
+                fall_spot=[x+random.randint(1,max([1,(chance-int(shot_chance))//20]))*random.choice([-1,1]) for x in attacker.target]
                 if (fall_spot[0] <= 20):
                     fall_spot[0]=21
                 if (fall_spot[0] >= 79):
@@ -2279,7 +2295,7 @@ class Game:
                                 add_dmg = 0
                                 crit = random.randint(1,100)
                                 if crit <= attacker.attr['Dex']:
-                                    add_dmg = attacker.attr['Dex']/10 + 1
+                                    add_dmg = attacker.attr['Dex']//10 + 1
                                 if attacker.tag=='@':
                                     attacker.force_attack(creature)
                                     if creature.tag!='@':
@@ -2297,7 +2313,7 @@ class Game:
                                             if each_other.force==creature.force and (creature.t=='sentient' and each_other.t=='sentient') and not (creature.force=='Chaos' and attacker.mode=='Chaos'):
                                                 each_other.mode='hostile'
                                 resisted=self.get_resisted_damage(creature)
-                                damage = random.randint(0,max([1,attacker.attr['Dex']/5]))+attacker.weapon_dmg+add_dmg+bullet.dmg-resisted
+                                damage = random.randint(0,max([1,attacker.attr['Dex']//5]))+attacker.weapon_dmg+add_dmg+bullet.dmg-resisted
                                 if damage < 1:
                                     damage = 0
                                 if attacker.tag=='@':
@@ -2356,7 +2372,7 @@ class Game:
                 add_dmg = 0
                 crit = random.randint(1,100)
                 if crit <= attacker.attr['Dex']:
-                    add_dmg = attacker.attr['Dex']/10 + 1
+                    add_dmg = attacker.attr['Dex']//10 + 1
                 resisted=self.get_resisted_damage(defender)
                 damage = random.randint(1,attacker.dmg) + attacker.weapon_dmg + add_dmg - resisted
                 if damage < 1:
@@ -2574,7 +2590,7 @@ class Game:
         force_points={}
         for each in ['Nature','Chaos','Order','Population','Water']:
             force_points[each]=[]
-            for i in range(self.map_size/2):
+            for i in range(self.map_size//2):
                 fx = random.randint(0,self.map_size-1)
                 fy = random.randint(0,self.map_size-1)
                 if each=='Population':
@@ -2738,7 +2754,7 @@ class Game:
     ##Random terrain generation
     def generate_terr(self,starting_point):
         tp=self.T_matrix[starting_point[0]][starting_point[1]]
-        temp_select = min([tp['Temperature']/33,2])
+        temp_select = int(min([tp['Temperature']//33,2]))
         terrain_selection={}
         swamp_add=[]
         if tp['Water']>60:
@@ -2754,7 +2770,7 @@ class Game:
         all_land=''
         done_lands=0
         for f in terrain_selection:
-            amount=(1334*tp[f])/100
+            amount=(1334*tp[f])//100
             for x in range(amount):
                 add_terr=random.choice(range(len(terrain_selection[f])))
                 if not T[terrain_selection[f][add_terr]].pass_through and random.random()>0.25:
@@ -2764,7 +2780,7 @@ class Game:
                     all_land+=add_terr
                     done_lands+=1
                 elif T[terrain_selection[f][add_terr]].pass_through:
-                    if random.random()>(add_terr+tp['Population']/10)/10.:
+                    if random.random()>(add_terr+tp['Population']//10)/10.:
                         all_land+=terrain_selection[f][add_terr]
                         done_lands+=1
                     else:
@@ -2776,10 +2792,9 @@ class Game:
                     else:
                         all_land+=terrain_selection[f][add_terr]
                     done_lands+=1
-        if 1334>done_lands:
-            for x in range(1334-done_lands):
-                add_terr=random.choice(terrain_selection[random.choice(terrain_selection.keys())])
-                all_land+=add_terr
+        for x in range(1334-done_lands):
+            add_terr = random.choice(terrain_selection[random.choice(list(terrain_selection.keys()))])
+            all_land += add_terr
         all_land=list(all_land)
         random.shuffle(all_land)
         all_land=''.join(all_land)
@@ -2791,7 +2806,7 @@ class Game:
         creature_coords=[self.player.xy[:]]
         if random.random()<tp['Water']/100.:
             self.terrain_type='w'
-            size=random.randint(7,min([15,max([7,tp['Water']/5])]))
+            size=random.randint(7,min([15,max([7,tp['Water']//5])]))
             spot=[random.randint(3,19-size),random.randint(3,53-size)]
             land_features[tuple(spot)]=size
             filling=['w','f','%','~']
@@ -2839,7 +2854,7 @@ class Game:
             self.terrain_type=''
         if tp['Population']>19:
             if land_features=={}:
-                wells=random.randint(0,max([tp['Temperature']/30,1]))
+                wells=random.randint(0,max([tp['Temperature']//30,1]))
                 for x in range(wells):
                     spot=[random.randint(3,19),random.randint(3,53)]
                     land_features[tuple(spot)]=1
@@ -2847,19 +2862,19 @@ class Game:
             if  tp['Order']==max([tp['Nature'],tp['Order'],tp['Chaos']]):
                 farms=random.randint(1,2)
                 for x in range(farms):
-                    size=random.randint(5,min([max([6,tp['Temperature']/8]),10]))
+                    size=random.randint(5,min([max([6,tp['Temperature']//8]),10]))
                     good_spot=0
                     tries=0
                     while not good_spot and tries<2000:
                         tries+=1
                         good_spots=0
                         spot=[random.randint(3,19-size),random.randint(3,53-size)]
-                        center=[spot[0]+size/2,spot[1]+size/2]
+                        center=[spot[0]+size//2,spot[1]+size//2]
                         if land_features=={}:
                             good_spot=1
                         for s in land_features:
-                            center_s=[s[0]+land_features[s]/2,s[1]+land_features[s]/2]
-                            min_distance=size/2+size%2+land_features[s]/2+land_features[s]%2+1
+                            center_s=[s[0]+land_features[s]//2,s[1]+land_features[s]//2]
+                            min_distance=size//2+size%2+land_features[s]//2+land_features[s]%2+1
                             if max([abs(center[0]-center_s[0]),abs(center[1]-center_s[1])]) > min_distance:
                                 good_spots+=1
                         if good_spots==len(land_features):
@@ -2883,7 +2898,7 @@ class Game:
                                 if door==y:
                                     the_fence[random.randint(0,1)]='+'
                                 lands[spot[0]+y]=lands[spot[0]+y][:spot[1]]+the_fence[0]+to_add+the_fence[1]+lands[spot[0]+y][spot[1]+size:]
-            creatures = random.randint(0,tp['Population']/10)
+            creatures = random.randint(0,tp['Population']//10)
             if creatures:
                 resident_type=[]
                 if  tp['Order']==max([tp['Nature'],tp['Order'],tp['Chaos']]):
@@ -2898,7 +2913,7 @@ class Game:
                     add_id=1
                 for i in range(creatures):
                     c_force=random.choice(resident_type)
-                    c_race=random.choice(self.player.races[c_force].keys())
+                    c_race=random.choice(list(self.player.races[c_force].keys()))
                     ID = 1
                     game_id = i+add_id+1
                     game_ids.append(game_id)
@@ -2950,7 +2965,7 @@ class Game:
                 village_type.append('Nature')
             if  tp['Chaos']==max([tp['Nature'],tp['Order'],tp['Chaos']]):
                 village_type.append('Chaos')
-            houses=random.randint(1,(tp['Population']-25)/5)
+            houses=random.randint(1,(tp['Population']-25)//5)
             add_ons=list(inventory.house_generated[:])
             for x in range(houses):
                 house_type=random.choice(village_type)
@@ -2967,28 +2982,28 @@ class Game:
                 while not good_spot and tries<2000:
                     tries+=1
                     good_spots=0
-                    size=min([15,random.randint(4, 4+(tp['Population']-35)/5)])
+                    size=min([15,random.randint(4, 4+(tp['Population']-35)//5)])
                     if house_type=='Nature' and size<5:
                         size=5
                     spot=[random.randint(3,19-size),random.randint(3,53-size)]
-                    center=[spot[0]+size/2,spot[1]+size/2]
+                    center=[spot[0]+size//2,spot[1]+size//2]
                     if land_features=={}:
                         good_spot=1
                     for s in land_features:
-                        center_s=[s[0]+land_features[s]/2,s[1]+land_features[s]/2]
-                        min_distance=size/2+size%2+land_features[s]/2+land_features[s]%2+1
+                        center_s=[s[0]+land_features[s]//2,s[1]+land_features[s]//2]
+                        min_distance=size//2+size%2+land_features[s]//2+land_features[s]%2+1
                         if max([abs(center[0]-center_s[0]),abs(center[1]-center_s[1])]) > min_distance:
                             good_spots+=1
                     if good_spots==len(land_features):
                         good_spot=1
                 if good_spot:
-                    for person in range(size/4):
+                    for person in range(size//4):
                         if game_ids:
                             add_id=max(game_ids)
                         else:
                             add_id=1
                         c_force=house_type
-                        c_race=random.choice(self.player.races[c_force].keys())
+                        c_race=random.choice(list(self.player.races[c_force].keys()))
                         ID = 2
                         game_id = 1+add_id
                         game_ids.append(game_id)
@@ -3177,7 +3192,7 @@ class Game:
                             creature_coords.append(creation.xy[:])
                             self.all_creatures.append(creation)
                 else:
-                    creatures = random.randint(0,tp['Population']/10)
+                    creatures = random.randint(0,tp['Population']//10)
                     if creatures:
                         resident_type=[]
                         if  tp['Order']==max([tp['Nature'],tp['Order'],tp['Chaos']]):
@@ -3244,7 +3259,7 @@ class Game:
                 self.place_descriptions['area%s' %(an)] = 'A place of %s.' %(predominant_f[max(predominant_f.keys())])
             else:
                 an=int(an)
-                coords=[an/self.map_size,an%self.map_size]
+                coords=[an//self.map_size,an%self.map_size]
                 self.current_place=self.T_matrix[coords[0]][coords[1]]
                 self.all_creatures = []
                 self.hidden = []
@@ -3366,7 +3381,7 @@ class Game:
                             self.effect('research',{self.player.research_force:{self.player.research_race:0.01}})
                             x.learning-=0.01
                 elif x.t=='sentient' and 'midnight fears' in self.player.effects and x.mode=='hostile':
-                    x.fear+=int(self.player.races['Nature']['fairy']/10)-abs(600-max([0,self.player.turn%2400-1200])%1200)/100
+                    x.fear+=int(self.player.races['Nature']['fairy']/10)-abs(600-max([0,self.player.turn%2400-1200])%1200)//100
             self.draw_items()
             self.player.turn += 1 * self.player.place_time
             for cr in self.all_creatures:
@@ -3375,8 +3390,8 @@ class Game:
                 if (cr.energy > cr.max_energy):
                     cr.energy = cr.max_energy
             if self.player.place_time > 1:
-                self.player.hunger += self.player.place_time/20
-                self.player.thirst += self.player.place_time/20
+                self.player.hunger += self.player.place_time//20
+                self.player.thirst += self.player.place_time//20
             elif (self.player.turn % 20) == 0:
                 self.player.hunger += 1
                 self.player.thirst += 1
@@ -3485,7 +3500,7 @@ class Game:
                         daytime=self.player.turn%2400
                         for s in range(len(steps)):
                             if daytime<steps[s]:
-                                self.player.sun_armour=max([0,adds[s]-penalty*adds[s]/60])
+                                self.player.sun_armour=max([0,adds[s]-penalty*adds[s]//60])
                                 self.player.armour+=self.player.sun_armour
                                 break
             for x in self.player.land_effects.keys():
@@ -3618,7 +3633,7 @@ class Game:
                                 if r+n=='imp1':
                                     self.player.tool_tags.append('fire')
 
-    def effect(self,k,v,xy=[],ot=''):
+    def effect(self,k,v,xy=(),ot=''):
         if k == 'attr':
             mod = self.player.attr[v[0]]-self.player.max_attr[v[0]]
             self.player.max_attr[v[0]] += v[1]
@@ -3813,7 +3828,7 @@ class Game:
         elif k=='mass destruction':
             self.player.land_effects[self.player.turn]=[1,'mass destruction',self.current_area]
         elif k=='dryad song':
-            self.player.land_effects[self.player.turn]=[1,'dryad song',self.current_area,self.player.energy/100+1]
+            self.player.land_effects[self.player.turn]=[1,'dryad song',self.current_area,self.player.energy//100+1]
         elif k == 'thirst':
             self.player.thirst -= v
             if self.player.thirst < 0:
@@ -3950,7 +3965,7 @@ class Game:
                 elif 'sapphire' in v[1]:
                     for x in self.all_creatures:
                         if x.mode=='hostile' and self.clear_los(self.direct_path(self.player.xy,x.xy)):
-                            x.life-=max([(self.player.races['Nature']['gnome']-60)/4,1])
+                            x.life-=max([(self.player.races['Nature']['gnome']-60)//4,1])
                             self.message.creature('sapphired',x)
                 elif 'ruby' in v[1]:
                     found_fire=0
@@ -3961,7 +3976,7 @@ class Game:
                             found_fire=1
                             for x in self.all_creatures:
                                 if x.mode=='hostile' and self.clear_los(self.direct_path(self.player.xy,x.xy)):
-                                    x.life-=max([(self.player.races['Nature']['gnome']-60)/2,1])
+                                    x.life-=max([(self.player.races['Nature']['gnome']-60)//2,1])
                                     self.message.creature('rubied',x)
                             break
                     if not found_fire:
@@ -3987,8 +4002,8 @@ class Game:
         self.player.max_weight = self.player.attr['Str']*10
         self.player.max_weaps = self.player.attr['Str']
         self.player.max_energy = self.player.attr['End']*100
-        self.player.max_life = self.player.attr['End'] + self.player.attr['End']/4
-        self.player.dmg = max([self.player.attr['Str'] / 5, 1])
+        self.player.max_life = self.player.attr['End'] + self.player.attr['End']//4
+        self.player.dmg = max([self.player.attr['Str'] // 5, 1])
         if self.player.weapon_weight < 6:
             self.player.att_att = 'Dex'
             self.player.def_att = 'Dex'
@@ -3997,7 +4012,7 @@ class Game:
         ## If the weapon is medium a balance between Dex and Str allows maximum skill level
             the_max=max([self.player.attr['Dex'],self.player.attr['Str']])
             the_min=min([self.player.attr['Dex'],self.player.attr['Str']])
-            self.player.battle_att = min([the_max+(the_min-the_max*2/3),20])
+            self.player.battle_att = min([the_max+(the_min-the_max*2//3),20])
             self.player.att_att = 'Str'
             self.player.def_att = 'Dex'
         else:
@@ -4283,7 +4298,7 @@ class Game:
                     for force in self.player.races:
                         if l[0] in self.player.races[force]:
                             break
-                    quality=random.randint(0,100)<self.current_place[force]/5+self.current_place['Treasure']
+                    quality=random.randint(0,100)<self.current_place[force]//5+self.current_place['Treasure']
                     if l[0]=='ork':
                         creation = random.choice(inventory.medium_weapons+inventory.heavy_weapons).duplicate(1)
                         if quality:
