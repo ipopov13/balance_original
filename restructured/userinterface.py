@@ -4,7 +4,7 @@ import msvcrt
 from windows import Window, WelcomeWindow
 
 
-class Display:
+class UserInterface:
     def __init__(self):
         self._screens: [Window] = [WelcomeWindow()]
         cls()
@@ -22,9 +22,14 @@ class Display:
 
     def process_player_input(self) -> bool:
         player_input = msvcrt.getch().decode()
-        response = self._top_screen.interfaces.get(player_input, self._empty_response)
-        return response(player_input)
+        updates = self._top_screen.handle_input(player_input)
+        if updates:
+            self._process_updates(updates)
+            return True
+        return False
 
     @staticmethod
-    def _empty_response(_):
-        return True
+    def _process_updates(updates):
+        for coordinates, update_string in updates.items():
+            with console.screen.sc.location(*coordinates):
+                print(update_string)
