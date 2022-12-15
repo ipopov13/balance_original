@@ -26,12 +26,14 @@ class UserInterface:
     @staticmethod
     def display(updates):
         """
-        Display the data sent by the window.
-        Also called directly by the window
+        Display the data sent by the window
+        updates: {'drop': Window,
+                  'update': {coords: update_string},
+                  'add': Window}
         """
         if not updates:
             return False
-        for coordinates, update_string in updates.items():
+        for coordinates, update_string in updates['update'].items():
             with console.screen.sc.location(*coordinates):
                 print(update_string)
         return True

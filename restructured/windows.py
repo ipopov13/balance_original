@@ -40,19 +40,19 @@ class Window(ABC):
         content_data[-1] = '(?)' + content_data[-1][3:]
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
-        return content_dict
+        return {'update': content_dict}
 
     def _available_commands(self) -> dict:
         return {**self._commands(), **self._content_commands(), **{'?': self._help_command}}
 
     @staticmethod
     def _empty_command(_):
-        return {(0, 0): ''}
+        return {'update': {(0, 0): ''}}
 
     @staticmethod
     def _help_command(_):
         # TODO: Implement the help overlay
-        return {(0, 0): 'help command'}
+        return {'update': {(0, 0): 'help command'}}
 
     def handle_input(self, player_input) -> bool:
         """
@@ -74,11 +74,11 @@ class WelcomeWindow(Window):
 
     @staticmethod
     def _new_game(_):
-        return {(0, 0): 'new game '}
+        return {'update': {(0, 0): 'new game '}}
 
     @staticmethod
     def _load_game(_):
-        return {(0, 0): 'load game'}
+        return {'update': {(0, 0): 'load game'}}
 
     @staticmethod
     def _empty_command(_):
@@ -100,10 +100,13 @@ class WelcomeWindow(Window):
 
 class OverlayWindow(Window):
     def _commands(self) -> dict:
-        pass
+        return {'b': self._back_command}
 
     def _organize_content_data(self):
-        pass
+        return self._contents[0].data
+
+    def _back_command(self):
+        return {'drop': self}
 
 
 if __name__ == '__main__':
