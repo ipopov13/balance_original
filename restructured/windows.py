@@ -5,30 +5,34 @@ class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
 
-    def __init__(self, size=_default_size, top_left=_default_top_left, ui=None):
+    def __init__(self, size=_default_size, top_left=_default_top_left, ui=None, contents=()):
         if ui is None:
             raise ValueError(f"Window {self.__class__} must be initialized with a UI!")
         self.ui = ui
         self.size = size
         self.top_left = top_left
+        self._contents = contents
 
     @abstractmethod
     def _commands(self) -> dict:
         """The mapping of commands&methods specific for the window"""
-        return {'?': self._help_command}
+        raise NotImplementedError(f'Window {self.__class__} must define a _commands() method!')
 
     @abstractmethod
-    def _collect_content_data(self):
-        raise NotImplementedError
+    def _organize_content_data(self):
+        """Windows use this method to collect and organize their content"""
+        raise NotImplementedError(f'Window {self.__class__} must define a _collect_content_data() method!')
 
-    @abstractmethod
     def _content_commands(self) -> dict:
         """The mapping of commands&methods specific for the window content"""
-        #TODO: Add automatic command collection here, drop method from children
-        pass
+        content_commands = {}
+        for content in self._contents:
+            content_commands.update(content.commands)
+        return content_commands
 
     def get_display_data(self):
-        content_data = self._collect_content_data()
+        """Pad the content to size and position and return it to the UI"""
+        content_data = self._organize_content_data()
         content_data = content_data.split('\n')
         for row_index in range(len(content_data)):
             content_data[row_index] += ' ' * (self.size[1] - len(content_data[row_index]))
@@ -38,13 +42,15 @@ class Window(ABC):
         return content_dict
 
     def _available_commands(self) -> dict:
-        return {**self._commands(), **self._content_commands()}
+        return {**self._commands(), **self._content_commands(), **{'?': self._help_command}}
 
     @staticmethod
     def _empty_command(_):
         return {(0, 0): ''}
 
-    def _help_command(self):
+    @staticmethod
+    def _help_command(_):
+        # TODO: Implement the help overlay
         return {(0, 0): 'help command'}
 
     def handle_input(self, player_input) -> bool:
@@ -59,11 +65,11 @@ class Window(ABC):
 
 class WelcomeWindow(Window):
 
+    def _set_contents(self, contents):
+        pass
+
     def _commands(self):
         return {'n': self._new_game, 'l': self._load_game}
-
-    def _content_commands(self):
-        return {}
 
     @staticmethod
     def _new_game(_):
@@ -77,7 +83,7 @@ class WelcomeWindow(Window):
     def _empty_command(_):
         return {}
 
-    def _collect_content_data(self):
+    def _organize_content_data(self):
         return r'''
                ___      _   _         _   _    _   ___   ____
               |   \    / |  |        / |  |\   |  /   \ |
@@ -93,7 +99,7 @@ class WelcomeWindow(Window):
 
 if __name__ == '__main__':
     window = WelcomeWindow(ui=1)
-    content = window.get_display_data()
-    for v in content.values():
+    test_content = window.get_display_data()
+    for v in test_content.values():
         assert len(v) == window.size[1], str(v)
-    assert len(content) == window.size[0]
+    assert len(test_content) == window.size[0]
