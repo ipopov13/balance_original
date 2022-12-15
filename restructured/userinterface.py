@@ -23,6 +23,14 @@ class UserInterface:
         player_input = msvcrt.getch().decode()
         return self._top_screen.handle_input(player_input)
 
+    def drop_window(self, window):
+        if window is not self._screens[-1]:
+            raise ValueError(f'Window {window.__class__} is not top window for the UI,'
+                             f' it cannot be dropped!')
+        self._screens.remove(window)
+        update_data = self._top_screen.get_display_data(window.size, window.top_left)
+        return self.display(update_data)
+
     @staticmethod
     def display(updates):
         """
@@ -33,7 +41,7 @@ class UserInterface:
         """
         if not updates:
             return False
-        for coordinates, update_string in updates['update'].items():
+        for coordinates, update_string in updates.items():
             with console.screen.sc.location(*coordinates):
                 print(update_string)
         return True

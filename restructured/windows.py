@@ -30,7 +30,7 @@ class Window(ABC):
             content_commands.update(content.commands)
         return content_commands
 
-    def get_display_data(self):
+    def get_display_data(self, size=None, top_left=None):
         """Pad the content to size and position and return it to the UI"""
         content_data = self._organize_content_data()
         content_data = content_data.split('\n')
@@ -40,19 +40,17 @@ class Window(ABC):
         content_data[-1] = '(?)' + content_data[-1][3:]
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
-        return {'update': content_dict}
+        return content_dict
 
     def _available_commands(self) -> dict:
         return {**self._commands(), **self._content_commands(), **{'?': self._help_command}}
 
-    @staticmethod
-    def _empty_command(_):
-        return {'update': {(0, 0): ''}}
+    def _empty_command(self, _):
+        return self.ui.display({(0, 0): ''})
 
-    @staticmethod
-    def _help_command(_):
+    def _help_command(self, _):
         # TODO: Implement the help overlay
-        return {'update': {(0, 0): 'help command'}}
+        return self.ui.display({(0, 0): 'help command'})
 
     def handle_input(self, player_input) -> bool:
         """
@@ -60,8 +58,7 @@ class Window(ABC):
         methods
         """
         chosen_command = self._available_commands().get(player_input, self._empty_command)
-        updates = chosen_command(player_input)
-        return self.ui.display(updates)
+        return chosen_command(player_input)
 
 
 class WelcomeWindow(Window):
@@ -72,17 +69,14 @@ class WelcomeWindow(Window):
     def _commands(self):
         return {'n': self._new_game, 'l': self._load_game}
 
-    @staticmethod
-    def _new_game(_):
-        return {'update': {(0, 0): 'new game '}}
+    def _new_game(self, _):
+        return self.ui.display({(0, 0): 'new game '})
 
-    @staticmethod
-    def _load_game(_):
-        return {'update': {(0, 0): 'load game'}}
+    def _load_game(self, _):
+        return self.ui.display({(0, 0): 'load game'})
 
-    @staticmethod
-    def _empty_command(_):
-        return {}
+    def _empty_command(self, _):
+        return self.ui.display({})
 
     def _organize_content_data(self):
         return r'''
@@ -106,7 +100,7 @@ class OverlayWindow(Window):
         return self._contents[0].data
 
     def _back_command(self):
-        return {'drop': self}
+        return self.ui.drop_window(self)
 
 
 if __name__ == '__main__':
