@@ -37,6 +37,7 @@ class Window(ABC):
         for row_index in range(len(content_data)):
             content_data[row_index] += ' ' * (self.size[1] - len(content_data[row_index]))
         content_data += [' ' * self.size[1]] * (self.size[0] - len(content_data))
+        content_data[-1] = '(?)' + content_data[-1][3:]
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
         return content_dict
@@ -95,6 +96,14 @@ class WelcomeWindow(Window):
 
                                    (n)ew game
                              (l)oad a previous game'''
+
+
+class OverlayWindow(Window):
+    def _commands(self) -> dict:
+        pass
+
+    def _organize_content_data(self):
+        pass
 
 
 if __name__ == '__main__':
