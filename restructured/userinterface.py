@@ -6,30 +6,32 @@ from windows import Window, WelcomeWindow
 
 class UserInterface:
     def __init__(self):
-        self._screens: [Window] = [WelcomeWindow()]
+        self._screens: [Window] = [WelcomeWindow(ui=self)]
         cls()
-        self._show()
-
-    def _show(self):
         display_data = self._top_screen.get_display_data()
-        for row_index, row in enumerate(display_data):
-            with console.screen.sc.location(row_index, 0):
-                print(row)
+        self.display(display_data)
 
     @property
     def _top_screen(self) -> Window:
         return self._screens[-1]
 
     def process_player_input(self) -> bool:
+        """
+        Read a character from the input and send it to the window.
+        Called by the main loop
+        """
         player_input = msvcrt.getch().decode()
-        updates = self._top_screen.handle_input(player_input)
-        if updates:
-            self._process_updates(updates)
-            return True
-        return False
+        return self._top_screen.handle_input(player_input)
 
     @staticmethod
-    def _process_updates(updates):
+    def display(updates):
+        """
+        Display the data sent by the window.
+        Also called directly by the window
+        """
+        if not updates:
+            return False
         for coordinates, update_string in updates.items():
             with console.screen.sc.location(*coordinates):
                 print(update_string)
+        return True
