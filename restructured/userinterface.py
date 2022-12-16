@@ -8,6 +8,9 @@ class UserInterface:
     def __init__(self):
         self._screens: [Window] = [WelcomeWindow(ui=self)]
         cls()
+        self._refresh()
+
+    def _refresh(self):
         display_data = self._top_screen.get_display_data()
         self.display(display_data)
 
@@ -26,18 +29,18 @@ class UserInterface:
             cls()
         return result
 
-    def drop_window(self, window):
+    def drop_window(self, window) -> bool:
         if window is not self._screens[-1]:
             raise ValueError(f'Window {window.__class__} is not top window for the UI,'
                              f' it cannot be dropped!')
         self._screens.remove(window)
-        update_data = self._top_screen.get_display_data(window.size, window.top_left)
-        return self.display(update_data)
+        self._refresh()
+        return True
 
-    def add_window(self, window):
+    def add_window(self, window) -> bool:
         self._screens.append(window)
-        update_data = self._top_screen.get_display_data()
-        return self.display(update_data)
+        self._refresh()
+        return True
 
     @staticmethod
     def display(updates):

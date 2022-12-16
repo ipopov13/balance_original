@@ -31,9 +31,8 @@ class Window(ABC):
             content_commands.update(content.commands())
         return content_commands
 
-    def get_display_data(self, size=None, top_left=None) -> dict:
+    def get_display_data(self) -> dict:
         """Pad the content to size and position and return it to the UI"""
-        # TODO: Subset the display data using the arguments
         content_data = self._organize_content_data()
         content_data = content_data.split('\n')
         for row_index in range(len(content_data)):
@@ -51,7 +50,6 @@ class Window(ABC):
         return self.ui.display({(0, 0): ''})
 
     def _help_command(self, _) -> bool:
-        # TODO: Implement the help overlay
         help_window = OverlayWindow(size=(15, 50), top_left=(5, 20), ui=self.ui,
                                     contents=[CommandsList(self._available_commands())])
         return self.ui.add_window(help_window)
