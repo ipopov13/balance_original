@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from content_types import CommandsList
 
 
 class Window(ABC):
@@ -19,7 +20,7 @@ class Window(ABC):
         raise NotImplementedError(f'Window {self.__class__} must define a _commands() method!')
 
     @abstractmethod
-    def _organize_content_data(self):
+    def _organize_content_data(self) -> str:
         """Windows use this method to collect and organize their content"""
         raise NotImplementedError(f'Window {self.__class__} must define a _collect_content_data() method!')
 
@@ -27,11 +28,12 @@ class Window(ABC):
         """The mapping of commands&methods specific for the window content"""
         content_commands = {}
         for content in self._contents:
-            content_commands.update(content.commands)
+            content_commands.update(content.commands())
         return content_commands
 
-    def get_display_data(self, size=None, top_left=None):
+    def get_display_data(self, size=None, top_left=None) -> dict:
         """Pad the content to size and position and return it to the UI"""
+        # TODO: Subset the display data using the arguments
         content_data = self._organize_content_data()
         content_data = content_data.split('\n')
         for row_index in range(len(content_data)):
@@ -45,12 +47,14 @@ class Window(ABC):
     def _available_commands(self) -> dict:
         return {**self._commands(), **self._content_commands(), **{'?': self._help_command}}
 
-    def _empty_command(self, _):
+    def _empty_command(self, _) -> bool:
         return self.ui.display({(0, 0): ''})
 
-    def _help_command(self, _):
+    def _help_command(self, _) -> bool:
         # TODO: Implement the help overlay
-        return self.ui.display({(0, 0): 'help command'})
+        help_window = OverlayWindow(size=(15, 50), top_left=(5, 20), ui=self.ui,
+                                    contents=[CommandsList(self._available_commands())])
+        return self.ui.add_window(help_window)
 
     def handle_input(self, player_input) -> bool:
         """
@@ -76,7 +80,7 @@ class WelcomeWindow(Window):
         return self.ui.display({(0, 0): 'load game'})
 
     def _empty_command(self, _):
-        return self.ui.display({})
+        return False
 
     def _organize_content_data(self):
         return r'''
@@ -97,9 +101,9 @@ class OverlayWindow(Window):
         return {'b': self._back_command}
 
     def _organize_content_data(self):
-        return self._contents[0].data
+        return self._contents[0].data()
 
-    def _back_command(self):
+    def _back_command(self, _):
         return self.ui.drop_window(self)
 
 
