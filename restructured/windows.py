@@ -76,6 +76,8 @@ class Window(ABC):
     def _apply_hints(self, content_data):
         hints = [c.hint for c in self._available_commands() if c.hint]
         hint_string = ' '.join(hints)
+        if len(hint_string) > self.size[-1]:
+            raise ValueError(f'Hint string too long to fit into window {self.__class__}')
         fill_character = list(set(content_data[-1]))[0]
         last_row = hint_string.center(self.size[-1], fill_character)
         content_data[-1] = last_row
