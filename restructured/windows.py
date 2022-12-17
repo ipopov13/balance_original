@@ -30,9 +30,12 @@ class Window(ABC):
     def _content_commands(self) -> dict:
         """The mapping of commands&methods specific for the window content"""
         content_commands = {}
-        # TODO: A window should check for overlapping commands and raise an error!
         for content in self._contents:
-            content_commands.update(content.commands())
+            command_dict = content.commands()
+            if set(command_dict) & set(content_commands):
+                raise ValueError(f'Duplicate window command "{set(command_dict) & set(content_commands)}"'
+                                 f' in window {self.__class__}')
+            content_commands.update(command_dict)
         return content_commands
 
     def get_display_data(self) -> dict:
@@ -79,7 +82,6 @@ class Window(ABC):
         return content_data
 
     def _apply_border(self, content_data, pads):
-        # TODO: A window can have a border and have the command hints and title integrated in it
         if not all([p > 0 for p in pads]):
             raise ValueError(f'Content is too big to apply border in {self.__class__}')
         content_data[0] = self._title.center(self.size[-1], '-')
@@ -87,7 +89,11 @@ class Window(ABC):
         return content_data
 
     def _available_commands(self) -> dict:
-        # TODO: A window should check for overlapping commands and raise an error!
+        local_commands = self._commands()
+        content_commands = self._content_commands()
+        if set(local_commands) & set(content_commands):
+            raise ValueError(f'Duplicate window command "{set(local_commands) & set(content_commands)}"'
+                             f' in window {self.__class__}')
         return {**self._commands(), **self._content_commands()}
 
     def _empty_command(self, _) -> bool:
