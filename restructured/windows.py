@@ -128,17 +128,14 @@ class WelcomeWindow(Window):
         return False
 
     def _organize_content_data(self):
-        return r'''
-               ___      _   _         _   _    _   ___   ____
-              |   \    / |  |        / |  |\   |  /   \ |
-              |___/   /  |  |       /  |  | \  |  |     |___
-              |   \  /---|  |      /---|  |  \ |  |     |
-              |___/ /    |  |___| /    |  |   \|  \___/ |____
+        return r''' ___      _   _         _   _    _   ___   ____
+|   \    / |  |        / |  |\   |  /   \ |
+|___/   /  |  |       /  |  | \  |  |     |___
+|   \  /---|  |      /---|  |  \ |  |     |
+|___/ /    |  |___| /    |  |   \|  \___/ |____
 
-                                    ver 0.6
-
-                                   (n)ew game
-                             (l)oad a previous game'''
+                    ver 0.7
+                  Ivan Popov'''
 
 
 class OverlayWindow(Window):
