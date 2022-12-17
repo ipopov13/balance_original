@@ -1,7 +1,3 @@
-# TODO: Have the command dicts in the windows/contents be:
-# {commandObject: method}
-# and use the keys when the help is needed.
-
 class Command:
     character = '(na)'
     hint = '(na)'
@@ -12,6 +8,12 @@ class Command:
 
     def __hash__(self):
         return hash(self.character)
+
+
+class CompleteInput(Command):
+    character = '\r'
+    hint = ''
+    description = 'Send your input'
 
 
 class Back(Command):

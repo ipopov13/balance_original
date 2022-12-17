@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+import string
 from content_types import CommandsList
+from game_objects import Game
 import commands
 
-
+# TODO: Split Window into ContentWindow (has contents) and InputWindow (has target)
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
@@ -118,19 +120,20 @@ class Window(ABC):
 
 class WelcomeWindow(Window):
 
-    def _set_contents(self, contents):
-        pass
-
     def _commands(self):
         return {commands.NewGame(): self._new_game,
                 commands.LoadGame(): self._load_game,
                 commands.GetHelp(): self._help_command}
 
     def _new_game(self, _):
-        return self.ui.display({(0, 0): 'new game '})
+        self.ui.game = Game()
+        name_window = InputWindow(size=(3, 20), top_left=(11, 30), ui=self.ui, border=True,
+                                  title='Enter your name', character_set=string.ascii_letters,
+                                  target=self.ui.game.set_character_name)
+        return self.ui.add_window(name_window)
 
     def _load_game(self, _):
-        return self.ui.display({(0, 0): 'load game'})
+        return self.ui.display({(0, 0): self.ui.game.character.name})
 
     def _empty_command(self, _):
         return False
@@ -147,6 +150,7 @@ class WelcomeWindow(Window):
 
 
 class OverlayWindow(Window):
+    """A closable window presenting information"""
     def _commands(self) -> dict:
         return {commands.Back(): self._back_command}
 
@@ -154,6 +158,33 @@ class OverlayWindow(Window):
         return self._contents[0].data()
 
     def _back_command(self, _):
+        return self.ui.drop_window(self)
+
+
+class InputWindow(Window):
+    """A window for collecting multi-character user input"""
+
+    def _organize_content_data(self) -> str:
+        return ''
+
+    def __init__(self, character_set=string.digits, target=None, **kwargs):
+        super().__init__(**kwargs)
+        self._character_set = character_set
+        self.target = target
+        self.collected_input = ''
+
+    def _commands(self) -> dict:
+        return {commands.CompleteInput(): self._complete_input}
+
+    def _empty_command(self, char) -> bool:
+        if char not in self._character_set:
+            return True
+        else:
+            self.collected_input += char
+            return self.ui.display({(self.size[0] + 1, self.size[1] + 2): self.collected_input})
+
+    def _complete_input(self, _):
+        self.target(self.collected_input)
         return self.ui.drop_window(self)
 
 
