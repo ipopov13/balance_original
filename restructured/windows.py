@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 from content_types import CommandsList
+import commands
+
+# TODO: A window should check for overlapping commands and raise an error!
+# TODO: A window can have a border and have the command hints and title integrated in it
 
 
 class Window(ABC):
@@ -44,9 +48,12 @@ class Window(ABC):
         return content_dict
 
     def _available_commands(self) -> dict:
-        return {**self._commands(), **self._content_commands(), **{'?': self._help_command}}
+        return {**self._commands(),
+                **self._content_commands(),
+                **{commands.GetHelp(): self._help_command}}
 
     def _empty_command(self, _) -> bool:
+        # TODO Make this an actual DoNothing
         return self.ui.display({(0, 0): ''})
 
     def _help_command(self, _) -> bool:
@@ -69,7 +76,7 @@ class WelcomeWindow(Window):
         pass
 
     def _commands(self):
-        return {'n': self._new_game, 'l': self._load_game}
+        return {commands.NewGame(): self._new_game, commands.LoadGame(): self._load_game}
 
     def _new_game(self, _):
         return self.ui.display({(0, 0): 'new game '})
@@ -96,7 +103,7 @@ class WelcomeWindow(Window):
 
 class OverlayWindow(Window):
     def _commands(self) -> dict:
-        return {'b': self._back_command}
+        return {commands.Back(): self._back_command}
 
     def _organize_content_data(self):
         return self._contents[0].data()
