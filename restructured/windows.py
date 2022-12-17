@@ -64,9 +64,19 @@ class Window(ABC):
         if self._border:
             content_data = self._apply_border(content_data,
                                               pads=[left_pad, min_right_pad, top_pad, bottom_pad])
+        if bottom_pad > 0:
+            content_data = self._apply_hints(content_data)
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
         return content_dict
+
+    def _apply_hints(self, content_data):
+        hints = [c.hint for c in self._available_commands() if c.hint]
+        hint_string = ' '.join(hints)
+        fill_character = list(set(content_data[-1]))[0]
+        last_row = hint_string.center(self.size[-1], fill_character)
+        content_data[-1] = last_row
+        return content_data
 
     def _apply_border(self, content_data, pads):
         # TODO: A window can have a border and have the command hints and title integrated in it
@@ -74,7 +84,6 @@ class Window(ABC):
             raise ValueError(f'Content is too big to apply border in {self.__class__}')
         content_data[0] = self._title.center(self.size[-1], '-')
         content_data[-1] = '-' * self.size[-1]
-        # content_data = self._apply_hints(content_data)
         return content_data
 
     def _available_commands(self) -> dict:
