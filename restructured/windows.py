@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 import string
-from content_types import CommandsList
+from content_types import CommandsList, SelectionList
 from game_objects import Game
 import commands
 
-# TODO: Split Window into ContentWindow (has contents) and InputWindow (has target)
+
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
@@ -27,7 +27,7 @@ class Window(ABC):
     @abstractmethod
     def _organize_content_data(self) -> str:
         """Windows use this method to collect and organize their content"""
-        raise NotImplementedError(f'Window {self.__class__} must define a _collect_content_data() method!')
+        raise NotImplementedError(f'Window {self.__class__} must define a _organize_content_data() method!')
 
     def _content_commands(self) -> dict:
         """The mapping of commands&methods specific for the window content"""
@@ -118,6 +118,15 @@ class Window(ABC):
         return chosen_command(player_input)
 
 
+class SelectionWindow(Window):
+    def __init__(self, target=None, **kwargs):
+        super().__init__(**kwargs)
+        self.target = target
+
+    def _organize_content_data(self) -> str:
+        return self._contents[0].data()
+
+
 class WelcomeWindow(Window):
 
     def _commands(self):
@@ -129,7 +138,11 @@ class WelcomeWindow(Window):
         self.ui.game = Game()
         name_window = InputWindow(size=(3, 20), top_left=(11, 30), ui=self.ui, border=True,
                                   title='Enter your name', character_set=string.ascii_letters + '- ',
-                                  target=self.ui.game.set_character_name)
+                                  target=self.ui.game.start_game)
+        race_window = SelectionWindow(ui=self.ui, border=True, title='Select your character race',
+                                      contents=[SelectionList(self.ui.game.races)],
+                                      target=self.ui.game.set_character_race)
+        self.ui.add_window(race_window)
         return self.ui.add_window(name_window)
 
     def _load_game(self, _):

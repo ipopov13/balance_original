@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from commands import Command
+from game_objects import GameObject
 
 
 class WindowContent(ABC):
@@ -18,6 +19,21 @@ class WindowContent(ABC):
 
     def data(self) -> str:
         return '(empty content)'
+
+
+class SelectionList(WindowContent):
+    def _confirm_object_type(self, game_object):
+        assert isinstance(game_object, list)
+        for obj in game_object:
+            assert isinstance(obj, GameObject)
+        return True
+
+    def data(self):
+        # TODO: Implement item sorting in the list
+        # TODO: Implement pagination and description justifying and line splitting
+        # TODO: Implement item selection characters/numbers and command handling
+        item_descriptions = [f'{item.name}: {item.description}'[:65] for item in self.game_object]
+        return '\n'.join(item_descriptions)
 
 
 class CommandsList(WindowContent):
