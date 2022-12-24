@@ -1,24 +1,19 @@
 from abc import ABC, abstractmethod
 import string
-from content_types import CommandsList
-from game_objects import Game
 import commands
 
-# TODO: Split Window into ContentWindow (has contents) and InputWindow (has target)
+
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
 
-    def __init__(self, size=_default_size, top_left=_default_top_left, ui=None,
-                 contents=(), border=False, title='Balance'):
-        if ui is None:
-            raise ValueError(f"Window {self.__class__} must be initialized with a UI!")
-        self.ui = ui
-        self.size = size
-        self.top_left = top_left
-        self._contents = contents
-        self._border = border
-        self._title = title
+    def __init__(self, content):
+        self.size = Window._default_size
+        self.top_left = Window._default_top_left
+        self._content = content
+        self._border = False
+        self._title = 'Balance'
+        self.ui = None
 
     def _commands(self) -> dict:
         """The mapping of commands&methods specific for the window"""
@@ -28,17 +23,6 @@ class Window(ABC):
     def _organize_content_data(self) -> str:
         """Windows use this method to collect and organize their content"""
         raise NotImplementedError(f'Window {self.__class__} must define a _collect_content_data() method!')
-
-    def _content_commands(self) -> dict:
-        """The mapping of commands&methods specific for the window content"""
-        content_commands = {}
-        for content in self._contents:
-            command_dict = content.commands()
-            if set(command_dict) & set(content_commands):
-                raise ValueError(f'Duplicate window command "{set(command_dict) & set(content_commands)}"'
-                                 f' in window {self.__class__}')
-            content_commands.update(command_dict)
-        return content_commands
 
     def get_display_data(self) -> dict:
         """Pad the content to size and position, apply borders and hints"""
@@ -94,11 +78,11 @@ class Window(ABC):
 
     def _available_commands(self) -> dict:
         local_commands = self._commands()
-        content_commands = self._content_commands()
+        content_commands = self._content.commands
         if set(local_commands) & set(content_commands):
             raise ValueError(f'Duplicate window command "{set(local_commands) & set(content_commands)}"'
                              f' in window {self.__class__}')
-        return {**self._commands(), **self._content_commands()}
+        return {**local_commands, **content_commands}
 
     def _empty_command(self, _) -> bool:
         return self.ui.display({(0, 0): ''})
@@ -116,6 +100,10 @@ class Window(ABC):
         """
         chosen_command = self._available_commands().get(player_input, self._empty_command)
         return chosen_command(player_input)
+
+
+class FullScreenWindow(Window):
+    pass
 
 
 class WelcomeWindow(Window):
