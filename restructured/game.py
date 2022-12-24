@@ -1,28 +1,19 @@
 """
-The UI (what does the player see?):
-  displays the game
-  Asks the Game for a window when there is none
-  handles display calls from the windows
-  maintains a stack of windows to choose from
-  receives the player input
-  passes the input to the top window for execution
-
-The Game (what happens next?):
+The Game defines:
   # TODO: Write out the sequence of windows and commands that can happen
-  defines the sequence of windows that the UI should display (welcome, [race, name] | [load game], scene, [highscore])
-  answers get_window() calls from the UI based on the current state
-  defines the objects to be displayed
+  the sequence of windows that the UI should display
+  the objects to be passed to the windows as input
+  what window content type the objects will be displayed with
   holds all the required game Objects as references
-  is injected into the UI at the start
+  is attached to the UI
 
-The game Objects (what is displayed?):
-  define what window content type they are displayed with
+The game Objects:
   provide the object-related commands the window content should pass to the window
   define which game logic should be called after those commands are received
-  use the Logic to interact with one another
-  provide callback methods to be used when a command is triggered
+  are manipulated by the logic of the game
+  provide the trigger for the logic via the callback methods
 
-The game Logic (what happens now?):
+The game Logic:
   is disconnected from the actual objects
   is used by the objects to generate commands
   receives objects as input
@@ -45,27 +36,23 @@ The Commands:
       The EnterName command runs ChangeName Logic (character & name input), closes NameInput
         and opens RaceSelection Window
       NextPage changes the state of the window Content to show more races
-      SelectRace runs the ApplyRace(character, specific race) & ApplyStartingLocation(game, character) Logics,
+      SelectRace runs the ApplyRace & ChooseStartingLocation Logic (character, specific race),
         closes RaceSelection and opens MainScene Window
 
-The Windows (where are things displayed?):
+The UI:
+  organizes the display of the game
+  handles display calls from the windows
+  maintains a stack of windows to choose from
+  receives the player input
+  passes the input to the top window for execution
+
+The Windows:
   have some game content to use as input
   generate display data to show this content
   support generic window-related commands
   call back the methods they were handed by the content
 
-The window Content (how are things displayed?):
+The window Content:
   supports functions like pagination and item selection
 
 """
-from game_objects import WelcomeScreen
-
-
-class Game:
-    def __init__(self):
-        self.character = None
-
-    def get_window(self):
-        if self.character is None:
-            current_object = WelcomeScreen(self)
-        return current_object.display()

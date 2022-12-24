@@ -3,7 +3,7 @@ from console.utils import cls
 import msvcrt
 from windows import Window, WelcomeWindow
 
-# TODO: Should set the ui of new windows to self, so that they know where to send the data
+
 class UserInterface:
     def __init__(self):
         self._screens: [Window] = [WelcomeWindow(ui=self)]
