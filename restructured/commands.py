@@ -16,6 +16,12 @@ class CompleteInput(Command):
     description = 'Send your input'
 
 
+class Backspace(Command):
+    character = chr(8)
+    hint = ''
+    description = 'Drop the last character'
+
+
 class Back(Command):
     character = 'b'
     hint = '(b)ack'

@@ -128,7 +128,7 @@ class WelcomeWindow(Window):
     def _new_game(self, _):
         self.ui.game = Game()
         name_window = InputWindow(size=(3, 20), top_left=(11, 30), ui=self.ui, border=True,
-                                  title='Enter your name', character_set=string.ascii_letters,
+                                  title='Enter your name', character_set=string.ascii_letters + '- ',
                                   target=self.ui.game.set_character_name)
         return self.ui.add_window(name_window)
 
@@ -165,7 +165,7 @@ class InputWindow(Window):
     """A window for collecting multi-character user input"""
 
     def _organize_content_data(self) -> str:
-        return ''
+        return self.collected_input
 
     def __init__(self, character_set=string.digits, target=None, **kwargs):
         super().__init__(**kwargs)
@@ -174,15 +174,19 @@ class InputWindow(Window):
         self.collected_input = ''
 
     def _commands(self) -> dict:
-        return {commands.CompleteInput(): self._complete_input}
+        return {commands.CompleteInput(): self._complete_input,
+                commands.Backspace(): self._remove_last_input_char}
 
     def _empty_command(self, char) -> bool:
         if char not in self._character_set:
             return True
         else:
             self.collected_input += char
-            return self.ui.display({(self.top_left[0] + 1,
-                                     self.top_left[1] + 2): self.collected_input})
+            return self.ui.display(self.get_display_data())
+
+    def _remove_last_input_char(self, _):
+        self.collected_input = self.collected_input[:-1]
+        return self.ui.display(self.get_display_data())
 
     def _complete_input(self, _):
         self.target(self.collected_input)

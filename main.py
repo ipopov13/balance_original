@@ -22,4 +22,4 @@ inputs = 0
 while str(inputs) != '1':
     inputs = msvcrt.getch().decode()
     with console.screen.sc.location(0, 0):
-        print(f'{console.fg.red+console.bg.green}{str(inputs)}{console.fx.end}')
+        print(f'{console.fg.red+console.bg.green}{ord(inputs)}{console.fx.end}')
