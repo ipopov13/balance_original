@@ -181,7 +181,8 @@ class InputWindow(Window):
             return True
         else:
             self.collected_input += char
-            return self.ui.display({(self.size[0] + 1, self.size[1] + 2): self.collected_input})
+            return self.ui.display({(self.top_left[0] + 1,
+                                     self.top_left[1] + 2): self.collected_input})
 
     def _complete_input(self, _):
         self.target(self.collected_input)
