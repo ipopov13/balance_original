@@ -30,10 +30,10 @@ class WindowContent:
 
 class SelectionList(WindowContent):
     def data(self):
-        # TODO: Implement item sorting in the list
         # TODO: Implement pagination and description justifying and line splitting
         # TODO: Implement item selection characters/numbers and command handling
-        item_descriptions = [f'{item.name}: {item.description}'[:65] for item in self.game_object]
+        sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
+        item_descriptions = [f'{item.name}: {item.description}'[:65] for item in sorted_list]
         return '\n'.join(item_descriptions)
 
 
