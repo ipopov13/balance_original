@@ -1,4 +1,5 @@
 import commands
+import console
 
 
 class WindowContent:
@@ -41,7 +42,9 @@ class SelectionList(WindowContent):
     def data(self):
         # TODO: Implement pagination and limit page length to 10 (numbers 0-9)
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
-        item_descriptions = [self._line_up(f'{number}) {item.name}: {item.description}')
+        item_descriptions = [self._line_up(f'{console.fg.red}{number})'
+                                           f' {console.fg.green + item.name}:{console.fx.end}'
+                                           f' {item.description}')
                              for number, item in enumerate(sorted_list)]
         return '\n'.join(item_descriptions)
 
