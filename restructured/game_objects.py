@@ -20,7 +20,7 @@ class GameObject:
 human_race = GameObject(name='Human',
                         icon='H',
                         description='Explorers and treasure seekers, the human race combines the primal need '
-                                    'of discovery with the perseverance that has created all great empires.',
+                                    'of discovery with the perseverance that gave birth to all great empires.',
                         sort_key=0)
 dwarf_race = GameObject(name='Dwarf',
                         icon='D',

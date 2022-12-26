@@ -40,11 +40,25 @@ class SelectionList(WindowContent):
 
     def data(self):
         # TODO: Implement pagination and limit page length to 10 (numbers 0-9)
-        # TODO: Implement description justifying and line splitting
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
-        item_descriptions = [f'{number}) {item.name}: {item.description}'[:65]
+        item_descriptions = [self._line_up(f'{number}) {item.name}: {item.description}')
                              for number, item in enumerate(sorted_list)]
         return '\n'.join(item_descriptions)
+
+    @staticmethod
+    def _line_up(text: str) -> str:
+        """Turn the text into a multiline string"""
+        lines = []
+        text = text.strip()
+        while text:
+            if len(text) > 65:
+                a_line = text[:65].rsplit(' ', 1)[0]
+            else:
+                a_line = text
+            padding = '' if not lines else '   '
+            lines.append(padding + a_line.strip())
+            text = text[len(a_line):].strip()
+        return '\n'.join(lines)
 
 
 class DescriptionList(WindowContent):
