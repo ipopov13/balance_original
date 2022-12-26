@@ -51,12 +51,13 @@ class Game:
     States:
     """
     welcome_state = 'welcome'
-    new_game_state = 'starting new game'
-    loading_state = 'loading existing game'
-    character_name_substate = 'getting character name'
-    race_selection_substate = 'character race selection'
-    playing_state = 'playing (sub: scene, inventory, equipment, open_container, open_map, etc.)'
-    scene_substate = 'game scene'
+    new_game_state = 'starting_new_game'
+    loading_state = 'loading_existing_game'
+    character_name_substate = 'getting_character_name'
+    race_selection_substate = 'character_race_selection'
+    playing_state = 'playing'
+    # TODO: Implement subs: scene, inventory, equipment, open_container, open_map, etc.
+    scene_substate = 'game_scene'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = [human_race, gnome_race, elf_race, dwarf_race]
@@ -68,8 +69,9 @@ class Game:
         self.substate = None
 
     def set_character_race(self, character_race):
-        # TODO: implement race selection
-        raise NotImplementedError("Implement race selection!")
+        self.character.race = character_race
+        self.state = Game.playing_state
+        self.substate = Game.scene_substate
 
     def set_character_name(self, character_name):
         if self.state is Game.new_game_state:

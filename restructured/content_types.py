@@ -29,11 +29,21 @@ class WindowContent:
 
 
 class SelectionList(WindowContent):
+    def __init__(self, game_object):
+        super().__init__(game_object)
+
+    def commands(self) -> dict:
+        return {}
+
+    def return_object(self, number_string):
+        return self.game_object[int(number_string)]
+
     def data(self):
-        # TODO: Implement pagination and description justifying and line splitting
-        # TODO: Implement item selection characters/numbers and command handling
+        # TODO: Implement pagination and limit page length to 10 (numbers 0-9)
+        # TODO: Implement description justifying and line splitting
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
-        item_descriptions = [f'{item.name}: {item.description}'[:65] for item in sorted_list]
+        item_descriptions = [f'{number}) {item.name}: {item.description}'[:65]
+                             for number, item in enumerate(sorted_list)]
         return '\n'.join(item_descriptions)
 
 

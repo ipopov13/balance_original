@@ -113,6 +113,13 @@ class SelectionWindow(Window):
         super().__init__(**kwargs)
         self.target = target
 
+    def _commands(self) -> dict:
+        return {commands.NumberSelection(): self._complete_input}
+
+    def _complete_input(self, player_choice):
+        self.target(self._content.return_object(player_choice))
+        return True
+
 
 class OverlayWindow(Window):
     """A closable window presenting information"""

@@ -30,6 +30,19 @@ class TextInput(Command):
         return hash(self.character)
 
 
+class NumberSelection(Command):
+    character = string.digits
+    hint = ' (0-9) Choose an option '
+    description = 'Enter a number'
+    changes_window = True
+
+    def __eq__(self, other):
+        return other in self.character
+
+    def __hash__(self):
+        return hash(self.character)
+
+
 class CompleteInput(Command):
     character = '\r'
     hint = ''
@@ -75,6 +88,6 @@ if __name__ == '__main__':
     assert back == 'b'
     assert command_dict.get(back) == 'back'
     assert command_dict.get('b') == 'back'
-    dict1 = {GetHelp(): '1', NewGame():'3'}
+    dict1 = {GetHelp(): '1', NewGame(): '3'}
     dict2 = {GetHelp(): '2'}
     assert len(set(dict1) & set(dict2)) == 1
