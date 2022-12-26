@@ -30,19 +30,17 @@ class Window(ABC):
         #  the contents of the separate sub-windows one by one (so this method would be private). Border
         #  should be only one though, if any
         content_data = self._content.data()
+        raw_content_data = strip_ansi_escape_sequences(content_data)
+        raw_content_data = raw_content_data.split('\n')
         content_data = content_data.split('\n')
-        # Check if all content fits the line length, add ellipsis
-        for row_index in range(len(content_data)):
-            if len(content_data[row_index]) > self.size[-1]:
-                content_data[row_index] = content_data[row_index][:self.size[-1] - 3] + '...'
         # Horizontal pad: center the longest content line
-        longest_line_len = max([len(line) for line in content_data])
+        longest_line_len = max([len(line) for line in raw_content_data])
         left_pad = (self.size[-1] - longest_line_len) // 2
         min_right_pad = self.size[-1]
         for row_index in range(len(content_data)):
             content_data[row_index] = ' ' * left_pad + content_data[row_index]
         for row_index in range(len(content_data)):
-            right_pad = (self.size[1] - len(content_data[row_index]))
+            right_pad = (self.size[1] - len(raw_content_data[row_index]))
             content_data[row_index] += ' ' * right_pad
             min_right_pad = min(right_pad, min_right_pad)
         # Vertical pad: center within window size
