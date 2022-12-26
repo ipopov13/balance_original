@@ -102,7 +102,7 @@ class Window(ABC):
                 should_game_continue = callback(player_input)
                 if command.changes_window:
                     self.ui.drop_window(self)
-                if self._should_refresh_screen:
+                elif self._should_refresh_screen:
                     return self.ui.display(self.get_display_data())
                 return should_game_continue
         return True
@@ -136,7 +136,7 @@ class InputWindow(Window):
 
     def _complete_input(self, _):
         self.target(self._content.data())
-        return self.ui.drop_window(self)
+        return True
 
 
 if __name__ == '__main__':

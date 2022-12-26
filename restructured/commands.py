@@ -34,6 +34,7 @@ class CompleteInput(Command):
     character = '\r'
     hint = ''
     description = 'Send your input'
+    changes_window = True
 
 
 class Backspace(Command):
