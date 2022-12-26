@@ -60,6 +60,7 @@ The window Content:
 from windows import Window, InputWindow, SelectionWindow
 from content_types import WindowContent, SelectionList, TextInputField
 from game_objects import Game
+import config
 
 
 class GameSequence:
@@ -71,7 +72,7 @@ class GameSequence:
             return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True, title='Enter your name',
                                content=TextInputField(), target=ui.game.set_character_name)
         elif ui.game.state is Game.new_game_state and ui.game.substate is Game.race_selection_substate:
-            return SelectionWindow(ui=ui, border=True, title='Select your character race',
+            return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=SelectionList(Game.races), target=ui.game.set_character_race)
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

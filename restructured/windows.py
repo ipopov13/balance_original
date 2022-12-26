@@ -1,6 +1,7 @@
 from abc import ABC
 from content_types import DescriptionList
 import commands
+from utils import strip_ansi_escape_sequences
 
 
 class Window(ABC):
@@ -71,7 +72,8 @@ class Window(ABC):
     def _apply_border(self, content_data, pads):
         if not all([p > 0 for p in pads]):
             raise ValueError(f'Content is too big to apply border in {self.__class__}')
-        content_data[0] = self._title.center(self.size[-1], '-')
+        raw_title = strip_ansi_escape_sequences(self._title)
+        content_data[0] = raw_title.center(self.size[-1], '-').replace(raw_title, self._title)
         content_data[-1] = '-' * self.size[-1]
         return content_data
 

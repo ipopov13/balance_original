@@ -1,10 +1,14 @@
 import commands
+import console
+import config
 
 
 class GameObject:
-    def __init__(self, name=None, icon='@', description='(empty GameObj description)', sort_key=0):
+    def __init__(self, name=None, icon='@', color=console.fg.default,
+                 description='(empty GameObj description)', sort_key=0):
         self.name = name
         self.icon = icon
+        self.color = color
         self.description = description
         self.sort_key = sort_key
 
@@ -19,24 +23,34 @@ class GameObject:
 
 human_race = GameObject(name='Human',
                         icon='H',
+                        color=config.order_color,
                         description='Explorers and treasure seekers, the human race combines the primal need '
                                     'of discovery with the perseverance that gave birth to all great empires.',
                         sort_key=0)
 dwarf_race = GameObject(name='Dwarf',
                         icon='D',
+                        color=config.order_color,
                         description='Masters of the forge, they are drawn down into the depths of the world by '
                                     'an ancient instinct that rivals the bravery of human explorers.',
                         sort_key=1)
 gnome_race = GameObject(name='Gnome',
                         icon='G',
+                        color=config.order_color,
                         description='The only race that views rocks as living things,'
                                     ' gnomes are friendly and easygoing.',
                         sort_key=2)
 elf_race = GameObject(name='Elf',
                       icon='E',
+                      color=config.order_color,
                       description='Expert mages and librarians, the elves have given the world'
                                   ' a lot of legendary heroes.',
                       sort_key=3)
+orc_race = GameObject(name='Orc',
+                      icon='O',
+                      color=config.chaos_color,
+                      description='The most aggressive of races, orcs crave combat above all else.'
+                                  ' They always keep a spare weapon around, just in case.',
+                      sort_key=4)
 
 
 class Character(GameObject):
@@ -60,7 +74,7 @@ class Game:
     scene_substate = 'game_scene'
     high_score_state = 'high_score'
     ended_state = 'ended'
-    races = [human_race, gnome_race, elf_race, dwarf_race]
+    races = [human_race, gnome_race, elf_race, dwarf_race, orc_race]
 
     def __init__(self):
         self.character = None
