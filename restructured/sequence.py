@@ -1,6 +1,5 @@
 """
 The GameSequence defines:
-  # TODO: Write out the sequence of windows and commands that can happen
   the sequence of windows that the UI should display
   the objects to be passed to the windows as input
   what window content type the objects will be displayed with
@@ -60,18 +59,19 @@ The window Content:
 """
 from windows import Window, InputWindow, SelectionWindow
 from content_types import WindowContent, SelectionList, TextInputField
+from game_objects import Game
 
 
 class GameSequence:
     @staticmethod
     def get_window(ui):
-        if ui.game.state is ui.game.welcome_state:
+        if ui.game.state is Game.welcome_state:
             return Window(ui=ui, content=WindowContent(ui.game))
-        elif ui.game.state is ui.game.character_name_state:
-            return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True,
-                               title='Enter your name',
+        elif ui.game.state is Game.new_game_state and ui.game.substate is Game.character_name_substate:
+            return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True, title='Enter your name',
                                content=TextInputField(), target=ui.game.set_character_name)
-        elif ui.game.state is ui.game.race_selection_state:
+        elif ui.game.state is Game.new_game_state and ui.game.substate is Game.race_selection_substate:
             return SelectionWindow(ui=ui, border=True, title='Select your character race',
-                                   contents=[SelectionList(ui.game.races)],
-                                   target=ui.game.set_character_race)
+                                   content=SelectionList(Game.races), target=ui.game.set_character_race)
+        else:
+            raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

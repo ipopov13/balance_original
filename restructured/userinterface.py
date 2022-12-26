@@ -1,13 +1,12 @@
 import console
 from console.utils import cls
 import msvcrt
-from windows import Window
 
 
 class UserInterface:
     def __init__(self, game, game_sequence):
         self.game = game
-        self._screens: [Window] = []
+        self._screens = []
         self._game_sequence = game_sequence
         cls()
         self._refresh()
@@ -20,7 +19,7 @@ class UserInterface:
         self.display(display_data)
 
     @property
-    def _top_screen(self) -> Window:
+    def _top_screen(self):
         return self._screens[-1]
 
     def process_player_input(self) -> bool:

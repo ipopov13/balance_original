@@ -51,10 +51,10 @@ class Game:
     States:
     """
     welcome_state = 'welcome'
-    character_name_state = 'character_name (sub: new | loading)'
-    new_game_substate = 'new_game'
-    loading_substate = 'loading existing game'
-    race_selection_state = 'race_selection'
+    new_game_state = 'starting new game'
+    loading_state = 'loading existing game'
+    character_name_substate = 'getting character name'
+    race_selection_substate = 'character race selection'
     playing_state = 'playing (sub: scene, inventory, equipment, open_container, open_map, etc.)'
     scene_substate = 'game scene'
     high_score_state = 'high_score'
@@ -72,10 +72,10 @@ class Game:
         raise NotImplementedError("Implement race selection!")
 
     def set_character_name(self, character_name):
-        if self.substate is Game.new_game_substate:
+        if self.state is Game.new_game_state:
             self.character = Character(name=character_name, description='You are standing here.')
-            self.substate = Game.race_selection_state
-        elif self.substate is Game.loading_substate:
+            self.substate = Game.race_selection_substate
+        elif self.state is Game.loading_state:
             self._load_saved_game(character_name)
             self.state = Game.playing_state
             self.substate = Game.scene_substate
@@ -87,13 +87,13 @@ class Game:
 
     def _new_game(self, _):
         self._create_world()
-        self.state = Game.character_name_state
-        self.substate = Game.new_game_substate
+        self.state = Game.new_game_state
+        self.substate = Game.character_name_substate
         return True
 
     def _initiate_load(self, _):
-        self.state = Game.character_name_state
-        self.substate = Game.loading_substate
+        self.state = Game.loading_state
+        self.substate = Game.character_name_substate
         return True
 
     def _load_saved_game(self, name):
