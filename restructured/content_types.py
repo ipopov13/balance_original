@@ -48,6 +48,10 @@ class SelectionList(WindowContent):
                              for number, item in enumerate(sorted_list)]
         return '\n'.join(item_descriptions)
 
+    @property
+    def max_choice(self):
+        return len(self.game_object)
+
     @staticmethod
     def _line_up(text: str) -> str:
         """Turn the text into a multiline string"""

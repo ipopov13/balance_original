@@ -114,7 +114,7 @@ class SelectionWindow(Window):
         self.target = target
 
     def _commands(self) -> dict:
-        return {commands.NumberSelection(): self._complete_input}
+        return {commands.NumberSelection(self._content.max_choice): self._complete_input}
 
     def _complete_input(self, player_choice):
         self.target(self._content.return_object(player_choice))

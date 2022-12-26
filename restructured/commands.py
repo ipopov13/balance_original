@@ -36,6 +36,9 @@ class NumberSelection(Command):
     description = 'Enter a number'
     changes_window = True
 
+    def __init__(self, choice_cap):
+        self.character = ''.join([str(x) for x in range(choice_cap)])
+
     def __eq__(self, other):
         return other in self.character
 
