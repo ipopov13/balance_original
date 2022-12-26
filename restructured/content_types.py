@@ -1,33 +1,34 @@
-from abc import ABC, abstractmethod
-from commands import Command
-from game_objects import GameObject
+import commands
 
 
-class WindowContent(ABC):
+class WindowContent:
     def __init__(self, game_object):
-        if not self._confirm_object_type(game_object):
-            raise ValueError(f'Wrong object of type {type(game_object)} passed to {self.__class__}')
         self.game_object = game_object
 
-    @abstractmethod
-    def _confirm_object_type(self, game_object):
-        raise NotImplementedError(f'Class {self.__class__} must implement _confirm_object_type!')
-
     @staticmethod
-    def commands() -> dict:
+    def _own_commands():
         return {}
 
+    def commands(self) -> dict:
+        """Combine the content-specific and object-specific commands"""
+        return {**self._object_commands(),
+                **self._own_commands()}
+
     def data(self) -> str:
-        return '(empty content)'
+        return self.game_object.data()
+
+    def _object_commands(self) -> dict:
+        """The mapping of commands&methods specific for the underlying object(s)"""
+        try:
+            object_commands = self.game_object.commands()
+        except AttributeError:
+            object_commands = {}
+            for obj in self.game_object:
+                object_commands.update(obj.commands())
+        return object_commands
 
 
 class SelectionList(WindowContent):
-    def _confirm_object_type(self, game_object):
-        assert isinstance(game_object, list)
-        for obj in game_object:
-            assert isinstance(obj, GameObject)
-        return True
-
     def data(self):
         # TODO: Implement item sorting in the list
         # TODO: Implement pagination and description justifying and line splitting
@@ -36,13 +37,26 @@ class SelectionList(WindowContent):
         return '\n'.join(item_descriptions)
 
 
-class CommandsList(WindowContent):
-    def _confirm_object_type(self, game_object):
-        assert isinstance(game_object, dict)
-        for command in game_object:
-            assert isinstance(command, Command)
-        return True
-
+class DescriptionList(WindowContent):
+    """Generate a list of object descriptions from an iterable"""
     def data(self):
         command_descriptions = [f'{k.character}: {k.description}' for k in self.game_object]
         return '\n'.join(command_descriptions)
+
+
+class TextInputField:
+    def __init__(self):
+        self._data = ''
+
+    def commands(self) -> dict:
+        return {commands.TextInput(): self._add_character,
+                commands.Backspace(): self._remove_last_character}
+
+    def _add_character(self, character):
+        self._data += character
+
+    def _remove_last_character(self):
+        self._data = self._data[:-1]
+
+    def data(self) -> str:
+        return self._data

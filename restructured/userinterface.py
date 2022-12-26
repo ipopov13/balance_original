@@ -1,16 +1,21 @@
 import console
 from console.utils import cls
 import msvcrt
-from windows import Window, WelcomeWindow
+from windows import Window
 
 
 class UserInterface:
-    def __init__(self):
-        self._screens: [Window] = [WelcomeWindow(ui=self)]
+    def __init__(self, game, game_sequence):
+        self.game = game
+        self._screens: [Window] = []
+        self._game_sequence = game_sequence
         cls()
         self._refresh()
 
     def _refresh(self):
+        if not self._screens:
+            cls()
+            self._screens.append(self._game_sequence.get_window(self))
         display_data = self._top_screen.get_display_data()
         self.display(display_data)
 
@@ -23,6 +28,8 @@ class UserInterface:
         Read a character from the input and send it to the window.
         Called by the main loop
         """
+        # TODO: This cannot decode arrow keys, add an exception for this
+        #  (but it's good for breaking out of endless loops during development)
         player_input = msvcrt.getch().decode()
         result = self._top_screen.handle_input(player_input)
         if not result:
@@ -30,9 +37,6 @@ class UserInterface:
         return result
 
     def drop_window(self, window) -> bool:
-        if window is not self._screens[-1]:
-            raise ValueError(f'Window {window.__class__} is not top window for the UI,'
-                             f' it cannot be dropped!')
         self._screens.remove(window)
         self._refresh()
         return True

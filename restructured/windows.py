@@ -1,22 +1,21 @@
-from abc import ABC, abstractmethod
-import string
-from content_types import CommandsList, SelectionList
-from game_objects import Game
+from abc import ABC
+from content_types import DescriptionList
 import commands
 
 
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
+    _should_refresh_screen = False
 
     def __init__(self, size=_default_size, top_left=_default_top_left, ui=None,
-                 contents=(), border=False, title='Balance'):
+                 content=None, border=False, title='Balance'):
         if ui is None:
             raise ValueError(f"Window {self.__class__} must be initialized with a UI!")
         self.ui = ui
         self.size = size
         self.top_left = top_left
-        self._contents = contents
+        self._content = content
         self._border = border
         self._title = title
 
@@ -24,28 +23,12 @@ class Window(ABC):
         """The mapping of commands&methods specific for the window"""
         return {commands.GetHelp(): self._help_command}
 
-    @abstractmethod
-    def _organize_content_data(self) -> str:
-        """Windows use this method to collect and organize their content"""
-        raise NotImplementedError(f'Window {self.__class__} must define a _organize_content_data() method!')
-
-    def _content_commands(self) -> dict:
-        """The mapping of commands&methods specific for the window content"""
-        content_commands = {}
-        for content in self._contents:
-            command_dict = content.commands()
-            if set(command_dict) & set(content_commands):
-                raise ValueError(f'Duplicate window command "{set(command_dict) & set(content_commands)}"'
-                                 f' in window {self.__class__}')
-            content_commands.update(command_dict)
-        return content_commands
-
     def get_display_data(self) -> dict:
         """Pad the content to size and position, apply borders and hints"""
         # TODO: For composite windows (i.e. game scene) this can be called by a provide_data method that sends
         #  the contents of the separate sub-windows one by one (so this method would be private). Border
         #  should be only one though, if any
-        content_data = self._organize_content_data()
+        content_data = self._content.data()
         content_data = content_data.split('\n')
         # Check if all content fits the line length, add ellipsis
         for row_index in range(len(content_data)):
@@ -94,18 +77,18 @@ class Window(ABC):
 
     def _available_commands(self) -> dict:
         local_commands = self._commands()
-        content_commands = self._content_commands()
+        content_commands = self._content.commands()
         if set(local_commands) & set(content_commands):
             raise ValueError(f'Duplicate window command "{set(local_commands) & set(content_commands)}"'
                              f' in window {self.__class__}')
-        return {**self._commands(), **self._content_commands()}
+        return {**local_commands, **content_commands}
 
     def _empty_command(self, _) -> bool:
         return self.ui.display({(0, 0): ''})
 
     def _help_command(self, _) -> bool:
         help_window = OverlayWindow(size=(15, 50), top_left=(5, 20), ui=self.ui,
-                                    contents=[CommandsList(self._available_commands())],
+                                    content=DescriptionList(self._available_commands()),
                                     border=True, title='Available commands')
         return self.ui.add_window(help_window)
 
@@ -114,8 +97,15 @@ class Window(ABC):
         Process the player command by getting the data and calling one of the UI
         methods
         """
-        chosen_command = self._available_commands().get(player_input, self._empty_command)
-        return chosen_command(player_input)
+        for command, callback in self._available_commands().items():
+            if command == player_input:
+                should_game_continue = callback(player_input)
+                if command.changes_window:
+                    self.ui.drop_window(self)
+                if self._should_refresh_screen:
+                    return self.ui.display(self.get_display_data())
+                return should_game_continue
+        return True
 
 
 class SelectionWindow(Window):
@@ -123,52 +113,11 @@ class SelectionWindow(Window):
         super().__init__(**kwargs)
         self.target = target
 
-    def _organize_content_data(self) -> str:
-        return self._contents[0].data()
-
-
-class WelcomeWindow(Window):
-
-    def _commands(self):
-        return {commands.NewGame(): self._new_game,
-                commands.LoadGame(): self._load_game,
-                commands.GetHelp(): self._help_command}
-
-    def _new_game(self, _):
-        self.ui.game = Game()
-        name_window = InputWindow(size=(3, 20), top_left=(11, 30), ui=self.ui, border=True,
-                                  title='Enter your name', character_set=string.ascii_letters + '- ',
-                                  target=self.ui.game.start_game)
-        race_window = SelectionWindow(ui=self.ui, border=True, title='Select your character race',
-                                      contents=[SelectionList(self.ui.game.races)],
-                                      target=self.ui.game.set_character_race)
-        self.ui.add_window(race_window)
-        return self.ui.add_window(name_window)
-
-    def _load_game(self, _):
-        return self.ui.display({(0, 0): self.ui.game.character.name})
-
-    def _empty_command(self, _):
-        return False
-
-    def _organize_content_data(self):
-        return r''' ___      _   _         _   _    _   ___   ____
-|   \    / |  |        / |  |\   |  /   \ |
-|___/   /  |  |       /  |  | \  |  |     |___
-|   \  /---|  |      /---|  |  \ |  |     |
-|___/ /    |  |___| /    |  |   \|  \___/ |____
-
-                    ver 0.7
-                  Ivan Popov'''
-
 
 class OverlayWindow(Window):
     """A closable window presenting information"""
     def _commands(self) -> dict:
         return {commands.Back(): self._back_command}
-
-    def _organize_content_data(self):
-        return self._contents[0].data()
 
     def _back_command(self, _):
         return self.ui.drop_window(self)
@@ -176,38 +125,24 @@ class OverlayWindow(Window):
 
 class InputWindow(Window):
     """A window for collecting multi-character user input"""
+    _should_refresh_screen = True
 
-    def _organize_content_data(self) -> str:
-        return self.collected_input
-
-    def __init__(self, character_set=string.digits, target=None, **kwargs):
+    def __init__(self, target=None, **kwargs):
         super().__init__(**kwargs)
-        self._character_set = character_set
         self.target = target
-        self.collected_input = ''
 
     def _commands(self) -> dict:
-        return {commands.CompleteInput(): self._complete_input,
-                commands.Backspace(): self._remove_last_input_char}
-
-    def _empty_command(self, char) -> bool:
-        if char not in self._character_set:
-            return True
-        else:
-            self.collected_input += char
-            return self.ui.display(self.get_display_data())
-
-    def _remove_last_input_char(self, _):
-        self.collected_input = self.collected_input[:-1]
-        return self.ui.display(self.get_display_data())
+        return {commands.CompleteInput(): self._complete_input}
 
     def _complete_input(self, _):
-        self.target(self.collected_input)
+        self.target(self._content.data())
         return self.ui.drop_window(self)
 
 
 if __name__ == '__main__':
-    window = WelcomeWindow(ui=1)
+    from content_types import TextInputField
+
+    window = Window(ui=1, content=TextInputField())
     test_content = window.get_display_data()
     for v in test_content.values():
         assert len(v) == window.size[1], str(v)

@@ -1,9 +1,11 @@
 """
-The Game defines:
+The GameSequence defines:
   # TODO: Write out the sequence of windows and commands that can happen
   the sequence of windows that the UI should display
   the objects to be passed to the windows as input
   what window content type the objects will be displayed with
+
+The Game object:
   holds all the required game Objects as references
   is attached to the UI
 
@@ -56,3 +58,20 @@ The window Content:
   supports functions like pagination and item selection
 
 """
+from windows import Window, InputWindow, SelectionWindow
+from content_types import WindowContent, SelectionList, TextInputField
+
+
+class GameSequence:
+    @staticmethod
+    def get_window(ui):
+        if ui.game.state is ui.game.welcome_state:
+            return Window(ui=ui, content=WindowContent(ui.game))
+        elif ui.game.state is ui.game.character_name_state:
+            return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True,
+                               title='Enter your name',
+                               content=TextInputField(), target=ui.game.set_character_name)
+        elif ui.game.state is ui.game.race_selection_state:
+            return SelectionWindow(ui=ui, border=True, title='Select your character race',
+                                   contents=[SelectionList(ui.game.races)],
+                                   target=ui.game.set_character_race)

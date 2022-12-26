@@ -1,10 +1,30 @@
+import string
+
+
 class Command:
     character = '(na)'
     hint = '(na)'
     description = '(na)'
+    changes_window = False
 
     def __eq__(self, other):
         return self.character == other
+
+    def __hash__(self):
+        return hash(self.character)
+
+    @staticmethod
+    def commands():
+        return {}
+
+
+class TextInput(Command):
+    character = string.ascii_letters + '- '
+    hint = ''
+    description = 'Enter text'
+
+    def __eq__(self, other):
+        return other in self.character
 
     def __hash__(self):
         return hash(self.character)
@@ -38,12 +58,14 @@ class NewGame(Command):
     character = 'n'
     hint = '(n)ew game'
     description = 'Start a new game'
+    changes_window = True
 
 
 class LoadGame(Command):
     character = 'l'
     hint = '(l)oad'
     description = 'Load a saved game'
+    changes_window = True
 
 
 if __name__ == '__main__':
