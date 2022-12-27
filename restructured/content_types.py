@@ -33,9 +33,6 @@ class WindowContent:
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
-        # TODO: CHeck where the second fay disappears in the listing!
-        self.game_object = 2 * self.game_object
-
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
         self._item_descriptions = [f'{console.fg.yellow}#)'
                                    f' {self._line_up(f"{item.name}: {item.description}")}'
@@ -85,9 +82,9 @@ class PagedList(WindowContent):
         current_start_index = 0
         for i, content in enumerate(contents):
             if current_size + content > config.max_text_lines_on_page \
-                    or i - current_start_index == 10:
+                    or i - current_start_index > 10:
                 pages.append((current_start_index, i))
-                current_size = 0
+                current_size = content
                 current_start_index = i
                 continue
             current_size += content
