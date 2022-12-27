@@ -29,7 +29,7 @@ class WindowContent:
         return object_commands
 
 
-class SelectionList(WindowContent):
+class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
 
