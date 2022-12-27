@@ -58,7 +58,7 @@ The window Content:
 
 """
 from windows import Window, InputWindow, SelectionWindow
-from content_types import WindowContent, PagedList, TextInputField
+from content_types import WindowContent, PagedList, TextInputField, GameScene
 from game_objects import Game
 import config
 
@@ -74,5 +74,7 @@ class GameSequence:
         elif ui.game.state is Game.new_game_state and ui.game.substate is Game.race_selection_substate:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=PagedList(Game.races), target=ui.game.set_character_race)
+        elif ui.game.state is Game.playing_state and ui.game.substate is Game.scene_substate:
+            return Window(ui=ui, content=GameScene(ui.game))
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

@@ -75,7 +75,7 @@ kraken_race = Race(name='Kraken',
                    icon='K',
                    color=config.chaos_color,
                    description="Descendants of deep sea monsters, the kraken have learned to "
-                               "reap even the most disgusting water dwellers for useful substances.",
+                               "reap even the most disgusting of water dwellers for useful substances.",
                    sort_key=7)
 imp_race = Race(name='Imp',
                 icon='I',

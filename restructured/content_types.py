@@ -30,6 +30,10 @@ class WindowContent:
         return object_commands
 
 
+class GameScene(WindowContent):
+    pass
+
+
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
@@ -132,7 +136,7 @@ class TextInputField:
     def _add_character(self, character):
         self._data += character
 
-    def _remove_last_character(self):
+    def _remove_last_character(self, _):
         self._data = self._data[:-1]
 
     def data(self) -> str:
