@@ -43,8 +43,15 @@ class PagedList(WindowContent):
         self._current_page = 0
 
     def commands(self) -> dict:
-        # TODO: Implement page-flip commands
-        return {}
+        # TODO: Test that the race is returned correctly from the second page
+        return {commands.NextPage(): self._next_page,
+                commands.PreviousPage(): self._previous_page}
+
+    def _next_page(self, _):
+        self._current_page = min(self._current_page + 1, len(self._pages) - 1)
+
+    def _previous_page(self, _):
+        self._current_page = max(self._current_page - 1, 0)
 
     def return_object(self, number_string):
         return self.game_object[int(number_string)]
@@ -54,6 +61,7 @@ class PagedList(WindowContent):
         return self._item_descriptions[curr_start:curr_end]
 
     def data(self) -> str:
+        # TODO: Add the numbers of the list here to make them restart for each page
         return '\n'.join(self._current_page_content())
 
     @staticmethod
@@ -64,7 +72,7 @@ class PagedList(WindowContent):
         current_start_index = 0
         for i, content in enumerate(contents):
             if current_size + content > config.max_text_lines_on_page \
-            or i - current_start_index == 10:
+                    or i - current_start_index == 10:
                 pages.append((current_start_index, i))
                 current_size = 0
                 current_start_index = i
@@ -97,6 +105,7 @@ class PagedList(WindowContent):
 
 class DescriptionList(WindowContent):
     """Generate a list of object descriptions from an iterable"""
+
     def data(self):
         command_descriptions = [f'{k.character}: {k.description}' for k in self.game_object]
         return '\n'.join(command_descriptions)

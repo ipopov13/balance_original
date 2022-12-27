@@ -109,6 +109,8 @@ class Window(ABC):
 
 
 class SelectionWindow(Window):
+    _should_refresh_screen = True
+
     def __init__(self, target=None, **kwargs):
         super().__init__(**kwargs)
         self.target = target

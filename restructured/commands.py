@@ -30,6 +30,18 @@ class TextInput(Command):
         return hash(self.character)
 
 
+class NextPage(Command):
+    character = 'n'
+    hint = '(n)ext page'
+    description = 'Go to the next page'
+
+
+class PreviousPage(Command):
+    character = 'p'
+    hint = '(p)revious page'
+    description = 'Go to the previous page'
+
+
 class NumberSelection(Command):
     character = string.digits
     hint = ' (0-9) Choose an option '
