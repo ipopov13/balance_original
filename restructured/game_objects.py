@@ -2,6 +2,8 @@ import commands
 import console
 import config
 
+races = []
+
 
 class GameObject:
     def __init__(self, name=None, icon='@', color=console.fg.default,
@@ -21,36 +23,91 @@ class GameObject:
         return '(empty object data)'
 
 
-human_race = GameObject(name='Human',
-                        icon='H',
-                        color=config.order_color,
-                        description='Explorers and treasure seekers, the human race combines the primal need '
-                                    'of discovery with the perseverance that gave birth to all great empires.',
-                        sort_key=0)
-dwarf_race = GameObject(name='Dwarf',
-                        icon='D',
-                        color=config.order_color,
-                        description='Masters of the forge, they are drawn down into the depths of the world by '
-                                    'an ancient instinct that rivals the bravery of human explorers.',
-                        sort_key=1)
-gnome_race = GameObject(name='Gnome',
-                        icon='G',
-                        color=config.order_color,
-                        description='The only race that views rocks as living things,'
-                                    ' gnomes are friendly and easygoing.',
-                        sort_key=2)
-elf_race = GameObject(name='Elf',
-                      icon='E',
-                      color=config.order_color,
-                      description='Expert mages and librarians, the elves have given the world'
-                                  ' a lot of legendary heroes.',
-                      sort_key=3)
-orc_race = GameObject(name='Orc',
-                      icon='O',
-                      color=config.chaos_color,
-                      description='The most aggressive of races, orcs crave combat above all else.'
-                                  ' They always keep a spare weapon around, just in case.',
-                      sort_key=4)
+class Race(GameObject):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        races.append(self)
+
+
+human_race = Race(name='Human',
+                  icon='H',
+                  color=config.order_color,
+                  description='Explorers and treasure seekers, the human race combines the primal need '
+                              'of discovery with the perseverance that gave birth to all great empires.',
+                  sort_key=0)
+dwarf_race = Race(name='Dwarf',
+                  icon='D',
+                  color=config.order_color,
+                  description='Masters of the forge, they are drawn down into the depths of the world by '
+                              'an ancient instinct that rivals the bravery of human explorers.',
+                  sort_key=1)
+gnome_race = Race(name='Gnome',
+                  icon='G',
+                  color=config.order_color,
+                  description='The only race that views rocks as living things,'
+                              ' gnomes are friendly and easygoing.',
+                  sort_key=2)
+elf_race = Race(name='Elf',
+                icon='E',
+                color=config.order_color,
+                description='Expert mages and librarians, the elves have given the world'
+                            ' a lot of legendary heroes.',
+                sort_key=3)
+orc_race = Race(name='Orc',
+                icon='O',
+                color=config.chaos_color,
+                description='The most aggressive of races, orcs crave combat above all else.'
+                            ' They always keep a spare weapon around, just in case.',
+                sort_key=4)
+troll_race = Race(name='Troll',
+                  icon='T',
+                  color=config.chaos_color,
+                  description="Finding a tasty rock to eat makes a troll's day. Having "
+                              "someone to throw a rock at is a bonus that only a troll can appreciate in full.",
+                  sort_key=5)
+goblin_race = Race(name='Goblin',
+                   icon='G',
+                   color=config.chaos_color,
+                   description="For a goblin, everything can come in handy one day. They are"
+                               " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
+                   sort_key=6)
+kraken_race = Race(name='Kraken',
+                   icon='K',
+                   color=config.chaos_color,
+                   description="Descendants of deep sea monsters, the kraken have learned to "
+                               "reap even the most disgusting water dwellers for useful substances.",
+                   sort_key=7)
+imp_race = Race(name='Imp',
+                icon='I',
+                color=config.chaos_color,
+                description="Fire burns in an imp's veins and dances over their fingers."
+                            " To burn is to feel alive!",
+                sort_key=8)
+dryad_race = Race(name='Dryad',
+                  icon='D',
+                  color=config.nature_color,
+                  description="The kin of plants, dryads are champions of the forest. They give"
+                              " trees their all and received undying love in return.",
+                  sort_key=9)
+shifter_race = Race(name='Shifter',
+                    icon='S',
+                    color=config.nature_color,
+                    description="A shifter can easily pass as a human if they cut their talon-like nails "
+                                "and keep their totemic tattoos hidden. They rarely do.",
+                    sort_key=10)
+water_elemental_race = Race(name='Water Elemental',
+                            icon='W',
+                            color=config.nature_color,
+                            description="To make other living beings see the beauty of water, elementals "
+                                        "turn it into art, home, and sustenance.",
+                            sort_key=11)
+fay_race = Race(name='Fay',
+                icon='F',
+                color=config.nature_color,
+                description="The fay are born from the natural magic of the world, and "
+                            "they have developed methods to manipulate it. Their ability to "
+                            "trespass into the dreams of others is an insignificant side effect.",
+                sort_key=12)
 
 
 class Character(GameObject):
@@ -74,7 +131,7 @@ class Game:
     scene_substate = 'game_scene'
     high_score_state = 'high_score'
     ended_state = 'ended'
-    races = [human_race, gnome_race, elf_race, dwarf_race, orc_race]
+    races = races
 
     def __init__(self):
         self.character = None
@@ -130,3 +187,7 @@ class Game:
 
                     ver 0.7
                   Ivan Popov'''
+
+
+if __name__ == '__main__':
+    print(human_race.sort_key)
