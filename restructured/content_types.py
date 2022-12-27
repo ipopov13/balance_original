@@ -34,7 +34,7 @@ class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
-        self._item_descriptions = [f'{console.fg.yellow}{number})'
+        self._item_descriptions = [f'{console.fg.yellow}#)'
                                    f' {self._line_up(f"{item.name}: {item.description}")}'
                                    .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
                                    for number, item in enumerate(sorted_list)]
@@ -61,8 +61,10 @@ class PagedList(WindowContent):
         return self._item_descriptions[curr_start:curr_end]
 
     def data(self) -> str:
-        # TODO: Add the numbers of the list here to make them restart for each page
-        return '\n'.join(self._current_page_content())
+        contents = self._current_page_content()
+        numbered_contents = [content.replace('#)', f'{n})') for content, n
+                             in zip(contents, range(len(contents)))]
+        return '\n'.join(numbered_contents)
 
     @staticmethod
     def _paginate(contents) -> [(int, int)]:
