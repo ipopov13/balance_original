@@ -1,4 +1,5 @@
 import commands
+import config
 import console
 
 
@@ -32,6 +33,14 @@ class WindowContent:
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
+        sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
+        self._item_descriptions = [f'{console.fg.yellow}{number})'
+                                   f' {self._line_up(f"{item.name}: {item.description}")}'
+                                   .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
+                                   for number, item in enumerate(sorted_list)]
+        description_lines = [len(desc.split('\n')) for desc in self._item_descriptions]
+        self._pages = self._paginate(description_lines)
+        self._current_page = 0
 
     def commands(self) -> dict:
         return {}
@@ -39,14 +48,27 @@ class PagedList(WindowContent):
     def return_object(self, number_string):
         return self.game_object[int(number_string)]
 
-    def data(self):
+    def data(self) -> str:
         # TODO: Implement pagination and limit page length to 10 (numbers 0-9)
-        sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
-        item_descriptions = [f'{console.fg.yellow}{number})'
-                             f' {self._line_up(f"{item.name}: {item.description}")}'
-                             .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
-                             for number, item in enumerate(sorted_list)]
-        return '\n'.join(item_descriptions)
+        # TODO: Move this to the init and let data() only retrieve the current page
+        curr_start, curr_end = self._pages[self._current_page]
+        return '\n'.join(self._item_descriptions[curr_start:curr_end])
+
+    @staticmethod
+    def _paginate(contents) -> [(int, int)]:
+        pages = []
+        current_size = 0
+        current_start_index = 0
+        for i, content in enumerate(contents):
+            if current_size + content > config.max_text_lines_on_page:
+                pages.append((current_start_index, i))
+                current_size = 0
+                current_start_index = i
+                continue
+            current_size += content
+        if current_size:
+            pages.append((current_start_index, len(contents)))
+        return pages
 
     @property
     def max_choice(self):
@@ -57,9 +79,10 @@ class PagedList(WindowContent):
         """Turn the text into a multiline string"""
         lines = []
         text = text.strip()
+        line_limit = config.max_text_line_length
         while text:
-            if len(text) > 65:
-                a_line = text[:65].rsplit(' ', 1)[0]
+            if len(text) > line_limit:
+                a_line = text[:line_limit].rsplit(' ', 1)[0]
             else:
                 a_line = text
             padding = '' if not lines else '   '

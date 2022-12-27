@@ -1,5 +1,8 @@
 import console
 
+max_text_lines_on_page = 21
+max_text_line_length = 65
+
 order_color = console.fg.lightblue
 nature_color = console.fg.lightgreen
 chaos_color = console.fg.red
