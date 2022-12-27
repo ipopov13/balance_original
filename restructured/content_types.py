@@ -43,24 +43,28 @@ class PagedList(WindowContent):
         self._current_page = 0
 
     def commands(self) -> dict:
+        # TODO: Implement page-flip commands
         return {}
 
     def return_object(self, number_string):
         return self.game_object[int(number_string)]
 
-    def data(self) -> str:
-        # TODO: Implement pagination and limit page length to 10 (numbers 0-9)
-        # TODO: Move this to the init and let data() only retrieve the current page
+    def _current_page_content(self):
         curr_start, curr_end = self._pages[self._current_page]
-        return '\n'.join(self._item_descriptions[curr_start:curr_end])
+        return self._item_descriptions[curr_start:curr_end]
+
+    def data(self) -> str:
+        return '\n'.join(self._current_page_content())
 
     @staticmethod
     def _paginate(contents) -> [(int, int)]:
+        # TODO: Write a test for the 10 lines rule!
         pages = []
         current_size = 0
         current_start_index = 0
         for i, content in enumerate(contents):
-            if current_size + content > config.max_text_lines_on_page:
+            if current_size + content > config.max_text_lines_on_page \
+            or i - current_start_index == 10:
                 pages.append((current_start_index, i))
                 current_size = 0
                 current_start_index = i
@@ -72,7 +76,7 @@ class PagedList(WindowContent):
 
     @property
     def max_choice(self):
-        return len(self.game_object)
+        return len(self._current_page_content())
 
     @staticmethod
     def _line_up(text: str) -> str:
