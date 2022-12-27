@@ -33,6 +33,9 @@ class WindowContent:
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
+        # TODO: CHeck where the second fay disappears in the listing!
+        self.game_object = 2 * self.game_object
+
         sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
         self._item_descriptions = [f'{console.fg.yellow}#)'
                                    f' {self._line_up(f"{item.name}: {item.description}")}'
@@ -43,7 +46,6 @@ class PagedList(WindowContent):
         self._current_page = 0
 
     def commands(self) -> dict:
-        # TODO: Test that the race is returned correctly from the second page
         return {commands.NextPage(): self._next_page,
                 commands.PreviousPage(): self._previous_page}
 
@@ -53,8 +55,9 @@ class PagedList(WindowContent):
     def _previous_page(self, _):
         self._current_page = max(self._current_page - 1, 0)
 
-    def return_object(self, number_string):
-        return self.game_object[int(number_string)]
+    def return_object(self, object_number_in_page_as_string):
+        absolute_object_number = self._pages[self._current_page][0] + int(object_number_in_page_as_string)
+        return self.game_object[absolute_object_number]
 
     def _current_page_content(self):
         curr_start, curr_end = self._pages[self._current_page]
@@ -64,7 +67,15 @@ class PagedList(WindowContent):
         contents = self._current_page_content()
         numbered_contents = [content.replace('#)', f'{n})') for content, n
                              in zip(contents, range(len(contents)))]
-        return '\n'.join(numbered_contents)
+        hint_line = ' ' * config.max_text_line_length
+        if self._current_page < len(self._pages) - 1:
+            hint = commands.NextPage.hint
+            hint_line = hint_line[:-1 * len(hint)] + hint
+        if self._current_page > 0:
+            hint = commands.PreviousPage.hint
+            hint_line = hint + hint_line[len(hint):]
+        final_contents = numbered_contents + [hint_line]
+        return '\n'.join(final_contents)
 
     @staticmethod
     def _paginate(contents) -> [(int, int)]:
