@@ -114,6 +114,31 @@ class Character(GameObject):
     def __init__(self, race=None, **kwargs):
         super().__init__(**kwargs)
         self.race = race
+        self.strength = 5
+        self.dexterity = 5
+        self.will = 5
+        self.endurance = 5
+        # TODO: Add ageing for NPCs here between the stats and the substats
+        self.hp = self.max_hp
+        self.mana = self.max_mana
+        self.energy = self.max_energy
+        self.load = 0
+
+    @property
+    def max_hp(self):
+        return self.strength + 2 * self.endurance
+
+    @property
+    def max_mana(self):
+        return self.will * 10
+
+    @property
+    def max_energy(self):
+        return self.endurance * 10
+
+    @property
+    def max_load(self):
+        return self.strength * 5
 
 
 class Game:
@@ -187,6 +212,36 @@ class Game:
 
                     ver 0.7
                   Ivan Popov'''
+
+    @property
+    def current_area_name(self) -> str:
+        # TODO: Implement the area name as the area name + the region name, colored depending on the force.
+        #  The name implementation can be provided by the area (if it knows the region object)
+        #  Example: "Village of Stow, Woods of Despair"
+        #  The area has a name only if it has something to show on the map (resource, artifact, settlement),
+        #  otherwise it only carries the name of the region
+        return '(area), (region)'
+
+    def get_character_hud(self) -> list[str]:
+        hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
+        mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
+        energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
+        load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
+        hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]'
+        return [hud]
+
+    @staticmethod
+    def _format_gauge(current_stat, max_stat, color) -> str:
+        raw_gauge = f'{current_stat}/{max_stat}'.center(10, ' ')
+        percentage_full = int((current_stat / max_stat) * 10)
+        print(current_stat, max_stat, percentage_full)
+        input()
+        colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end + raw_gauge[percentage_full:]
+        return colored_gauge
+
+    def get_area_view(self) -> list[str]:
+        # TODO: Implement area view
+        return [''] * 21
 
 
 if __name__ == '__main__':

@@ -75,6 +75,6 @@ class GameSequence:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=PagedList(Game.races), target=ui.game.set_character_race)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.scene_substate:
-            return Window(ui=ui, content=GameScene(ui.game))
+            return Window(ui=ui, title=ui.game.current_area_name, border=True, content=GameScene(ui.game))
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

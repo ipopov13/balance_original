@@ -31,7 +31,12 @@ class WindowContent:
 
 
 class GameScene(WindowContent):
-    pass
+    # TODO: Make the ChangeArea command close the screen so that a new one (with the new title) is created
+    #  by the GameSequence
+    def data(self) -> str:
+        character_hud = self.game_object.get_character_hud()
+        area_view = self.game_object.get_area_view()
+        return '\n'.join(area_view + character_hud)
 
 
 class PagedList(WindowContent):
