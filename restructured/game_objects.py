@@ -38,11 +38,16 @@ class Container(GameObject):
         super().__init__(**kwargs)
         self._width = width
         self._height = height
-        self._contents: list[GameObject] = []
+        self._contents: list = []
+
+    @property
+    def contents(self):
+        self._data_prep()
+        return self._contents
 
     def _data_prep(self) -> None:
         """
-        Adjust the data before presentation
+        Adjust the _contents before presentation
         Can be overridden by subclasses for extra functionality
         """
         pass
@@ -50,9 +55,8 @@ class Container(GameObject):
         #  The key is their location inside the container!
 
     def data(self) -> str:
-        self._data_prep()
-        rows = [[c.icon for c in self._contents[start:start + self._width]]
-                for start in range(0, len(self._contents), self._width)]
+        rows = [[c.icon for c in self.contents[start:start + self._width]]
+                for start in range(0, len(self.contents), self._width)]
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
@@ -144,7 +148,9 @@ fay_race = Race(name='Fay',
                 sort_key=12)
 
 
-class Character(GameObject):
+class Creature(GameObject):
+    # TODO: Creatures have goals and they ask the Location for the path to the closest
+    #  Tile that satisfies the goal
     def __init__(self, race=None, **kwargs):
         super().__init__(**kwargs)
         self.race = race
@@ -152,7 +158,7 @@ class Character(GameObject):
         self.dexterity = 5
         self.will = 5
         self.endurance = 5
-        # TODO: Add ageing for NPCs here between the stats and the substats
+        # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self.hp = self.max_hp
         self.mana = self.max_mana
         self.energy = self.max_energy
@@ -195,18 +201,24 @@ class Game:
     def __init__(self):
         self.character = None
         self._character_location = None
+        self.character_name = None
         self.world = None
         self.state = Game.welcome_state
         self.substate = None
 
     def set_character_race(self, character_race):
+        self.character = Creature(name=self.character_name, race=character_race,
+                                  description='You are standing here.', color=console.fg.default,
+                                  icon='@')
+        self._character_location = self.world[0][0]
+        self._character_location.add_creature(self.character)
         self.character.race = character_race
         self.state = Game.playing_state
         self.substate = Game.scene_substate
 
     def set_character_name(self, character_name):
         if self.state is Game.new_game_state:
-            self.character = Character(name=character_name, description='You are standing here.')
+            self.character_name = character_name
             self.substate = Game.race_selection_substate
         elif self.state is Game.loading_state:
             self._load_saved_game(character_name)
@@ -219,7 +231,7 @@ class Game:
                 commands.LoadGame(): self._initiate_load}
 
     def _new_game(self, _):
-        self._create_world()
+        self.world = World()
         self.state = Game.new_game_state
         self.substate = Game.character_name_substate
         return True
@@ -232,10 +244,6 @@ class Game:
     def _load_saved_game(self, name):
         # TODO: Implement loading
         raise NotImplementedError("Implement loading games!")
-
-    def _create_world(self):
-        self.world = World()
-        self._character_location = self.world[0][0]
 
     @staticmethod
     def data() -> str:
@@ -318,7 +326,7 @@ class Tile(Container):
     def __init__(self, terrain: Terrain, sort_key: int = 0):
         super().__init__(height=3, width=3, sort_key=sort_key)
         self.terrain = terrain
-        self.creature: Character = None
+        self.creature: Creature = None
         self.neighbors = {'nw': None, 'n': None, 'ne': None,
                           'w': None, 'self': self, 'e': None,
                           'sw': None, 's': None, 'se': None}
@@ -333,10 +341,13 @@ class Tile(Container):
             return self.creature.icon
         return self.terrain.icon
 
+    def add_creature(self, creature: Creature):
+        self.creature = creature
 
-# TODO: Structures generation
+
+# TODO: Structures&NPCs generation
 # TODO: Tile neighboring
-# TODO: NPCs
+# TODO: Answer calls from the NPCs for the path to their closest goal (e.g. rock to mine, character to attack)
 class Location(Container):
     def __init__(self, sort_key: int):
         super().__init__(height=config.location_height, width=config.location_width, sort_key=sort_key)
@@ -349,6 +360,10 @@ class Location(Container):
     def _generate_tiles(self) -> None:
         self._contents = [Tile(terrain=grass, sort_key=i) for i in range(self._width * self._height)]
 
+    def add_creature(self, creature: Creature, row: int = 0, column: int = 0):
+        tile_num = row * config.location_width + column
+        self.contents[tile_num].add_creature(creature)
+
 
 # TODO: PoI selection and randomization
 # TODO: Rolls the environment stats on init
@@ -356,13 +371,10 @@ class Location(Container):
 class Region(Container):
     def __init__(self, sort_key: int):
         super().__init__(height=config.region_size, width=config.region_size, sort_key=sort_key)
-        self._contents: list[Location] = []
 
-    @property
-    def contents(self):
+    def _data_prep(self) -> None:
         if not self._contents:
             self._generate_locations()
-        return self._contents
 
     def _generate_locations(self) -> None:
         self._contents = [Location(sort_key=i) for i in range(self._width * self._height)]
@@ -384,7 +396,7 @@ class World(Container):
     def __getitem__(self, item: int):
         if not isinstance(item, int):
             raise TypeError(f'World location index must be int, not {type(item)} ({item})')
-        return self._contents[item]
+        return self.contents[item]
 
 
 if __name__ == '__main__':
