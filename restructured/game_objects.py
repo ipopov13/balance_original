@@ -271,7 +271,7 @@ class Game:
         #  Example: "Village of Stow, Woods of Despair"
         #  The area has a name only if it has something to show on the map (resource, artifact, settlement),
         #  otherwise it only carries the name of the region
-        return '(area), (region)'
+        return f'{self._character_location.sort_key}, (region)'
 
     def get_character_hud(self) -> str:
         # TODO: Add active mode, current interaction target name and health/durability gauge (without
@@ -335,9 +335,6 @@ class Tile(Container):
         super().__init__(height=3, width=3, sort_key=sort_key)
         self.terrain = terrain
         self.creature: Creature = None
-        self.neighbors = {'nw': None, 'n': None, 'ne': None,
-                          'w': None, 'self': self, 'e': None,
-                          'sw': None, 's': None, 'se': None}
 
     @property
     def description(self):
@@ -356,41 +353,54 @@ class Tile(Container):
 class Location(Container):
     def __init__(self, sort_key: int):
         super().__init__(height=config.location_height, width=config.location_width, sort_key=sort_key)
-        self._contents: list[Tile] = []
-        self._creatures: dict[Creature, int] = {}
+        self._contents: list[list[Tile]] = []
+        self._creatures: dict[Creature, tuple[int, int]] = {}
 
     def _data_prep(self) -> None:
         if not self._contents:
             self._generate_tiles()
 
     def _generate_tiles(self) -> None:
-        self._contents = [Tile(terrain=grass, sort_key=i) for i in range(self._width * self._height)]
+        self._contents = [[Tile(terrain=grass, sort_key=i) for i in range(self._width)]
+                          for i in range(self._height)]
 
     def add_creature(self, creature: Creature, row: int = 0, column: int = 0):
-        tile_num = row * config.location_width + column
-        self.contents[tile_num].creature = creature
-        self._creatures[creature] = tile_num
+        self.contents[row][column].creature = creature
+        self._creatures[creature] = (row, column)
 
     def move_creature(self, creature, direction):
-        old_tile = self._creatures.get(creature)
-        if old_tile is None:
+        The world generates the whole set of locations. The regions are just annotation for
+            the Locations. The Character keeps the coordinates in absolute value on the World
+            scale. The Game changes the coords and then requests the correct Location from the
+            World. If the Location is different from the current one kept by the World,
+            and no save file is available, the World archives the old Location, gets the annotation,
+            inits the new Location, sets it as current, and returns it.
+        old_tile_coords = self._creatures.get(creature)
+        if old_tile_coords is None:
             raise ValueError(f'Unknown creature passed to Location!')
-        new_tile = self._calculate_new_position(old_tile, direction)
-        self.contents[old_tile].creature = None
-        self.contents[new_tile].creature = creature
-        self._creatures[creature] = new_tile
+        new_tile_coords = self._calculate_new_position(old_tile_coords, direction)
+        self.contents[old_tile_coords[0]][old_tile_coords[1]].creature = None
+        self.contents[new_tile_coords[0]][new_tile_coords[1]].creature = creature
+        self._creatures[creature] = new_tile_coords
 
-    def _calculate_new_position(self, old_pos, direction):
-        adjusted_pos = {'7': old_pos - self._width - 1,
-                        '8': old_pos - self._width,
-                        '9': old_pos - self._width + 1,
-                        '4': old_pos - 1,
-                        '5': old_pos,
-                        '6': old_pos + 1,
-                        '1': old_pos + self._width - 1,
-                        '2': old_pos + self._width,
-                        '3': old_pos + self._width + 1}
-        return adjusted_pos[direction]
+    @staticmethod
+    def _calculate_new_position(old_pos, direction):
+        row, column = old_pos
+        if direction in '789':
+            row -= 1
+        elif direction in '123':
+            row += 1
+        if direction in '147':
+            column -= 1
+        elif direction in '369':
+            column += 1
+        return row, column
+
+    def data(self) -> str:
+        rows = [[c.icon for c in row]
+                for row in self.contents]
+        rows = [''.join(row) for row in rows]
+        return '\n'.join(rows)
 
 
 # TODO: PoI selection and randomization
