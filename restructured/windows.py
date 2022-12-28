@@ -31,6 +31,8 @@ class Window(ABC):
         #  should be only one though, if any
         content_data = self._content.data()
         raw_content_data = strip_ansi_escape_sequences(content_data)
+        print(raw_content_data)
+        input()
         raw_content_data = raw_content_data.split('\n')
         content_data = content_data.split('\n')
         # Horizontal pad: center the longest content line
@@ -69,7 +71,7 @@ class Window(ABC):
 
     def _apply_border(self, content_data, pads):
         if not all([p > 0 for p in pads]):
-            raise ValueError(f'Content is too big to apply border in {self.__class__}')
+            raise ValueError(f'Content is too big to apply border in {self.__class__},\n pads {pads}')
         raw_title = strip_ansi_escape_sequences(self._title)
         content_data[0] = raw_title.center(self.size[-1], '-').replace(raw_title, self._title)
         content_data[-1] = '-' * self.size[-1]

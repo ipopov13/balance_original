@@ -1,5 +1,10 @@
 import console
 
+location_height = 21
+location_width = 78
+region_size = 9
+world_size = 9
+
 max_text_lines_on_page = 21
 max_text_line_length = 65
 

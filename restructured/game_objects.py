@@ -1,18 +1,30 @@
 import commands
 import console
 import config
+# TODO: Split the objects in modules by level of abstraction:
+#  GameObject/Container <- Race|Item|Creature|etc. <- Game
 
 races = []
 
+GameObject.data() must return the colored data + a size tuple to make window padding possible
+
 
 class GameObject:
-    def __init__(self, name=None, icon='@', color=console.fg.default,
-                 description='(empty GameObj description)', sort_key=0):
+    def __init__(self, name=None, icon='.', color=console.fg.black,
+                 description='(empty)', sort_key=0):
         self.name = name
-        self.icon = icon
+        self._icon = icon
         self.color = color
-        self.description = description
+        self._description = description
         self.sort_key = sort_key
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def icon(self):
+        return self.color + self._icon + console.fx.end
 
     @staticmethod
     def commands() -> dict:
@@ -20,7 +32,30 @@ class GameObject:
 
     @staticmethod
     def data() -> str:
-        return '(empty object data)'
+        return '(empty)'
+
+
+class Container(GameObject):
+    def __init__(self, width: int, height: int, **kwargs):
+        super().__init__(**kwargs)
+        self._width = width
+        self._height = height
+        self._contents: list[GameObject] = []
+
+    def _data_prep(self) -> None:
+        """
+        Adjust the data before presentation
+        Can be overridden by subclasses for extra functionality
+        """
+        pass
+        # TODO: items get the correct sort_key when being added into a physical container.
+        #  The key is their location inside the container!
+
+    def data(self) -> str:
+        self._data_prep()
+        icons = ''.join([c.icon for c in self._contents])
+        rows = [icons[start:start + self._width] for start in range(0, len(icons), self._width)]
+        return '\n'.join(rows)
 
 
 class Race(GameObject):
@@ -160,6 +195,7 @@ class Game:
 
     def __init__(self):
         self.character = None
+        self._character_location = None
         self.world = None
         self.state = Game.welcome_state
         self.substate = None
@@ -199,8 +235,8 @@ class Game:
         raise NotImplementedError("Implement loading games!")
 
     def _create_world(self):
-        # TODO: Implement world creation
-        self.world = 1
+        self.world = World()
+        self._character_location = self.world[0][0]
 
     @staticmethod
     def data() -> str:
@@ -222,27 +258,138 @@ class Game:
         #  otherwise it only carries the name of the region
         return '(area), (region)'
 
-    def get_character_hud(self) -> list[str]:
+    def get_character_hud(self) -> str:
+        # TODO: Add active mode, current interaction target name and health/durability gauge (without
+        #  numbers, also applicable to work-target terrains),
+        #  target location (chosen on map, hinted with Travelling: West-NW)
         hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
         mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]'
-        return [hud]
+        return hud
 
     @staticmethod
     def _format_gauge(current_stat, max_stat, color) -> str:
         raw_gauge = f'{current_stat}/{max_stat}'.center(10, ' ')
         percentage_full = int((current_stat / max_stat) * 10)
-        print(current_stat, max_stat, percentage_full)
-        input()
         colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end + raw_gauge[percentage_full:]
         return colored_gauge
 
     def get_area_view(self) -> list[str]:
-        # TODO: Implement area view
-        return [''] * 21
+        return self._character_location.data()
+
+
+# TODO: Implement Terrains
+class Terrain(GameObject):
+    def __init__(self, passable: bool = True, exhaustion_factor: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self.passable = passable
+        self.exhaustion_factor = exhaustion_factor
+
+
+grass = Terrain(color=console.fg.green, description='grass')
+
+
+def set_neighbors(spot, neighbor_list: list, row_length: int):
+    adjacency_map = {spot.sort_key - 1: 'w', spot.sort_key + 1: 'e',
+                     spot.sort_key - row_length - 1: 'nw',
+                     spot.sort_key - row_length: 'n',
+                     spot.sort_key - row_length + 1: 'ne',
+                     spot.sort_key + row_length - 1: 'sw',
+                     spot.sort_key + row_length: 's',
+                     spot.sort_key + row_length + 1: 'se'}
+    for neighbor in neighbor_list:
+        if type(neighbor) != type(spot):
+            raise TypeError(f"Wrong type of neighbor {type(neighbor)} passed"
+                            f" for spot {type(spot)}@{spot.sort_key}!")
+        adjacency = adjacency_map.get(neighbor.sort_key, None)
+        if adjacency is None:
+            raise ValueError(f'Wrong neighbor {neighbor.sort_key} passed to {type(spot)} at position'
+                             f'{spot.sort_key}!')
+        else:
+            if spot.neighbors[adjacency] is None:
+                spot.neighbors[adjacency] = neighbor
+            else:
+                raise ValueError(f'Two neighbors with the same adjacency {adjacency}/{neighbor.sort_key}'
+                                 f' passed to {type(spot)}@{spot.sort_key}!')
+
+
+class Tile(Container):
+    def __init__(self, terrain: Terrain, sort_key: int = 0):
+        super().__init__(height=3, width=3, sort_key=sort_key)
+        self.terrain = terrain
+        self.creature: Character = None
+        self.neighbors = {'nw': None, 'n': None, 'ne': None,
+                          'w': None, 'self': self, 'e': None,
+                          'sw': None, 's': None, 'se': None}
+
+    @property
+    def description(self):
+        return self.terrain.description
+
+    @property
+    def icon(self):
+        if self.creature is not None:
+            return self.creature.icon
+        return self.terrain.icon
+
+
+# TODO: Structures generation
+# TODO: Tile neighboring
+# TODO: NPCs
+class Location(Container):
+    def __init__(self, sort_key: int):
+        super().__init__(height=config.location_height, width=config.location_width, sort_key=sort_key)
+        self._contents: list[Tile] = []
+
+    def _data_prep(self) -> None:
+        if not self._contents:
+            self._generate_tiles()
+
+    def _generate_tiles(self) -> None:
+        self._contents = [Tile(terrain=grass, sort_key=i) for i in range(self._width * self._height)]
+
+
+# TODO: PoI selection and randomization
+# TODO: Rolls the environment stats on init
+# TODO: Inits the locations with the PoI/force/stats (handles gradients)
+class Region(Container):
+    def __init__(self, sort_key: int):
+        super().__init__(height=config.region_size, width=config.region_size, sort_key=sort_key)
+        self._contents: list[Location] = []
+
+    @property
+    def contents(self):
+        if not self._contents:
+            self._generate_locations()
+        return self._contents
+
+    def _generate_locations(self) -> None:
+        self._contents = [Location(sort_key=i) for i in range(self._width * self._height)]
+
+    def __getitem__(self, item: int):
+        if not self.contents:
+            self._generate_locations()
+        if not isinstance(item, int):
+            raise TypeError(f'Region location index must be int, not {type(item)} ({item})')
+        return self.contents[item]
+
+
+# TODO: Randomize forces and pass to regions on init
+class World(Container):
+    def __init__(self):
+        super().__init__(height=config.world_size, width=config.world_size)
+        self._contents: list[Region] = [Region(sort_key=i) for i in range(self._width * self._height)]
+
+    def __getitem__(self, item: int):
+        if not isinstance(item, int):
+            raise TypeError(f'World location index must be int, not {type(item)} ({item})')
+        return self._contents[item]
 
 
 if __name__ == '__main__':
-    print(human_race.sort_key)
+    l = Location(0)
+    data = l.data()
+    print(len(l._contents))
+    print(data)

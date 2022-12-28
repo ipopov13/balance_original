@@ -36,7 +36,7 @@ class GameScene(WindowContent):
     def data(self) -> str:
         character_hud = self.game_object.get_character_hud()
         area_view = self.game_object.get_area_view()
-        return '\n'.join(area_view + character_hud)
+        return '\n'.join([area_view, character_hud])
 
 
 class PagedList(WindowContent):
