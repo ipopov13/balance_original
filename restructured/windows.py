@@ -31,8 +31,6 @@ class Window(ABC):
         #  should be only one though, if any
         content_data = self._content.data()
         raw_content_data = strip_ansi_escape_sequences(content_data)
-        print(raw_content_data)
-        input()
         raw_content_data = raw_content_data.split('\n')
         content_data = content_data.split('\n')
         # Horizontal pad: center the longest content line

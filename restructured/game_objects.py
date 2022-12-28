@@ -2,11 +2,9 @@ import commands
 import console
 import config
 # TODO: Split the objects in modules by level of abstraction:
-#  GameObject/Container <- Race|Item|Creature|etc. <- Game
+#  GameObject/Container <- Race|Item|Creature|world|etc. <- Game
 
 races = []
-
-GameObject.data() must return the colored data + a size tuple to make window padding possible
 
 
 class GameObject:
@@ -53,8 +51,9 @@ class Container(GameObject):
 
     def data(self) -> str:
         self._data_prep()
-        icons = ''.join([c.icon for c in self._contents])
-        rows = [icons[start:start + self._width] for start in range(0, len(icons), self._width)]
+        rows = [[c.icon for c in self._contents[start:start + self._width]]
+                for start in range(0, len(self._contents), self._width)]
+        rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
 
@@ -391,5 +390,5 @@ class World(Container):
 if __name__ == '__main__':
     l = Location(0)
     data = l.data()
-    print(len(l._contents))
-    print(data)
+    print(len(l.data()))
+    print([data[:30]])
