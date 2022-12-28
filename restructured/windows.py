@@ -7,7 +7,7 @@ from utils import strip_ansi_escape_sequences
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
-    _should_refresh_screen = False
+    _should_refresh_screen = True
 
     def __init__(self, size=_default_size, top_left=_default_top_left, ui=None,
                  content=None, border=False, title='Balance'):

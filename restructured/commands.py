@@ -30,6 +30,18 @@ class TextInput(Command):
         return hash(self.character)
 
 
+class Move(Command):
+    character = string.digits
+    hint = '(0-9) Move'
+    description = 'Move in a num-pad direction'
+
+    def __eq__(self, other):
+        return other in self.character
+
+    def __hash__(self):
+        return hash(self.character)
+
+
 class NextPage(Command):
     character = 'n'
     hint = '(n)ext page'

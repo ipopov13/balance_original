@@ -227,8 +227,16 @@ class Game:
         return True
 
     def commands(self) -> dict:
-        return {commands.NewGame(): self._new_game,
-                commands.LoadGame(): self._initiate_load}
+        # TODO: Offer different commands depending on state
+        if self.state is Game.welcome_state:
+            return {commands.NewGame(): self._new_game,
+                    commands.LoadGame(): self._initiate_load}
+        elif self.state is Game.playing_state:
+            return {commands.Move(): self._move_character}
+
+    def _move_character(self, direction):
+        self._character_location.move_creature(self.character, direction)
+        return True
 
     def _new_game(self, _):
         self.world = World()
@@ -287,7 +295,7 @@ class Game:
         return self._character_location.data()
 
 
-# TODO: Implement Terrains
+# TODO: Add Terrains
 class Terrain(GameObject):
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0, **kwargs):
         super().__init__(**kwargs)
@@ -341,9 +349,6 @@ class Tile(Container):
             return self.creature.icon
         return self.terrain.icon
 
-    def add_creature(self, creature: Creature):
-        self.creature = creature
-
 
 # TODO: Structures&NPCs generation
 # TODO: Tile neighboring
@@ -352,6 +357,7 @@ class Location(Container):
     def __init__(self, sort_key: int):
         super().__init__(height=config.location_height, width=config.location_width, sort_key=sort_key)
         self._contents: list[Tile] = []
+        self._creatures: dict[Creature, int] = {}
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -362,7 +368,29 @@ class Location(Container):
 
     def add_creature(self, creature: Creature, row: int = 0, column: int = 0):
         tile_num = row * config.location_width + column
-        self.contents[tile_num].add_creature(creature)
+        self.contents[tile_num].creature = creature
+        self._creatures[creature] = tile_num
+
+    def move_creature(self, creature, direction):
+        old_tile = self._creatures.get(creature)
+        if old_tile is None:
+            raise ValueError(f'Unknown creature passed to Location!')
+        new_tile = self._calculate_new_position(old_tile, direction)
+        self.contents[old_tile].creature = None
+        self.contents[new_tile].creature = creature
+        self._creatures[creature] = new_tile
+
+    def _calculate_new_position(self, old_pos, direction):
+        adjusted_pos = {'7': old_pos - self._width - 1,
+                        '8': old_pos - self._width,
+                        '9': old_pos - self._width + 1,
+                        '4': old_pos - 1,
+                        '5': old_pos,
+                        '6': old_pos + 1,
+                        '1': old_pos + self._width - 1,
+                        '2': old_pos + self._width,
+                        '3': old_pos + self._width + 1}
+        return adjusted_pos[direction]
 
 
 # TODO: PoI selection and randomization
