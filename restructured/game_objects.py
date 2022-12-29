@@ -1,3 +1,5 @@
+from typing import Optional
+
 import commands
 import console
 import config
@@ -199,10 +201,11 @@ class Game:
     races = races
 
     def __init__(self):
-        self.character = None
+        self.character: Optional[Creature] = None
         self._character_location = None
         self.character_name = None
-        self.world = None
+        self._character_coords = None
+        self.world: Optional[World] = None
         self.state = Game.welcome_state
         self.substate = None
 
@@ -210,9 +213,9 @@ class Game:
         self.character = Creature(name=self.character_name, race=character_race,
                                   description='You are standing here.', color=console.fg.default,
                                   icon='@')
-        self._character_location = self.world[0][0]
-        self._character_location.add_creature(self.character)
-        self.character.race = character_race
+        self._character_coords = (0, 0)
+        self._character_location = self.world.get_location(self._character_coords)
+        self._character_location.add_creature(self.character, self._character_coords)
         self.state = Game.playing_state
         self.substate = Game.scene_substate
 
@@ -235,7 +238,9 @@ class Game:
             return {commands.Move(): self._move_character}
 
     def _move_character(self, direction):
-        self._character_location.move_creature(self.character, direction)
+        new_coords = self._character_location.move_creature(self.character, direction)
+        self._character_coords = new_coords or self._character_coords
+        self._character_location = self.world.get_location(self._character_coords)
         return True
 
     def _new_game(self, _):
@@ -334,7 +339,7 @@ class Tile(Container):
     def __init__(self, terrain: Terrain, sort_key: int = 0):
         super().__init__(height=3, width=3, sort_key=sort_key)
         self.terrain = terrain
-        self.creature: Creature = None
+        self.creature: Optional[Creature] = None
 
     @property
     def description(self):
@@ -369,12 +374,17 @@ class Location(Container):
         self._creatures[creature] = (row, column)
 
     def move_creature(self, creature, direction):
-        The world generates the whole set of locations. The regions are just annotation for
-            the Locations. The Character keeps the coordinates in absolute value on the World
-            scale. The Game changes the coords and then requests the correct Location from the
-            World. If the Location is different from the current one kept by the World,
-            and no save file is available, the World archives the old Location, gets the annotation,
-            inits the new Location, sets it as current, and returns it.
+        # The world generates the whole set of locations. The regions are just annotation for
+        #     the Locations.
+        # 0) The Game keeps the coordinates in absolute value on the World
+        #     scale.
+        # 1) The Game asks the Location to change the coords and then requests the
+        #     correct new Location from the World.
+        # 2) The location is injected with the edge rows of all its 8 neighbors and displays the Tiles,
+        #     but, once it return the coordinates of those Tiles, the World hands the Game a new Location.
+        # 3) Once a neighbor is requested by the Game,
+        #     and if no save file is available, the World saves the old Location, gets the annotation,
+        #     inits the new Location, sets it as current, and returns it.
         old_tile_coords = self._creatures.get(creature)
         if old_tile_coords is None:
             raise ValueError(f'Unknown creature passed to Location!')
