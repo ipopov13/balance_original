@@ -10,7 +10,7 @@ class Window(ABC):
     _should_refresh_screen = True
 
     def __init__(self, size=_default_size, top_left=_default_top_left, ui=None,
-                 content=None, border=False, title='Balance'):
+                 content=None, border: bool = False, title: str = None, title_source=None):
         if ui is None:
             raise ValueError(f"Window {self.__class__} must be initialized with a UI!")
         self.ui = ui
@@ -19,6 +19,7 @@ class Window(ABC):
         self._content = content
         self._border = border
         self._title = title
+        self._title_source = title_source
 
     def _commands(self) -> dict:
         """The mapping of commands&methods specific for the window"""
@@ -70,8 +71,9 @@ class Window(ABC):
     def _apply_border(self, content_data, pads):
         if not all([p > 0 for p in pads]):
             raise ValueError(f'Content is too big to apply border in {self.__class__},\n pads {pads}')
-        raw_title = strip_ansi_escape_sequences(self._title)
-        content_data[0] = raw_title.center(self.size[-1], '-').replace(raw_title, self._title)
+        title = self._title or self._title_source()
+        raw_title = strip_ansi_escape_sequences(title)
+        content_data[0] = raw_title.center(self.size[-1], '-').replace(raw_title, title)
         content_data[-1] = '-' * self.size[-1]
         return content_data
 

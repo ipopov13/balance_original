@@ -1,12 +1,12 @@
 import console
 
-location_height = 21
-location_width = 78
-region_size = 9  # Locations per row & column
-world_size = 9  # Regions per row & column
+location_height: int = 21
+location_width: int = 78
+region_size: int = 9  # Locations per row & column
+world_size: int = 9  # Regions per row & column
 
-max_text_lines_on_page = 21
-max_text_line_length = 65
+max_text_lines_on_page: int = 21
+max_text_line_length: int = 65
 
 order_color = console.fg.lightblue
 nature_color = console.fg.lightgreen
