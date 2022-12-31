@@ -65,7 +65,7 @@ import config
 
 class GameSequence:
     @staticmethod
-    def get_window(ui):
+    def get_window(ui) -> Window:
         if ui.game.state is Game.welcome_state:
             return Window(ui=ui, content=WindowContent(ui.game))
         elif ui.game.state is Game.new_game_state and ui.game.substate is Game.character_name_substate:
@@ -75,6 +75,7 @@ class GameSequence:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=PagedList(Game.races), target=ui.game.set_character_race)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.scene_substate:
-            return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True, content=GameScene(ui.game))
+            return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True,
+                          content=GameScene(ui.game))
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

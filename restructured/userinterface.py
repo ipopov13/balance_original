@@ -6,8 +6,9 @@ import msvcrt
 class UserInterface:
     def __init__(self, game, game_sequence):
         self.game = game
-        self._screens = []
+        self.sc = console.screen.Screen(swap=False)
         self._game_sequence = game_sequence
+        self._screens = []
         cls()
         self._refresh()
 
@@ -45,15 +46,17 @@ class UserInterface:
         self._refresh()
         return True
 
-    @staticmethod
-    def display(updates):
+    def display(self, updates: tuple[dict, tuple[int, int]]):
         """
         Display the data sent by the window
         updates: {'drop': Window,
                   'update': {coords: update_string},
                   'add': Window}
         """
-        for coordinates, update_string in updates.items():
-            with console.screen.sc.location(*coordinates):
-                print(update_string)
+        content_dict, cursor_pos = updates
+        for coordinates, update_string in content_dict.items():
+            with self.sc.hidden_cursor():
+                with console.screen.sc.location(*coordinates):
+                    print(update_string, end='', flush=True)
+        print(self.sc.move_to(*cursor_pos), end='', flush=True)
         return True

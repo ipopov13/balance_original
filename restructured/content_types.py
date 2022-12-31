@@ -31,8 +31,6 @@ class WindowContent:
 
 
 class GameScene(WindowContent):
-    # TODO: Make the ChangeArea command close the screen so that a new one (with the new title) is created
-    #  by the GameSequence
     def data(self) -> str:
         character_hud = self.game_object.get_character_hud()
         area_view = self.game_object.get_area_view()
@@ -125,7 +123,7 @@ class PagedList(WindowContent):
 class DescriptionList(WindowContent):
     """Generate a list of object descriptions from an iterable"""
 
-    def data(self):
+    def data(self) -> str:
         command_descriptions = [f'{k.character}: {k.description}' for k in self.game_object]
         return '\n'.join(command_descriptions)
 

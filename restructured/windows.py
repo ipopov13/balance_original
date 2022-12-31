@@ -25,7 +25,7 @@ class Window(ABC):
         """The mapping of commands&methods specific for the window"""
         return {commands.GetHelp(): self._help_command}
 
-    def get_display_data(self) -> dict:
+    def get_display_data(self) -> tuple[dict, tuple[int, int]]:
         """Pad the content to size and position, apply borders and hints"""
         # TODO: For composite windows (i.e. game scene) this can be called by a provide_data method that sends
         #  the contents of the separate sub-windows one by one (so this method would be private). Border
@@ -56,7 +56,16 @@ class Window(ABC):
             content_data = self._apply_hints(content_data)
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
-        return content_dict
+        try:
+            final_raw_content = strip_ansi_escape_sequences('\n'.join(content_data)).split('\n')
+            row_with_character = [row for row in final_raw_content if '@' in row][0]
+            row_index = final_raw_content.index(row_with_character)
+            column_index = row_with_character.index('@')
+            cursor_pos = (row_index, column_index)
+        except IndexError:
+            cursor_pos = (self.size[0] - 1 + self.top_left[0],
+                          self.size[1] - 1 + self.top_left[1])
+        return content_dict, cursor_pos
 
     def _apply_hints(self, content_data):
         hints = [c.hint for c in self._available_commands() if c.hint]
@@ -84,9 +93,6 @@ class Window(ABC):
             raise ValueError(f'Duplicate window command "{set(local_commands) & set(content_commands)}"'
                              f' in window {self.__class__}')
         return {**local_commands, **content_commands}
-
-    def _empty_command(self, _) -> bool:
-        return self.ui.display({(0, 0): ''})
 
     def _help_command(self, _) -> bool:
         help_window = OverlayWindow(size=(15, 50), top_left=(5, 20), ui=self.ui,
@@ -154,7 +160,7 @@ if __name__ == '__main__':
     from content_types import TextInputField
 
     window = Window(ui=1, content=TextInputField())
-    test_content = window.get_display_data()
+    test_content = window.get_display_data()[0]
     for v in test_content.values():
         assert len(v) == window.size[1], str(v)
     assert len(test_content) == window.size[0]
