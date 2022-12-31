@@ -1,5 +1,5 @@
 from typing import Optional
-
+import random
 import commands
 import console
 import config
@@ -287,7 +287,7 @@ class Game:
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n' \
-              f'{self.get_current_location_name()} {self._creature_coords[self.character]}'
+              f'{self._current_location._forces}'
         return hud
 
     @staticmethod
@@ -415,10 +415,11 @@ class Location(Container):
     Provides Line-of-sight information
     Provides pathfinding
     """
-    def __init__(self, top_left: tuple[int, int]):
+    def __init__(self, top_left: tuple[int, int], forces: dict[str, int]):
         super().__init__(height=config.location_height, width=config.location_width)
         self._contents: list[list[Tile]] = []
         self._top_left = top_left
+        self._forces = forces
 
     @property
     def name(self) -> str:
@@ -439,7 +440,7 @@ class Location(Container):
         return self._contents
 
     def _generate_tiles(self) -> None:
-        self._contents = [[Tile(terrain=grass) for i in range(self._width)]
+        self._contents = [[Tile(terrain=grass) for _ in range(self._width)]
                           for _ in range(self._height)]
 
     def add_creature(self, creature: Creature, coords: tuple[int, int]) -> None:
@@ -471,9 +472,10 @@ class Region(Container):
     height_in_tiles = config.region_size * config.location_height
     width_in_tiles = config.region_size * config.location_width
 
-    def __init__(self, top_left: tuple[int, int]):
+    def __init__(self, top_left: tuple[int, int], main_force: str):
         super().__init__(height=config.region_size, width=config.region_size)
         self._top_left = top_left
+        self._main_force = main_force
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -485,8 +487,20 @@ class Region(Container):
         return self._contents
 
     def _generate_locations(self) -> None:
-        self._contents = [[Location(top_left=self._get_location_top_left(row, column))
+        self._contents = [[Location(top_left=self._get_location_top_left(row, column),
+                                    forces=self._calculate_forces(row, column))
                           for column in range(self._width)] for row in range(self._height)]
+
+    def _calculate_forces(self, row: int, column: int) -> dict[str, int]:
+        forces = {'Nature': 33, 'Chaos': 33, 'Order': 33}
+        scaling_factor = (4 - max(abs(4 - row), abs(4 - column))) * 0.25
+        adjustment = int(67 * scaling_factor)
+        for force in forces:
+            if force == self._main_force:
+                forces[force] += adjustment
+            else:
+                forces[force] -= adjustment // 2
+        return forces
 
     def _get_location_top_left(self, row: int, column: int) -> tuple[int, int]:
         location_top_left_row = self._top_left[0] + row * config.location_height
@@ -505,7 +519,10 @@ class Region(Container):
 class World(Container):
     def __init__(self):
         super().__init__(height=config.world_size, width=config.world_size)
-        self._contents: list[list[Region]] = [[Region(top_left=self._get_region_top_left(row, column))
+        forces = ['Nature', 'Order', 'Chaos'] * (config.world_size ** 2 // 3 + 1)
+        random.shuffle(forces)
+        self._contents: list[list[Region]] = [[Region(top_left=self._get_region_top_left(row, column),
+                                                      main_force=forces.pop())
                                                for column in range(self._width)]
                                               for row in range(self._height)]
 
@@ -536,7 +553,7 @@ class World(Container):
 
 
 if __name__ == '__main__':
-    l = Location((0, 0))
-    data = l.data()
-    print(len(l.data()))
+    location = Location((0, 0), {})
+    data = location.data()
+    print(len(location.data()))
     print([data[:30]])
