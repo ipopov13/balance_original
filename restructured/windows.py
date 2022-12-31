@@ -155,6 +155,12 @@ class InputWindow(Window):
         self.target(self._content.data())
         return True
 
+    def get_display_data(self) -> tuple[dict, tuple[int, int]]:
+        content_dict, cursor_pos = super().get_display_data()
+        cursor_pos = (self.top_left[0] + 1,
+                      len(self._content.data()) // 2 + self.top_left[1] + self.size[1] // 2)
+        return content_dict, cursor_pos
+
 
 if __name__ == '__main__':
     from content_types import TextInputField
