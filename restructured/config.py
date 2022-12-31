@@ -2,7 +2,7 @@ import console
 
 location_height: int = 21
 location_width: int = 78
-region_size: int = 9  # Locations per row & column
+region_size: int = 1  # Locations per row & column
 world_size: int = 9  # Regions per row & column
 
 max_text_lines_on_page: int = 21
@@ -15,6 +15,7 @@ hp_color = console.bg.red
 mana_color = console.bg.blue
 energy_color = console.bg.lightgreen
 load_color = console.bg.white
+brown_fg_color = console.fg.t_a8a800
 
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '

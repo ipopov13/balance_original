@@ -7,13 +7,16 @@ import config
 #  GameObject/Container <- Race|Item|Creature|world|etc. <- Game
 
 races = []
+NATURE_FORCE = 'Nature'
+CHAOS_FORCE = 'Chaos'
+ORDER_FORCE = 'Order'
 
 
 class GameObject:
     def __init__(self, name=None, icon='.', color=console.fg.black,
                  description='(empty)', sort_key=0):
         self._name = name
-        self._icon = icon
+        self.raw_icon = icon
         self.color = color
         self._description = description
         self.sort_key = sort_key
@@ -28,7 +31,7 @@ class GameObject:
 
     @property
     def icon(self):
-        return self.color + self._icon + console.fx.end
+        return self.color + self.raw_icon + console.fx.end
 
     @staticmethod
     def commands() -> dict:
@@ -355,7 +358,31 @@ class Terrain(GameObject):
         return self.passable
 
 
-grass = Terrain(color=console.fg.green, description='grass')
+grass = Terrain(color=console.fg.lightgreen, description='grass')
+snow = Terrain(color=console.fg.white, description='snow')
+sand = Terrain(color=console.fg.yellow, description='sand')
+bones = Terrain(color=console.fg.lightwhite, description='bones')
+ice = Terrain(color=console.fg.lightblue, description='ice')
+flowers = Terrain(color=console.fg.purple, description='flowers', icon='*')
+water = Terrain(color=console.fg.blue, description='water', icon='~')
+swamp = Terrain(color=console.fg.lightgreen, description='swamp', icon='~')
+poisoned_water = Terrain(color=console.fg.lightblack, description='poisoned water', icon='~')
+tree = Terrain(color=console.fg.lightgreen, description='tree', icon='T')
+jungle = Terrain(color=console.fg.green, description='tree', icon='T', passable=False)
+bush = Terrain(color=console.fg.lightgreen, description='bush', icon='#')
+lichen_clump = Terrain(color=console.fg.lightgreen, description='lichen clump', icon='o')
+dead_tree = Terrain(color=console.fg.lightblack, description='dead tree', icon='T')
+frozen_tree = Terrain(color=console.fg.lightblue, description='frozen tree', icon='T')
+rocks = Terrain(color=console.fg.lightblack, description='rocks', icon='%', passable=False)
+ice_block = Terrain(color=console.fg.lightblue, description='ice block', icon='%', passable=False)
+ruined_wall = Terrain(color=config.brown_fg_color, description='ruined wall', icon='#', passable=False)
+lava = Terrain(color=console.fg.lightred, description='lava', icon='~', passable=False)
+base_force_terrains = {NATURE_FORCE: [grass, snow, sand, flowers, water, tree, jungle,
+                                      bush, lichen_clump, rocks],
+                       CHAOS_FORCE: [snow, sand, bones, ice, swamp, poisoned_water, dead_tree, frozen_tree,
+                                     rocks, ice_block, lava],
+                       ORDER_FORCE: [grass, snow, sand, ice, water, swamp, tree, bush, frozen_tree, rocks,
+                                     ice_block, ruined_wall]}
 
 
 def set_neighbors(spot, neighbor_list: list, row_length: int):
@@ -415,11 +442,73 @@ class Location(Container):
     Provides Line-of-sight information
     Provides pathfinding
     """
-    def __init__(self, top_left: tuple[int, int], forces: dict[str, int]):
+    def __init__(self, top_left: tuple[int, int], forces: dict[str, int], base_terrains: list[Terrain]):
         super().__init__(height=config.location_height, width=config.location_width)
         self._contents: list[list[Tile]] = []
         self._top_left = top_left
         self._forces = forces
+        self._terrains: list[Terrain] = []
+        self._terrain_weights: list[float] = []
+        self._select_terrains(base=base_terrains)
+
+    def _select_terrains(self, base: list[Terrain]) -> None:
+        impassable = 0
+        max_impassable = 35
+        ground = 100
+        min_ground = 50
+        base_weight_for_impassable = 16
+        base_weight_for_passable_non_ground = 25
+        base_weight_for_passable_ground = 45
+        terrains = []
+        weights = []
+        for terrain in base:
+            terrains.append(terrain)
+            if not terrain.passable:
+                weights.append(base_weight_for_impassable)
+                impassable += base_weight_for_impassable
+                if terrain.raw_icon != '.':
+                    ground -= base_weight_for_impassable
+            elif terrain.raw_icon != '.':
+                weights.append(base_weight_for_passable_non_ground)
+                ground -= base_weight_for_passable_non_ground
+            else:
+                weights.append(base_weight_for_passable_ground)
+        remaining_space = 100 - sum(weights)
+        while remaining_space > 0:
+            forces = list(self._forces.keys())
+            force_weights = [self._forces[f] for f in forces]
+            force = random.choices(forces, weights=force_weights)[0]
+            terrain = random.choice(base_force_terrains[force])
+            if not terrain.passable and impassable < max_impassable and ground > min_ground:
+                terrains.append(terrain)
+                weight = min(base_weight_for_impassable // 2,
+                             max_impassable - impassable,
+                             ground - min_ground,
+                             remaining_space)
+                weights.append(weight)
+                impassable += weight
+                if terrain.raw_icon != '.':
+                    ground -= weight
+            elif terrain.raw_icon != '.' and ground > min_ground:
+                terrains.append(terrain)
+                weight = min(base_weight_for_passable_non_ground // 2,
+                             ground - min_ground,
+                             remaining_space)
+                weights.append(weight)
+                ground -= weight
+            else:
+                terrains.append(terrain)
+                weight = min(base_weight_for_passable_ground // 2,
+                             remaining_space)
+                weights.append(weight)
+            remaining_space = 100 - sum(weights)
+        if len(terrains) != len(weights):
+            raise ValueError(f'Terrains {terrains} and weights {weights} do not match!')
+        if sum(weights) != 100:
+            raise ValueError(f'Terrain weights not filled {weights}!')
+        self._terrains = terrains
+        self._terrain_weights = weights
+
 
     @property
     def name(self) -> str:
@@ -440,7 +529,8 @@ class Location(Container):
         return self._contents
 
     def _generate_tiles(self) -> None:
-        self._contents = [[Tile(terrain=grass) for _ in range(self._width)]
+        self._contents = [[Tile(terrain=random.choices(self._terrains, weights=self._terrain_weights)[0])
+                           for _ in range(self._width)]
                           for _ in range(self._height)]
 
     def add_creature(self, creature: Creature, coords: tuple[int, int]) -> None:
@@ -465,9 +555,9 @@ class Location(Container):
         return '\n'.join(rows)
 
 
+# TODO: Rolls the base terrains on init
 # TODO: PoI selection and randomization
-# TODO: Rolls the environment stats on init
-# TODO: Inits the locations with the PoI/force/stats (handles gradients)
+# TODO: Inits the locations with the PoI/force/base terrains (handles gradients)
 class Region(Container):
     height_in_tiles = config.region_size * config.location_height
     width_in_tiles = config.region_size * config.location_width
@@ -476,6 +566,7 @@ class Region(Container):
         super().__init__(height=config.region_size, width=config.region_size)
         self._top_left = top_left
         self._main_force = main_force
+        self._base_terrains = random.choices(population=base_force_terrains[self._main_force], k=2)
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -488,11 +579,12 @@ class Region(Container):
 
     def _generate_locations(self) -> None:
         self._contents = [[Location(top_left=self._get_location_top_left(row, column),
-                                    forces=self._calculate_forces(row, column))
+                                    forces=self._calculate_forces(row, column),
+                                    base_terrains=self._base_terrains)
                           for column in range(self._width)] for row in range(self._height)]
 
     def _calculate_forces(self, row: int, column: int) -> dict[str, int]:
-        forces = {'Nature': 33, 'Chaos': 33, 'Order': 33}
+        forces = {NATURE_FORCE: 33, CHAOS_FORCE: 33, ORDER_FORCE: 33}
         scaling_factor = (4 - max(abs(4 - row), abs(4 - column))) * 0.25
         adjustment = int(67 * scaling_factor)
         for force in forces:
@@ -519,7 +611,7 @@ class Region(Container):
 class World(Container):
     def __init__(self):
         super().__init__(height=config.world_size, width=config.world_size)
-        forces = ['Nature', 'Order', 'Chaos'] * (config.world_size ** 2 // 3 + 1)
+        forces = [NATURE_FORCE, ORDER_FORCE, CHAOS_FORCE] * (config.world_size ** 2 // 3 + 1)
         random.shuffle(forces)
         self._contents: list[list[Region]] = [[Region(top_left=self._get_region_top_left(row, column),
                                                       main_force=forces.pop())
@@ -553,7 +645,7 @@ class World(Container):
 
 
 if __name__ == '__main__':
-    location = Location((0, 0), {})
+    location = Location((0, 0), {}, [])
     data = location.data()
     print(len(location.data()))
     print([data[:30]])
