@@ -3,6 +3,7 @@ import random
 import commands
 import console
 import config
+
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- Race|Item|Creature|world|etc. <- Game
 
@@ -10,6 +11,9 @@ races = []
 NATURE_FORCE = 'Nature'
 CHAOS_FORCE = 'Chaos'
 ORDER_FORCE = 'Order'
+force_colors = {NATURE_FORCE: config.nature_color,
+                CHAOS_FORCE: config.chaos_color,
+                ORDER_FORCE: config.order_color}
 COLD_CLIMATE = 'Cold'
 TEMPERATE_CLIMATE = 'Temperate'
 HOT_CLIMATE = 'Hot'
@@ -383,17 +387,17 @@ rocks = Terrain(color=console.fg.lightblack, description='rocks', icon='%', pass
 mossy_rock = Terrain(color=console.fg.lightgreen, description='mossy rock', icon='%', passable=False)
 ice_block = Terrain(color=console.fg.lightblue, description='ice block', icon='%', passable=False)
 ruined_wall = Terrain(color=config.brown_fg_color, description='ruined wall', icon='#', passable=False)
-lava = Terrain(color=console.fg.lightred, description='lava', icon='~', passable=False)
+lava = Terrain(color=console.fg.red, description='lava', icon='~', passable=False)
 base_force_terrains = {
-    COLD_CLIMATE: {NATURE_FORCE: [snow, frozen_tree, rocks],
-                   CHAOS_FORCE: [ice, dead_tree, rocks, frozen_tree, swamp],
-                   ORDER_FORCE: [snow, ice, swamp, tree, frozen_tree, rocks]},
-    TEMPERATE_CLIMATE: {NATURE_FORCE: [grass, tree, bush, rocks],
-                        CHAOS_FORCE: [ashes, swamp, dead_tree, rocks],
-                        ORDER_FORCE: [dirt, swamp, tree, bush, rocks]},
-    HOT_CLIMATE: {NATURE_FORCE: [sand, rocks],
-                  CHAOS_FORCE: [sand, dead_tree, rocks],
-                  ORDER_FORCE: [sand, bush, rocks]}}
+    COLD_CLIMATE: {NATURE_FORCE: [snow, frozen_tree, tree],
+                   CHAOS_FORCE: [ice, dead_tree, swamp],
+                   ORDER_FORCE: [snow, dirt, rocks]},
+    TEMPERATE_CLIMATE: {NATURE_FORCE: [grass, tree, bush],
+                        CHAOS_FORCE: [ashes, swamp, dead_tree],
+                        ORDER_FORCE: [dirt, rocks]},
+    HOT_CLIMATE: {NATURE_FORCE: [sand, bush],
+                  CHAOS_FORCE: [sand, dead_tree],
+                  ORDER_FORCE: [sand, rocks]}}
 filler_terrains = {
     COLD_CLIMATE: {NATURE_FORCE: snow,
                    CHAOS_FORCE: ice,
@@ -473,14 +477,16 @@ class Location(Container):
     Provides Line-of-sight information
     Provides pathfinding
     """
-    def __init__(self, top_left: tuple[int, int] = (0, 0), forces: dict[str, int] = {},
-                 main_terrain: Terrain = None, climate: str = None):
+
+    def __init__(self, top_left: tuple[int, int] = (0, 0), forces: dict[str, int] = None,
+                 main_terrain: Terrain = None, climate: str = None, region_name: str = None):
         super().__init__(height=config.location_height, width=config.location_width)
         self._contents: list[list[Tile]] = []
         self._top_left = top_left
         self._forces = forces
         self._terrains: list[Terrain] = []
         self._terrain_weights: list[float] = []
+        self._region_name = region_name
         self._select_terrains(base=main_terrain, climate=climate)
 
     def _select_terrains(self, base: Terrain, climate: str) -> None:
@@ -515,7 +521,7 @@ class Location(Container):
         #  Example: "Village of Stow, Woods of Despair"
         #  The area has a name only if it has something to show on the map (resource, artifact, settlement),
         #  otherwise it only carries the name of the region
-        return str(self._top_left)
+        return f'{str(self._top_left)}, {self._region_name}'
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -556,14 +562,35 @@ class Location(Container):
 class Region(Container):
     height_in_tiles = config.region_size * config.location_height
     width_in_tiles = config.region_size * config.location_width
+    region_names = {COLD_CLIMATE: {snow: 'Frost lands',
+                                   frozen_tree: 'Frozen forests',
+                                   tree: 'Winter woods',
+                                   ice: 'Ice fields',
+                                   dead_tree: 'Icy deadwood',
+                                   swamp: 'Frozen swamps',
+                                   dirt: 'Snowy fields',
+                                   rocks: 'Snowy mountains'},
+                    TEMPERATE_CLIMATE: {grass: 'Plains',
+                                        tree: 'Forest',
+                                        bush: 'Bushland',
+                                        ashes: 'Wasteland',
+                                        swamp: 'Marshlands',
+                                        dead_tree: 'Deadwood',
+                                        dirt: 'Fields',
+                                        rocks: 'Mountains'},
+                    HOT_CLIMATE: {sand: 'Desert',
+                                  bush: 'Dry bushland',
+                                  dead_tree: 'Wasted deadwoods',
+                                  rocks: 'Rocky dunes'}}
 
-    def __init__(self, top_left: tuple[int, int], main_force: str, climate: str):
-        super().__init__(height=config.region_size, width=config.region_size)
+    def __init__(self, top_left: tuple[int, int], main_force: str, climate: str, suffix: str = ' of tests'):
         self._top_left = top_left
         self._main_force = main_force
         self._climate = climate
-        self._main_terrain = random.choice(base_force_terrains[self._climate][self._main_force] +
-                                           flavor_terrains[self._climate][self._main_force])
+        self._main_terrain = random.choice(base_force_terrains[self._climate][self._main_force])
+        raw_name = f'{Region.region_names[self._climate][self._main_terrain]} {suffix}'
+        name = f'{force_colors[self._main_force]}{raw_name}{console.fx.end}'
+        super().__init__(height=config.region_size, width=config.region_size, name=name)
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -578,8 +605,9 @@ class Region(Container):
         self._contents = [[Location(top_left=self._get_location_top_left(row, column),
                                     forces=self._calculate_forces(row, column),
                                     main_terrain=self._main_terrain,
-                                    climate=self._climate)
-                          for column in range(self._width)] for row in range(self._height)]
+                                    climate=self._climate,
+                                    region_name=self.name)
+                           for column in range(self._width)] for row in range(self._height)]
 
     def _calculate_forces(self, row: int, column: int) -> dict[str, int]:
         forces = {NATURE_FORCE: 33, CHAOS_FORCE: 33, ORDER_FORCE: 33}
@@ -612,17 +640,111 @@ class Region(Container):
 
 # TODO: Randomize forces and pass to regions on init
 class World(Container):
+    region_suffixes = {CHAOS_FORCE: """of Blood
+of Bone
+of Darkness
+of Decay
+of Desolation 
+of Despair
+of the Fang
+of Fear
+of Fog
+of the Ghost
+of Graves
+of Horror
+of lost souls
+of no return
+of Pain
+of Poison
+of Rot
+of Ruin
+of Screaming
+of Shackles
+of the Skull
+of Suffering 
+of the Dead
+of the Festering
+of the Tyrant
+of the Vampire 
+of the Worm
+of the Zombie""".split('\n'),
+                       ORDER_FORCE: """of Bread
+of Beauty
+of the Bell
+of the Bridge
+of Bronze
+of the Crafter
+of the Diamond
+of the Explorer
+of Gold
+of the Hunter
+of Iron
+of the King
+of the Mason
+of the Miner
+of the Plow
+of Queen's grace
+of Roads
+of the Scholar
+of Silver
+of the Smith
+of the Soldier
+of Sorcery
+of Steel
+of the Sword
+of the Tailor
+of the Tomb
+of the Trader
+of White
+of Wine""".split('\n'),
+                       NATURE_FORCE: """of the Bear
+of the Bee
+of the Bird
+of Bloom
+of Calm
+of Clay
+of the Dragon
+of Feathers
+of Flowers
+of Green
+of Leaves
+of the Lion
+of Moss
+of the Pig
+of Roots
+of Scales
+of Silence
+of the Snake
+of Stone
+of the Storm
+of Streams
+of Sunlight
+of the Earth
+of Thunder 
+of the Tiger
+of Whispers
+of Wings
+of the Wolf""".split('\n')}
+
     def __init__(self):
         super().__init__(height=config.world_size, width=config.world_size)
         forces = [NATURE_FORCE, ORDER_FORCE, CHAOS_FORCE] * (config.world_size ** 2 // 3 + 1)
         random.shuffle(forces)
-        self._contents: list[list[Region]] = [[Region(top_left=self._get_region_top_left(row, column),
-                                                      main_force=forces.pop(),
-                                                      climate=random.choice([COLD_CLIMATE,
-                                                                             TEMPERATE_CLIMATE,
-                                                                             HOT_CLIMATE]))
-                                               for column in range(self._width)]
-                                              for row in range(self._height)]
+        self._contents: Optional[list[list[Region]]] = []
+        suffixes = World.region_suffixes.copy()
+        for f in suffixes:
+            random.shuffle(suffixes[f])
+        for row in range(self._height):
+            region_list = []
+            for column in range(self._width):
+                main_force = forces.pop()
+                climate = random.choice([COLD_CLIMATE, TEMPERATE_CLIMATE, HOT_CLIMATE])
+                suffix = suffixes[main_force].pop()
+                region_list.append(Region(top_left=self._get_region_top_left(row, column),
+                                          main_force=main_force,
+                                          climate=climate,
+                                          suffix=suffix))
+            self._contents.append(region_list[:])
 
     @staticmethod
     def _get_region_top_left(row: int, column: int) -> tuple[int, int]:
@@ -647,7 +769,7 @@ class World(Container):
     @property
     def size(self) -> tuple[int, int]:
         return config.world_size * config.region_size * config.location_height, \
-            config.world_size * config.region_size * config.location_width
+               config.world_size * config.region_size * config.location_width
 
 
 if __name__ == '__main__':
