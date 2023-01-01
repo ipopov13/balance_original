@@ -110,7 +110,7 @@ class Window(ABC):
                 should_game_continue = callback(player_input)
                 if command.changes_window:
                     self.ui.drop_window(self)
-                elif self._should_refresh_screen:
+                elif self._should_refresh_screen and self.ui.is_top(self):
                     return self.ui.display(self.get_display_data())
                 return should_game_continue
         return True

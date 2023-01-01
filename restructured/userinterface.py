@@ -46,6 +46,9 @@ class UserInterface:
         self._refresh()
         return True
 
+    def is_top(self, window) -> bool:
+        return window is self._top_screen
+
     def display(self, updates: tuple[dict, tuple[int, int]]):
         """
         Display the data sent by the window
