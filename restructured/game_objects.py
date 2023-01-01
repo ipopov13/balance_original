@@ -54,7 +54,7 @@ class Container(GameObject):
         super().__init__(**kwargs)
         self._width = width
         self._height = height
-        self._contents: list = []
+        self._contents: list[list] = []
 
     @property
     def contents(self):
@@ -71,8 +71,8 @@ class Container(GameObject):
         #  The key is their location inside the container!
 
     def data(self) -> str:
-        rows = [[c.icon for c in self.contents[start:start + self._width]]
-                for start in range(0, len(self.contents), self._width)]
+        rows = [[c.icon for c in row]
+                for row in self.contents]
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
@@ -212,8 +212,9 @@ class Game:
     character_name_substate = 'getting_character_name'
     race_selection_substate = 'character_race_selection'
     playing_state = 'playing'
-    # TODO: Implement subs: scene, inventory, equipment, open_container, open_map, etc.
+    # TODO: Implement subs: inventory, equipment, open_container, etc.
     scene_substate = 'game_scene'
+    map_substate = 'world_map'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = races
@@ -252,8 +253,23 @@ class Game:
         if self.state is Game.welcome_state:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
-        elif self.state is Game.playing_state:
-            return {commands.Move(): self._move_character}
+        elif self.state is Game.playing_state and self.substate is Game.scene_substate:
+            return {commands.Move(): self._move_character,
+                    commands.Map(): self._open_map}
+        elif self.state is Game.playing_state and self.substate is Game.map_substate:
+            return {commands.Move(): self._move_map_focus,
+                    commands.Close(): self._close_map}
+
+    def _close_map(self, _) -> bool:
+        self.substate = Game.scene_substate
+        return True
+
+    def _move_map_focus(self, _):
+        raise NotImplementedError
+
+    def _open_map(self, _) -> bool:
+        self.substate = Game.map_substate
+        return True
 
     def _move_character(self, direction):
         self._move_creature(self.character, direction)
@@ -311,6 +327,14 @@ class Game:
         # TODO: The Game gets the 8 neighbor locations and displays the Tiles to make the scene consistent
         #     when there is impassable Terrain in the neighbor Location
         return self._current_location.data()
+
+    def get_world_data(self) -> str:
+        return self.world.data()
+
+    def get_region_data(self, coords: tuple[int, int] = None) -> str:
+        if coords is None:
+            coords = self._creature_coords[self.character]
+        return self.world.get_region_data(coords)
 
     def _move_creature(self, creature: Creature, direction: str) -> None:
         # TODO: Once the character moves to a new location,
@@ -480,7 +504,8 @@ class Location(Container):
 
     def __init__(self, top_left: tuple[int, int] = (0, 0), forces: dict[str, int] = None,
                  main_terrain: Terrain = None, climate: str = None, region_name: str = None):
-        super().__init__(height=config.location_height, width=config.location_width)
+        super().__init__(height=config.location_height, width=config.location_width,
+                         icon=main_terrain.raw_icon, color=main_terrain.color)
         self._contents: list[list[Tile]] = []
         self._top_left = top_left
         self._forces = forces
@@ -587,10 +612,11 @@ class Region(Container):
         self._top_left = top_left
         self._main_force = main_force
         self._climate = climate
-        self._main_terrain = random.choice(base_force_terrains[self._climate][self._main_force])
+        self._main_terrain: Terrain = random.choice(base_force_terrains[self._climate][self._main_force])
         raw_name = f'{Region.region_names[self._climate][self._main_terrain]} {suffix}'
         name = f'{force_colors[self._main_force]}{raw_name}{console.fx.end}'
-        super().__init__(height=config.region_size, width=config.region_size, name=name)
+        super().__init__(height=config.region_size, width=config.region_size,
+                         name=name, icon=self._main_terrain.raw_icon, color=self._main_terrain.color)
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -752,13 +778,21 @@ of the Wolf""".split('\n')}
         region_top_left_column = column * Region.width_in_tiles
         return region_top_left_row, region_top_left_column
 
-    def get_location(self, coords: tuple[int, int]) -> Location:
+    def _get_region_from_absolute_coords(self, coords: tuple[int, int]) -> Region:
         row = coords[0] // Region.height_in_tiles
         column = coords[1] // Region.width_in_tiles
         try:
             region = self.contents[row][column]
         except IndexError:
             raise IndexError(f'Wrong region coords ({row}, {column}) from absolute coords {coords}!')
+        return region
+
+    def get_region_data(self, coords: tuple[int, int]) -> str:
+        region = self._get_region_from_absolute_coords(coords)
+        return region.data()
+
+    def get_location(self, coords: tuple[int, int]) -> Location:
+        region = self._get_region_from_absolute_coords(coords)
         return region.get_location(coords)
 
     @property

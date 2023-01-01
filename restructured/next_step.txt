@@ -1,0 +1,2 @@
+Add map screen with world and region views
+  Fix bug with the disappearing help screen

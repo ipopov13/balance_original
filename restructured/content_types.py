@@ -37,6 +37,13 @@ class GameScene(WindowContent):
         return '\n'.join([area_view, character_hud])
 
 
+class MapScreen(WindowContent):
+    def data(self) -> str:
+        world_map = self.game_object.get_world_data()
+        region_map = self.game_object.get_region_data()
+        return '\n\n'.join([world_map, region_map])
+
+
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)

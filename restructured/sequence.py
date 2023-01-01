@@ -58,7 +58,7 @@ The window Content:
 
 """
 from windows import Window, InputWindow, SelectionWindow
-from content_types import WindowContent, PagedList, TextInputField, GameScene
+from content_types import WindowContent, PagedList, TextInputField, GameScene, MapScreen
 from game_objects import Game
 import config
 
@@ -77,5 +77,7 @@ class GameSequence:
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.scene_substate:
             return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True,
                           content=GameScene(ui.game))
+        elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:
+            return Window(ui=ui, content=MapScreen(ui.game))
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

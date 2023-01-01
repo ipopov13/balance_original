@@ -18,6 +18,20 @@ class Command:
         return {}
 
 
+class Map(Command):
+    character = 'M'
+    hint = '(M)ap'
+    description = 'Open the world map'
+    changes_window = True
+
+
+class Close(Command):
+    character = 'C'
+    hint = '(C)lose'
+    description = 'Close the current window'
+    changes_window = True
+
+
 class TextInput(Command):
     character = string.ascii_letters + '- '
     hint = ''
