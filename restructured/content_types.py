@@ -40,8 +40,11 @@ class GameScene(WindowContent):
 class MapScreen(WindowContent):
     def data(self) -> str:
         world_map = self.game_object.get_world_data()
+        pretty_world_map = '\n'.join(['World'.center(config.world_size + 2, '-'),
+                                      ' ' + world_map.replace('\n', '\n '),
+                                      '-' * (config.world_size + 2)])
         region_map = self.game_object.get_region_data()
-        return '\n\n'.join([world_map, region_map])
+        return '\n\n'.join([pretty_world_map, region_map])
 
 
 class PagedList(WindowContent):

@@ -1,2 +1,4 @@
 Add map screen with world and region views
-  Fix bug with the disappearing help screen
+  Add region name, borders, exploration %, current region with blinking @
+Pass the visual data in single characters up to the window level, where it is concatenated
+  just before sending to the UI!
