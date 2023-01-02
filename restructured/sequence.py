@@ -78,6 +78,6 @@ class GameSequence:
             return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True,
                           content=GameScene(ui.game))
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:
-            return Window(ui=ui, content=MapScreen(ui.game))
+            return Window(ui=ui, content=MapScreen(ui.game), border=True, title='Map')
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

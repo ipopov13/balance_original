@@ -25,6 +25,12 @@ class Map(Command):
     changes_window = True
 
 
+class SwitchMaps(Command):
+    character = 's'
+    hint = '(s)witch'
+    description = 'Switch between the two maps'
+
+
 class Close(Command):
     character = 'C'
     hint = '(C)lose'

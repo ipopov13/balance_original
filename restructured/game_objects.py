@@ -328,6 +328,10 @@ class Game:
         #     when there is impassable Terrain in the neighbor Location
         return self._current_location.data()
 
+    def get_character_position_in_location(self) -> tuple[int, int]:
+        return self._creature_coords[self.character][0] % config.location_height, \
+            self._creature_coords[self.character][1] % config.location_width
+
     def get_world_data(self) -> str:
         return self.world.data()
 
@@ -442,31 +446,6 @@ flavor_terrains = {
     HOT_CLIMATE: {NATURE_FORCE: [jungle, flowers],
                   CHAOS_FORCE: [bones, lava],
                   ORDER_FORCE: [ruined_wall, old_pavement]}}
-
-
-def set_neighbors(spot, neighbor_list: list, row_length: int):
-    # TODO: Delete this function if not used
-    adjacency_map = {spot.sort_key - 1: 'w', spot.sort_key + 1: 'e',
-                     spot.sort_key - row_length - 1: 'nw',
-                     spot.sort_key - row_length: 'n',
-                     spot.sort_key - row_length + 1: 'ne',
-                     spot.sort_key + row_length - 1: 'sw',
-                     spot.sort_key + row_length: 's',
-                     spot.sort_key + row_length + 1: 'se'}
-    for neighbor in neighbor_list:
-        if type(neighbor) != type(spot):
-            raise TypeError(f"Wrong type of neighbor {type(neighbor)} passed"
-                            f" for spot {type(spot)}@{spot.sort_key}!")
-        adjacency = adjacency_map.get(neighbor.sort_key, None)
-        if adjacency is None:
-            raise ValueError(f'Wrong neighbor {neighbor.sort_key} passed to {type(spot)} at position'
-                             f'{spot.sort_key}!')
-        else:
-            if spot.neighbors[adjacency] is None:
-                spot.neighbors[adjacency] = neighbor
-            else:
-                raise ValueError(f'Two neighbors with the same adjacency {adjacency}/{neighbor.sort_key}'
-                                 f' passed to {type(spot)}@{spot.sort_key}!')
 
 
 class Tile(Container):

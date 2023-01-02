@@ -8,7 +8,7 @@ class WindowContent:
         self.game_object = game_object
 
     @staticmethod
-    def _own_commands():
+    def _own_commands() -> dict:
         return {}
 
     def commands(self) -> dict:
@@ -18,6 +18,9 @@ class WindowContent:
 
     def data(self) -> str:
         return self.game_object.data()
+
+    def cursor_pos(self) -> tuple[int, int]:
+        return 0, 0
 
     def _object_commands(self) -> dict:
         """The mapping of commands&methods specific for the underlying object(s)"""
@@ -36,15 +39,47 @@ class GameScene(WindowContent):
         area_view = self.game_object.get_area_view()
         return '\n'.join([area_view, character_hud])
 
+    def cursor_pos(self) -> tuple[int, int]:
+        return self.game_object.get_character_position_in_location()
+
 
 class MapScreen(WindowContent):
+    WORLD = 'World'
+    REGION = 'Region'
+
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self._active_map = MapScreen.WORLD
+        self._map_top_left = {MapScreen.WORLD: (1, 1),
+                              MapScreen.REGION: (4 + config.world_size, 1)}
+        self._selected_pos = (0, 0)
+
+    def _own_commands(self) -> dict:
+        return {commands.SwitchMaps(): self._switch_maps}
+
+    def _switch_maps(self, _) -> bool:
+        if self._active_map is MapScreen.WORLD:
+            self._active_map = MapScreen.REGION
+        else:
+            self._active_map = MapScreen.WORLD
+        return True
+
+    def _prettify_map(self, map_name: str = None, map_: str = None, map_size: int = None):
+        border_color = console.fg.default if map_name is self._active_map else console.fx.dim
+        return '\n'.join([border_color + map_name.center(map_size + 2, '-') + console.fx.end,
+                          ' ' + map_.replace('\n', '\n '),
+                          border_color + '-' * (map_size + 2) + console.fx.end])
+
     def data(self) -> str:
         world_map = self.game_object.get_world_data()
-        pretty_world_map = '\n'.join(['World'.center(config.world_size + 2, '-'),
-                                      ' ' + world_map.replace('\n', '\n '),
-                                      '-' * (config.world_size + 2)])
+        pretty_world_map = self._prettify_map(MapScreen.WORLD, world_map, config.world_size)
         region_map = self.game_object.get_region_data()
-        return '\n\n'.join([pretty_world_map, region_map])
+        pretty_region_map = self._prettify_map(MapScreen.REGION, region_map, config.region_size)
+        return '\n\n'.join([pretty_world_map, pretty_region_map])
+
+    def cursor_pos(self) -> tuple[int, int]:
+        return self._map_top_left[self._active_map][0] + self._selected_pos[0], \
+            self._map_top_left[self._active_map][1] + self._selected_pos[1]
 
 
 class PagedList(WindowContent):
@@ -154,3 +189,6 @@ class TextInputField:
 
     def data(self) -> str:
         return self._data
+
+    def cursor_pos(self) -> tuple[int, int]:
+        return 0, len(self._data)

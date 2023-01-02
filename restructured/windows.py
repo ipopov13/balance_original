@@ -26,9 +26,6 @@ class Window(ABC):
 
     def get_display_data(self) -> tuple[dict, tuple[int, int]]:
         """Pad the content to size and position, apply borders and hints"""
-        # TODO: For composite windows (i.e. game scene) this can be called by a provide_data method that sends
-        #  the contents of the separate sub-windows one by one (so this method would be private). Border
-        #  should be only one though, if any
         content_data = self._content.data()
         raw_content_data = strip_ansi_escape_sequences(content_data)
         raw_content_data = raw_content_data.split('\n')
@@ -55,15 +52,9 @@ class Window(ABC):
             content_data = self._apply_hints(content_data)
         content_dict = {(row_index + self.top_left[0], 0 + self.top_left[1]): row
                         for row_index, row in enumerate(content_data)}
-        try:
-            final_raw_content = strip_ansi_escape_sequences('\n'.join(content_data)).split('\n')
-            row_with_character = [row for row in final_raw_content if '@' in row][0]
-            row_index = final_raw_content.index(row_with_character)
-            column_index = row_with_character.index('@')
-            cursor_pos = (row_index, column_index)
-        except IndexError:
-            cursor_pos = (self.size[0] - 1 + self.top_left[0],
-                          self.size[1] - 1 + self.top_left[1])
+        content_cursor_pos = self._content.cursor_pos()
+        cursor_pos = (content_cursor_pos[0] + self.top_left[0] + top_pad,
+                      content_cursor_pos[1] + self.top_left[1] + left_pad)
         return content_dict, cursor_pos
 
     def _apply_hints(self, content_data):

@@ -1,4 +1,5 @@
 Add map screen with world and region views
+    Game passes the coords and World makes the reg/loc have the char icon
+    Switch maps command for region map examination
   Add region name, borders, exploration %, current region with blinking @
-Pass the visual data in single characters up to the window level, where it is concatenated
-  just before sending to the UI!
+Optional: split the data into string and color (list[list[str]]), and let the UI combine the two at the end
