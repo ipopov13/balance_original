@@ -7,7 +7,6 @@ from utils import strip_ansi_escape_sequences
 class Window(ABC):
     _default_size = (25, 80)
     _default_top_left = (0, 0)
-    _should_refresh_screen = True
 
     def __init__(self, size=_default_size, top_left=_default_top_left, ui=None,
                  content=None, border: bool = False, title: str = None, title_source=None):
@@ -110,14 +109,13 @@ class Window(ABC):
                 should_game_continue = callback(player_input)
                 if command.changes_window:
                     self.ui.drop_window(self)
-                elif self._should_refresh_screen and self.ui.is_top(self):
+                elif self.ui.is_top(self):
                     return self.ui.display(self.get_display_data())
                 return should_game_continue
         return True
 
 
 class SelectionWindow(Window):
-    _should_refresh_screen = True
 
     def __init__(self, target=None, **kwargs):
         super().__init__(**kwargs)
@@ -142,7 +140,6 @@ class OverlayWindow(Window):
 
 class InputWindow(Window):
     """A window for collecting multi-character user input"""
-    _should_refresh_screen = True
 
     def __init__(self, target=None, **kwargs):
         super().__init__(**kwargs)
