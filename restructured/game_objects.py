@@ -467,6 +467,34 @@ farmland = FlavorTerrain(color=console.fg.black + config.brown_bg_color, descrip
 # Structure building blocks
 poisoned_water = Terrain(color=console.fg.lightblack, description='poisoned water', icon='~')
 water = Terrain(color=console.fg.blue, description='water', icon='~')
+well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well')
+
+
+class Well(FlavorTerrain):
+    size = (3, 3)
+    _data = {}
+
+    def new(self, size: tuple[int, int], filler: Terrain) -> dict[tuple[int, int], Terrain]:
+        self._data = {}
+        top_left = (random.randint(0, size[0] - self.size[0]),
+                    random.randint(0, size[1] - self.size[1]))
+        self._add_rectangle(filler=filler, size=self.size, border_only=True, at_coords=top_left)
+        self._data[(top_left[0] + 1, top_left[1] + 1)] = well_terrain
+        return self._data
+
+    def _add_rectangle(self, filler: Terrain, size: tuple[int, int], border_only: bool = False,
+                       at_coords: tuple[int, int] = (0, 0)) -> None:
+        for row in range(size[0]):
+            for column in range(size[1]):
+                if border_only and row not in (0, size[0] - 1) and column not in (0, size[1] - 1):
+                    continue
+                coords = (at_coords[0] + row, at_coords[1] + column)
+                self._data[coords] = filler
+
+
+well = Well(color=console.fg.blue, description='a well', icon='o',
+            required_base_terrains=all_base_terrains,
+            required_climates=ALL_CLIMATES)
 
 base_force_terrains = {
     COLD_CLIMATE: {NATURE_FORCE: [snow, rocks, tree],
@@ -498,6 +526,16 @@ flavor_terrains = {
     HOT_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock, gold_vein, iron_vein, silver_vein],
                   CHAOS_FORCE: [bones, junk_pile, poisonous_flowers, venomous_thorns, lava],
                   ORDER_FORCE: [ruined_wall, old_pavement, engraved_column, farmland, fireplace]}}
+structures = {
+    COLD_CLIMATE: {NATURE_FORCE: [],
+                   CHAOS_FORCE: [],
+                   ORDER_FORCE: [well]},
+    TEMPERATE_CLIMATE: {NATURE_FORCE: [],
+                        CHAOS_FORCE: [],
+                        ORDER_FORCE: [well]},
+    HOT_CLIMATE: {NATURE_FORCE: [],
+                  CHAOS_FORCE: [],
+                  ORDER_FORCE: [well]}}
 
 
 class Tile(Container):
@@ -540,19 +578,20 @@ class Location(Container):
         self._forces = forces
         self._terrains: list[Terrain] = []
         self._terrain_weights: list[float] = []
+        self._structure_terrains = {}
         self._region_name = region_name
-        self._flavor: Optional[Terrain] = None
-        self._select_terrains(base=main_terrain, climate=climate)
+        self._flavor: Optional[FlavorTerrain] = None
+        self._structure: Optional[FlavorTerrain] = None
+        self._select_contents(base=main_terrain, climate=climate)
+        visual = self._structure or self._flavor or main_terrain
         super().__init__(height=config.location_height, width=config.location_width,
-                         icon=self._flavor.raw_icon, color=self._flavor.color)
+                         icon=visual.raw_icon, color=visual.color)
 
     def _main_force(self):
         rev_forces = {v: k for k, v in self._forces.items()}
         return rev_forces[max(rev_forces)]
 
-    def _select_terrains(self, base: Terrain, climate: str) -> None:
-        # TODO: Fill 64.5% with fillers based on forces, 35% with base + 1 other per force based on forces,
-        #  and 0.5% with a flavor chosen on forces
+    def _select_contents(self, base: Terrain, climate: str) -> None:
         max_base_terrain = 40
         max_flavor_terrain = 3
         base_weight = max_base_terrain * self._forces[self._main_force()] / 100
@@ -560,10 +599,11 @@ class Location(Container):
         forces = list(self._forces.keys())
         force_weights = [self._forces[f] for f in forces]
         random_force = random.choices(forces, weights=force_weights)[0]
-        if random.random() > 0.75:
-            available_flavors = [fl for fl in flavor_terrains[climate][random_force]
-                                 if fl.appears_in(base, climate)]
+        available_flavors = [fl for fl in flavor_terrains[climate][random_force]
+                             if fl.appears_in(base, climate)]
+        if random.random() > 0.8 and available_flavors:
             flavor = random.choice(available_flavors)
+            self._flavor = flavor
         else:
             flavor = base
         flavor_weight = max_flavor_terrain * self._forces[random_force] / 100
@@ -572,7 +612,14 @@ class Location(Container):
         filler_weight = 100 - base_weight - flavor_weight
         self._terrains = [filler, base, flavor]
         self._terrain_weights = [filler_weight, base_weight, flavor_weight]
-        self._flavor = flavor
+        # Add a structure
+        force = random.choices(forces, weights=force_weights)[0]
+        available_structures = [structure for structure in structures[climate][force]
+                                if structure.appears_in(base, climate)]
+        if random.random() > 0.9 and available_structures:
+            self._structure = random.choice(available_structures)
+            self._structure_terrains = self._structure.new((config.location_height, config.location_width),
+                                                           filler)
 
     @property
     def name(self) -> str:
@@ -585,9 +632,14 @@ class Location(Container):
 
     def _data_prep(self) -> None:
         if not self._contents:
-            self._contents = [[Tile(terrain=random.choices(self._terrains, weights=self._terrain_weights)[0])
-                               for _ in range(self._width)]
-                              for _ in range(self._height)]
+            for row_index in range(self._height):
+                row = []
+                for column_index in range(self._width):
+                    terrain = self._structure_terrains.get((row_index, column_index),
+                                                           random.choices(self._terrains,
+                                                                          weights=self._terrain_weights)[0])
+                    row.append(Tile(terrain=terrain))
+                self._contents.append(row[:])
 
     @property
     def contents(self) -> list[list[Tile]]:
