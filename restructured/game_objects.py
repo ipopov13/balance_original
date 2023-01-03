@@ -501,19 +501,23 @@ class Location(Container):
     def _select_terrains(self, base: Terrain, climate: str) -> None:
         # TODO: Fill 64.5% with fillers based on forces, 35% with base + 1 other per force based on forces,
         #  and 0.5% with a flavor chosen on forces
-        descriptive_fraction = 40
-        flavor_fraction = 1
-        base_weight = descriptive_fraction * self._forces[self._main_force()] / 100
+        max_base_terrain = 40
+        max_flavor_terrain = 3
+        base_weight = max_base_terrain * self._forces[self._main_force()] / 100
         # Add a flavor terrain
         forces = list(self._forces.keys())
         force_weights = [self._forces[f] for f in forces]
         random_force = random.choices(forces, weights=force_weights)[0]
-        flavor = random.choice(flavor_terrains[climate][random_force])
+        if random.random() > 0.75:
+            flavor = random.choice(flavor_terrains[climate][random_force])
+        else:
+            flavor = base
+        flavor_weight = max_flavor_terrain * self._forces[random_force] / 100
         # Add filler terrain based on climate & force
         filler = filler_terrains[climate][self._main_force()]
-        filler_weight = 100 - base_weight - flavor_fraction
+        filler_weight = 100 - base_weight - flavor_weight
         self._terrains = [filler, base, flavor]
-        self._terrain_weights = [filler_weight, base_weight, flavor_fraction]
+        self._terrain_weights = [filler_weight, base_weight, flavor_weight]
         self._flavor = flavor
 
     @property
