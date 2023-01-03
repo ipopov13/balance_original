@@ -1,5 +1,13 @@
-Add map screen with world and region views
-    Game passes the coords and World makes the reg/loc have the char icon
-    Switch maps command for region map examination
-  Add region name, borders, exploration %, current region with blinking @
+Region:
+    Flavors define the name of a region
+Locations:
+    Add more flavors
+    Add Structure flavors
+    Add creature profile to Locations (automatic from the terrains/Structures?)
+    Creature profile includes respawn times, location keeps track (the Creature sends a message to the
+        Location when it dies)
+Map screen:
+    Character location
+    Region / Location details
+    Exploration details
 Optional: split the data into string and color (list[list[str]]), and let the UI combine the two at the end
