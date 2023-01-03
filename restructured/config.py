@@ -15,7 +15,8 @@ hp_color = console.bg.red
 mana_color = console.bg.blue
 energy_color = console.bg.lightgreen
 load_color = console.bg.white
-brown_fg_color = console.fg.t_a8a800
+brown_fg_color = console.fg.t_7b3f00
+brown_bg_color = console.bg.t_7b3f00
 
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '

@@ -17,6 +17,7 @@ force_colors = {NATURE_FORCE: config.nature_color,
 COLD_CLIMATE = 'Cold'
 TEMPERATE_CLIMATE = 'Temperate'
 HOT_CLIMATE = 'Hot'
+ALL_CLIMATES = [COLD_CLIMATE, HOT_CLIMATE, TEMPERATE_CLIMATE]
 
 
 class GameObject:
@@ -330,7 +331,7 @@ class Game:
 
     def get_character_position_in_location(self) -> tuple[int, int]:
         return self._creature_coords[self.character][0] % config.location_height, \
-            self._creature_coords[self.character][1] % config.location_width
+               self._creature_coords[self.character][1] % config.location_width
 
     def get_world_data(self) -> str:
         return self.world.data()
@@ -384,48 +385,99 @@ class Game:
 
 # TODO: Add Terrains
 class Terrain(GameObject):
+    instances = []
+
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
+        Terrain.instances.append(self)
 
     def is_passable_for(self, creature):
         return self.passable
 
 
+class FlavorTerrain(Terrain):
+    def __init__(self, required_base_terrains: list[Terrain] = None,
+                 required_climates: list[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        if required_climates is None or required_base_terrains is None:
+            raise ValueError(f'Flavor terrain {self.name} cannot be instantiated without a '
+                             f'climate and a required bases list.')
+        self._required_base_terrains = required_base_terrains
+        self._required_climates = required_climates
+
+    def appears_in(self, base_terrain: Terrain, climate: str):
+        return base_terrain in self._required_base_terrains and climate in self._required_climates
+
+
+# Ground fillers
 grass = Terrain(color=console.fg.lightgreen, description='grass')
 ashes = Terrain(color=console.fg.lightblack, description='ashes')
 dirt = Terrain(color=config.brown_fg_color, description='dirt')
 snow = Terrain(color=console.fg.white, description='snow')
 sand = Terrain(color=console.fg.yellow, description='sand')
-old_pavement = Terrain(color=console.fg.lightyellow, description='old pavement')
 ice = Terrain(color=console.fg.lightblue, description='ice')
-flowers = Terrain(color=console.fg.purple, description='flowers', icon='*')
-bones = Terrain(color=console.fg.lightwhite, description='bones', icon='~')
-water = Terrain(color=console.fg.blue, description='water', icon='~')
-swamp = Terrain(color=console.fg.lightgreen, description='swamp', icon='~')
-poisoned_water = Terrain(color=console.fg.lightblack, description='poisoned water', icon='~')
+# Other base terrains
 tree = Terrain(color=console.fg.lightgreen, description='tree', icon='T')
-jungle = Terrain(color=console.fg.green, description='tree', icon='T', passable=False)
-bush = Terrain(color=console.fg.lightgreen, description='bush', icon='#')
-lichen_clump = Terrain(color=console.fg.lightgreen, description='lichen clump', icon='o')
 dead_tree = Terrain(color=console.fg.lightblack, description='dead tree', icon='T')
 frozen_tree = Terrain(color=console.fg.lightblue, description='frozen tree', icon='T')
-rocks = Terrain(color=console.fg.lightblack, description='rocks', icon='%', passable=False)
-mossy_rock = Terrain(color=console.fg.lightgreen, description='mossy rock', icon='%', passable=False)
 ice_block = Terrain(color=console.fg.lightblue, description='ice block', icon='%', passable=False)
-ruined_wall = Terrain(color=config.brown_fg_color, description='ruined wall', icon='#', passable=False)
-lava = Terrain(color=console.fg.red, description='lava', icon='~', passable=False)
+rocks = Terrain(color=console.fg.lightblack, description='rocks', icon='%', passable=False)
+bush = Terrain(color=console.fg.lightgreen, description='bush', icon='#')
+swamp = Terrain(color=console.fg.lightgreen, description='swamp', icon='~')
+quick_sand = Terrain(color=console.fg.yellow, description='quicksand')
+jungle = Terrain(color=console.fg.green, description='tree', icon='T', passable=False)
+all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
+                     rocks, bush, swamp, quick_sand, jungle]
+# Flavor terrains
+poisonous_flowers = FlavorTerrain(color=console.fg.purple, description='poisonous flowers', icon='*',
+                                  required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+bones = FlavorTerrain(color=console.fg.lightwhite, description='bones', icon='~',
+                      required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+venomous_thorns = FlavorTerrain(color=console.fg.lightgreen, description='venomous thorns', icon='#',
+                                required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+junk_pile = FlavorTerrain(color=console.fg.lightblack, description='junk pile', icon='o',
+                          required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+lava = FlavorTerrain(color=console.fg.red, description='lava', icon='~', passable=False,
+                     required_base_terrains=all_base_terrains, required_climates=[HOT_CLIMATE])
+gold_vein = FlavorTerrain(color=console.fg.lightblack, description='gold vein', icon='%', passable=False,
+                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+silver_vein = FlavorTerrain(color=console.fg.lightblack, description='silver vein', icon='%', passable=False,
+                            required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+iron_vein = FlavorTerrain(color=console.fg.lightblack, description='iron vein', icon='%', passable=False,
+                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+mossy_rock = FlavorTerrain(color=console.fg.lightgreen, description='mossy rock', icon='%', passable=False,
+                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+lichen_clump = FlavorTerrain(color=console.fg.lightgreen, description='lichen clump', icon='o',
+                             required_base_terrains=all_base_terrains, required_climates=[COLD_CLIMATE])
+flowers = FlavorTerrain(color=console.fg.purple, description='flowers', icon='*',
+                        required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+old_pavement = FlavorTerrain(color=console.fg.lightyellow, description='old pavement',
+                             required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+ruined_wall = FlavorTerrain(color=config.brown_fg_color, description='ruined wall', icon='#', passable=False,
+                            required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+engraved_column = FlavorTerrain(color=config.brown_fg_color, description='engraved column', icon='|', passable=False,
+                                required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+fireplace = FlavorTerrain(color=console.fg.lightyellow, description='fireplace', icon='o', passable=False,
+                          required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+farmland = FlavorTerrain(color=console.fg.black + config.brown_bg_color, description='farmland', icon='|',
+                         required_base_terrains=[grass, dirt, tree, jungle, bush, swamp],
+                         required_climates=ALL_CLIMATES)
+# Structure building blocks
+poisoned_water = Terrain(color=console.fg.lightblack, description='poisoned water', icon='~')
+water = Terrain(color=console.fg.blue, description='water', icon='~')
+
 base_force_terrains = {
-    COLD_CLIMATE: {NATURE_FORCE: [snow, frozen_tree, tree],
-                   CHAOS_FORCE: [ice, dead_tree, swamp],
-                   ORDER_FORCE: [snow, dirt, rocks]},
-    TEMPERATE_CLIMATE: {NATURE_FORCE: [grass, tree, bush],
-                        CHAOS_FORCE: [ashes, swamp, dead_tree],
-                        ORDER_FORCE: [dirt, rocks]},
-    HOT_CLIMATE: {NATURE_FORCE: [sand, bush],
-                  CHAOS_FORCE: [sand, dead_tree],
-                  ORDER_FORCE: [sand, rocks]}}
+    COLD_CLIMATE: {NATURE_FORCE: [snow, rocks, tree],
+                   CHAOS_FORCE: [ice, rocks, ice_block],
+                   ORDER_FORCE: [snow, frozen_tree, rocks]},
+    TEMPERATE_CLIMATE: {NATURE_FORCE: [grass, tree, bush, rocks],
+                        CHAOS_FORCE: [ashes, dead_tree, swamp, rocks],
+                        ORDER_FORCE: [dirt, tree, bush, rocks]},
+    HOT_CLIMATE: {NATURE_FORCE: [sand, rocks, jungle],
+                  CHAOS_FORCE: [sand, rocks, quick_sand],
+                  ORDER_FORCE: [sand, rocks, bush]}}
 filler_terrains = {
     COLD_CLIMATE: {NATURE_FORCE: snow,
                    CHAOS_FORCE: ice,
@@ -437,15 +489,15 @@ filler_terrains = {
                   CHAOS_FORCE: sand,
                   ORDER_FORCE: sand}}
 flavor_terrains = {
-    COLD_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock, lichen_clump],
-                   CHAOS_FORCE: [bones, ice_block],
-                   ORDER_FORCE: [ruined_wall, old_pavement]},
-    TEMPERATE_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock],
-                        CHAOS_FORCE: [bones, lava],
-                        ORDER_FORCE: [ruined_wall, old_pavement]},
-    HOT_CLIMATE: {NATURE_FORCE: [jungle, flowers],
-                  CHAOS_FORCE: [bones, lava],
-                  ORDER_FORCE: [ruined_wall, old_pavement]}}
+    COLD_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock, lichen_clump, gold_vein, iron_vein, silver_vein],
+                   CHAOS_FORCE: [bones, junk_pile, poisonous_flowers, venomous_thorns],
+                   ORDER_FORCE: [ruined_wall, old_pavement, engraved_column, farmland, fireplace]},
+    TEMPERATE_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock, gold_vein, iron_vein, silver_vein],
+                        CHAOS_FORCE: [bones, junk_pile, poisonous_flowers, venomous_thorns],
+                        ORDER_FORCE: [ruined_wall, old_pavement, engraved_column, farmland, fireplace]},
+    HOT_CLIMATE: {NATURE_FORCE: [flowers, mossy_rock, gold_vein, iron_vein, silver_vein],
+                  CHAOS_FORCE: [bones, junk_pile, poisonous_flowers, venomous_thorns, lava],
+                  ORDER_FORCE: [ruined_wall, old_pavement, engraved_column, farmland, fireplace]}}
 
 
 class Tile(Container):
@@ -509,7 +561,9 @@ class Location(Container):
         force_weights = [self._forces[f] for f in forces]
         random_force = random.choices(forces, weights=force_weights)[0]
         if random.random() > 0.75:
-            flavor = random.choice(flavor_terrains[climate][random_force])
+            available_flavors = [fl for fl in flavor_terrains[climate][random_force]
+                                 if fl.appears_in(base, climate)]
+            flavor = random.choice(available_flavors)
         else:
             flavor = base
         flavor_weight = max_flavor_terrain * self._forces[random_force] / 100
@@ -572,9 +626,7 @@ class Region(Container):
                                    frozen_tree: 'Frozen forests',
                                    tree: 'Winter woods',
                                    ice: 'Ice fields',
-                                   dead_tree: 'Icy deadwood',
-                                   swamp: 'Frozen swamps',
-                                   dirt: 'Snowy fields',
+                                   ice_block: 'Ice mountains',
                                    rocks: 'Snowy mountains'},
                     TEMPERATE_CLIMATE: {grass: 'Plains',
                                         tree: 'Forest',
@@ -586,7 +638,8 @@ class Region(Container):
                                         rocks: 'Mountains'},
                     HOT_CLIMATE: {sand: 'Desert',
                                   bush: 'Dry bushland',
-                                  dead_tree: 'Wasted deadwoods',
+                                  jungle: 'Jungles',
+                                  quick_sand: 'Desert',
                                   rocks: 'Rocky dunes'}}
 
     def __init__(self, top_left: tuple[int, int], main_force: str, climate: str, suffix: str = ' of tests'):

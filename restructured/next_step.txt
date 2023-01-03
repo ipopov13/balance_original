@@ -1,11 +1,12 @@
-Region:
-    Flavors define the name of a region
 Locations:
-    Add more flavors
-    Add Structure flavors
+ *  Add Structure flavors from the excel
     Add creature profile to Locations (automatic from the terrains/Structures?)
     Creature profile includes respawn times, location keeps track (the Creature sends a message to the
         Location when it dies)
+Modes / Terrain interactions:
+    Masquerading terrains (ore veins, poisonous flowers, venom bushes)
+Region:
+    Flavors define the name of a region
 Map screen:
     Character location
     Region / Location details
