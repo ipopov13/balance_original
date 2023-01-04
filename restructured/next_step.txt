@@ -1,6 +1,28 @@
+Game passes to Location the creatures to add to the data?
+
+
+Creatures:
+    Random: disappear when you leave the Location, rerolled every time. Terrains define the number,
+      force defines the strength/type.
+    Permanent: Local residents, villagers, farm animals, bosses, etc. Removed once killed/chased away.
+      Have a probability value to show how often they can be found in the location.
+    Spawn profile: A list of specific roles with set home locations, who are filled from a specific list
+      of creatures. New creatures are added to the permanent list if there is an empty
+      role and the role's timer has run out. Otherwise, they are skipped (e.g., you don't get a second bandit
+      boss if the first one is still around).
+    Random creatures can become permanent by taming or convincing to stay (need a home terrain).
+    Respawning creatures are automatically created permanent.
+    When refreshing a location:
+        1) all permanents are loaded
+        2) the spawn profile is updated using the terrains
+        2) the roles of the permanents are subtracted from the spawn profile and any remaining
+           gaps are filled if their last update has been long enough ago, adding the new creatures to
+           the permanent list.
+        3) random creatures are rolled and added.
+    Creature priority: permanent > respawning. Random are always rerolled and added.
 Locations:
- *  Add Structure flavors from the excel
-    Add creature profile to Locations (automatic from the terrains/Structures?)
+    Add Structure flavors from the excel
+  * Add creature profile to Locations (automatic from the terrains/Structures?)
     Creature profile includes respawn times, location keeps track (the Creature sends a message to the
         Location when it dies)
 Modes / Terrain interactions:

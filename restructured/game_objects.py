@@ -202,6 +202,11 @@ class Creature(GameObject):
         return self.strength * 5
 
 
+class Fox(Creature):
+    def __init__(self):
+        super().__init__(race='animal', name='fox', icon='f', color=console.fg.lightred)
+
+
 class Game:
     """
     Keep the game state: All elements that can change their own state (Creatures, effects, crops, etc.)
@@ -224,18 +229,19 @@ class Game:
         self.character: Optional[Creature] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
-        self._creature_coords: dict[Creature, tuple[int, int]] = {}
+        self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
 
-    def set_character_race(self, character_race):
+    def start_game(self, character_race):
         self.character = Creature(name=self.character_name, race=character_race,
                                   description='You are standing here.', color=console.fg.default,
                                   icon='@')
-        self._creature_coords[self.character] = (0, 0)
-        self._current_location = self.world.get_location(self._creature_coords[self.character])
-        self._current_location.add_creature(self.character, self._creature_coords[self.character])
+        initial_coords = (0, 0)
+        self._creature_coords[initial_coords] = self.character
+        self._current_location = self.world.get_location(initial_coords)
+        self._creature_coords = self._current_location.load_creatures(self._creature_coords)
         self.state = Game.playing_state
         self.substate = Game.scene_substate
 
@@ -250,7 +256,6 @@ class Game:
         return True
 
     def commands(self) -> dict:
-        # TODO: Offer different commands depending on state
         if self.state is Game.welcome_state:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
@@ -258,6 +263,7 @@ class Game:
             return {commands.Move(): self._move_character,
                     commands.Map(): self._open_map}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
+            # TODO: Move_map_focus should be a content command
             return {commands.Move(): self._move_map_focus,
                     commands.Close(): self._close_map}
 
@@ -302,6 +308,12 @@ class Game:
                     ver 0.7
                   Ivan Popov'''
 
+    def _get_coords_of_creature(self, creature: Creature) -> tuple[int, int]:
+        for coords in self._creature_coords:
+            if self._creature_coords[coords] is creature:
+                return coords
+        raise ValueError(f'Creature {creature.name} cannot be found in coords dictionary!')
+
     def get_current_location_name(self) -> str:
         return self._current_location.name
 
@@ -327,37 +339,39 @@ class Game:
     def get_area_view(self) -> str:
         # TODO: The Game gets the 8 neighbor locations and displays the Tiles to make the scene consistent
         #     when there is impassable Terrain in the neighbor Location
-        return self._current_location.data()
+        return self._current_location.data_with_creatures(self._creature_coords)
 
     def get_character_position_in_location(self) -> tuple[int, int]:
-        return self._creature_coords[self.character][0] % config.location_height, \
-               self._creature_coords[self.character][1] % config.location_width
+        return self._get_coords_of_creature(self.character)[0] % config.location_height, \
+               self._get_coords_of_creature(self.character)[1] % config.location_width
 
     def get_world_data(self) -> str:
         return self.world.data()
 
     def get_region_data(self, coords: tuple[int, int] = None) -> str:
         if coords is None:
-            coords = self._creature_coords[self.character]
+            coords = self._get_coords_of_creature(self.character)
         return self.world.get_region_data(coords)
 
     def _move_creature(self, creature: Creature, direction: str) -> None:
         # TODO: Once the character moves to a new location,
         #     the Game sends the old Location to the World for saving and requests a new one.
-        creature_location = self.world.get_location(self._creature_coords[creature])
+        creature_location = self.world.get_location(self._get_coords_of_creature(creature))
         if creature_location is not self._current_location:
             raise ValueError(f'Creatures outside of current location should not be moving! '
-                             f'{creature.name} {self._creature_coords[creature]}')
-        old_coords = self._creature_coords[creature]
-        new_coords = self._calculate_new_position(self._creature_coords[creature], direction)
-        # TODO: Implement creature check at new coords and interaction here
+                             f'{creature.name} {self._get_coords_of_creature(creature)}')
+        new_coords = self._calculate_new_position(self._get_coords_of_creature(creature), direction)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
-        if new_location.can_ocupy(creature, new_coords):
-            self._creature_coords[creature] = new_coords
-            old_location.remove_creature(old_coords)
+        if new_location.can_ocupy(creature, new_coords) and new_coords not in self._creature_coords:
+            self._creature_coords.pop(self._get_coords_of_creature(creature))
+            self._creature_coords[new_coords] = creature
             self._current_location = new_location
-            new_location.add_creature(creature, new_coords)
+            if self._current_location is not old_location:
+                for coords in list(self._creature_coords.keys()):
+                    if self._creature_coords[coords] is not self.character:
+                        self._creature_coords.pop(coords)
+                self._creature_coords = self._current_location.load_creatures(self._creature_coords)
         elif creature is self.character:
             # TODO: Implement log message describing why the move is impossible
             pass
@@ -387,10 +401,12 @@ class Game:
 class Terrain(GameObject):
     instances = []
 
-    def __init__(self, passable: bool = True, exhaustion_factor: int = 0, **kwargs):
+    def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
+                 spawned_creatures: tuple[Creature] = (Fox,), **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
+        self.spawned_creatures: tuple[Creature] = spawned_creatures
         Terrain.instances.append(self)
 
     def is_passable_for(self, creature):
@@ -542,7 +558,6 @@ class Tile(Container):
     def __init__(self, terrain: Terrain):
         super().__init__(height=3, width=3)
         self.terrain = terrain
-        self.creature: Optional[Creature] = None
 
     @property
     def contents(self) -> list[list[Item]]:
@@ -555,9 +570,10 @@ class Tile(Container):
 
     @property
     def icon(self):
-        if self.creature is not None:
-            return self.creature.icon
         return self.terrain.icon
+
+    def is_passable_for(self, creature: Creature):
+        return self.terrain.is_passable_for(creature)
 
 
 # TODO: Structures&NPCs generation
@@ -576,22 +592,55 @@ class Location(Container):
         self._contents: list[list[Tile]] = []
         self._top_left = top_left
         self._forces = forces
+        self._climate = climate
         self._terrains: list[Terrain] = []
         self._terrain_weights: list[float] = []
-        self._structure_terrains = {}
         self._region_name = region_name
+        self._filler_terrain = filler_terrains[climate][self._main_force()]
+        self._main_terrain = main_terrain
         self._flavor: Optional[FlavorTerrain] = None
+        self._flavor_force: Optional[str] = None
         self._structure: Optional[FlavorTerrain] = None
-        self._select_contents(base=main_terrain, climate=climate)
+        self._structure_terrains = {}
+        self._select_terrains()
         visual = self._structure or self._flavor or main_terrain
+        # TODO: Add the structure name
+        name = f'{str(self._top_left)}, {self._region_name}'
         super().__init__(height=config.location_height, width=config.location_width,
-                         icon=visual.raw_icon, color=visual.color)
+                         icon=visual.raw_icon, color=visual.color, name=name)
 
-    def _main_force(self):
+    def load_creatures(self, local_creatures: dict[tuple[int, int], Creature]) -> dict[tuple[int, int], Creature]:
+        # TODO: Get random creatures from the filler/base/flavor
+        # TODO: Get respawning creatures from the flavor/structure
+        # TODO: Get non-respawning creatures from the structure
+        creature_lists = [t.spawned_creatures for t in self._terrains]
+        weights = self._terrain_weights[:]
+        weights[1] += self._forces[self._main_force()]
+        weights[2] += self._forces[self._flavor_force]
+        for creature_count in range(int(sum(weights) // 20)):
+            chosen_list = random.choices(creature_lists, weights=weights)[0]
+            chosen_weights = self._generate_weights(len(chosen_list))
+            chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
+            new_coords = self._random_coords()
+            creature_instance = chosen_creature_type()
+            while new_coords in local_creatures or not self.can_ocupy(creature_instance, new_coords):
+                new_coords = self._random_coords()
+            local_creatures[new_coords] = creature_instance
+        return local_creatures
+
+    def _random_coords(self):
+        return random.randint(self._top_left[0], self._top_left[0] + self._height - 1),\
+            random.randint(self._top_left[1], self._top_left[1] + self._width - 1)
+
+    @staticmethod
+    def _generate_weights(list_length):
+        return [1/x for x in range(1, list_length + 1)]
+
+    def _main_force(self) -> str:
         rev_forces = {v: k for k, v in self._forces.items()}
         return rev_forces[max(rev_forces)]
 
-    def _select_contents(self, base: Terrain, climate: str) -> None:
+    def _select_terrains(self) -> None:
         max_base_terrain = 40
         max_flavor_terrain = 3
         base_weight = max_base_terrain * self._forces[self._main_force()] / 100
@@ -599,36 +648,28 @@ class Location(Container):
         forces = list(self._forces.keys())
         force_weights = [self._forces[f] for f in forces]
         random_force = random.choices(forces, weights=force_weights)[0]
-        available_flavors = [fl for fl in flavor_terrains[climate][random_force]
-                             if fl.appears_in(base, climate)]
+        available_flavors = [fl for fl in flavor_terrains[self._climate][random_force]
+                             if fl.appears_in(self._main_terrain, self._climate)]
         if random.random() > 0.8 and available_flavors:
             flavor = random.choice(available_flavors)
             self._flavor = flavor
+            self._flavor_force = random_force
         else:
-            flavor = base
+            flavor = self._main_terrain
+            self._flavor_force = self._main_force()
         flavor_weight = max_flavor_terrain * self._forces[random_force] / 100
         # Add filler terrain based on climate & force
-        filler = filler_terrains[climate][self._main_force()]
         filler_weight = 100 - base_weight - flavor_weight
-        self._terrains = [filler, base, flavor]
+        self._terrains = [self._filler_terrain, self._main_terrain, flavor]
         self._terrain_weights = [filler_weight, base_weight, flavor_weight]
         # Add a structure
         force = random.choices(forces, weights=force_weights)[0]
-        available_structures = [structure for structure in structures[climate][force]
-                                if structure.appears_in(base, climate)]
+        available_structures = [structure for structure in structures[self._climate][force]
+                                if structure.appears_in(self._main_terrain, self._climate)]
         if random.random() > 0.9 and available_structures:
             self._structure = random.choice(available_structures)
             self._structure_terrains = self._structure.new((config.location_height, config.location_width),
-                                                           filler)
-
-    @property
-    def name(self) -> str:
-        # TODO: Implement the area name as the area name + the region name, colored depending on the force.
-        #  The name implementation can be provided by the area (if it knows the region object)
-        #  Example: "Village of Stow, Woods of Despair"
-        #  The area has a name only if it has something to show on the map (resource, artifact, settlement),
-        #  otherwise it only carries the name of the region
-        return f'{str(self._top_left)}, {self._region_name}'
+                                                           self._filler_terrain)
 
     def _data_prep(self) -> None:
         if not self._contents:
@@ -646,24 +687,25 @@ class Location(Container):
         self._data_prep()
         return self._contents
 
-    def add_creature(self, creature: Creature, coords: tuple[int, int]) -> None:
-        self._tile_at(coords).creature = creature
-
-    def remove_creature(self, coords: tuple[int, int]) -> None:
-        tile = self._tile_at(coords)
-        if tile.creature is None:
-            raise ValueError(f'Tile at coords {coords} has no creature!')
-        tile.creature = None
-
     def can_ocupy(self, creature: Creature, coords: tuple[int, int]) -> bool:
-        return self._tile_at(coords).terrain.is_passable_for(creature)
+        return self._tile_at(coords).is_passable_for(creature)
 
     def _tile_at(self, coords: tuple[int, int]) -> Tile:
-        return self.contents[coords[0] - self._top_left[0]][coords[1] - self._top_left[1]]
+        new_coords = self._local_coords(coords)
+        try:
+            return self.contents[new_coords[0]][new_coords[1]]
+        except IndexError:
+            raise IndexError(f'Bad coordinates {coords} / {new_coords} for Location tile!')
 
-    def data(self) -> str:
+    def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
+        return coords[0] - self._top_left[0], coords[1] - self._top_left[1]
+
+    def data_with_creatures(self, creatures: dict[tuple[int, int], Creature] = None) -> str:
         rows = [[c.icon for c in row]
                 for row in self.contents]
+        for coords, creature in creatures.items():
+            local_coords = self._local_coords(coords)
+            rows[local_coords[0]][local_coords[1]] = creature.icon
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
