@@ -5,9 +5,9 @@ import console
 import config
 
 # TODO: Split the objects in modules by level of abstraction:
-#  GameObject/Container <- Race|Item|Creature|world|etc. <- Game
+#  GameObject/Container <- SentientSpecies|Item|Creature|world|etc. <- Game
 
-races = []
+sentient_races = []
 NATURE_FORCE = 'Nature'
 CHAOS_FORCE = 'Chaos'
 ORDER_FORCE = 'Order'
@@ -82,103 +82,173 @@ class Item(GameObject):
     pass
 
 
-class Race(GameObject):
+class Helmet(Item):
+    pass
+
+
+class Armor(Item):
+    pass
+
+
+class Back(Item):
+    pass
+
+
+class Boots(Item):
+    pass
+
+
+class MainHand(Item):
+    pass
+
+
+class Offhand(Item):
+    pass
+
+
+class Teeth(Item):
+    pass
+
+
+class Hide(Item):
+    pass
+
+
+class Claws(Item):
+    pass
+
+
+class Tail(Item):
+    pass
+
+
+class Meat(Item):
+    pass
+
+
+base_sentient_equipment = {'Helmet': Helmet, 'Armor': Armor, 'Back': Back,
+                           'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
+base_animal_equipment = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
+
+
+class Species(GameObject):
+    @property
+    def base_stats(self) -> dict[str, int]:
+        raise NotImplementedError(f'Class {self.__class__} must implement base stats!')
+
+
+class SentientSpecies(Species):
+    @property
+    def base_stats(self) -> dict[str, int]:
+        return {'Str': 5, 'End': 5, 'Will': 5, 'Dex': 5}
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        races.append(self)
+        sentient_races.append(self)
+        self.equipment = base_sentient_equipment.copy()
 
 
-human_race = Race(name='Human',
-                  icon='H',
-                  color=config.order_color,
-                  description='Explorers and treasure seekers, the human race combines the primal need '
-                              'of discovery with the perseverance that gave birth to all great empires.',
-                  sort_key=0)
-dwarf_race = Race(name='Dwarf',
-                  icon='D',
-                  color=config.order_color,
-                  description='Masters of the forge, they are drawn down into the depths of the world by '
-                              'an ancient instinct that rivals the bravery of human explorers.',
-                  sort_key=1)
-gnome_race = Race(name='Gnome',
-                  icon='G',
-                  color=config.order_color,
-                  description='The only race that views rocks as living things,'
-                              ' gnomes are friendly and easygoing.',
-                  sort_key=2)
-elf_race = Race(name='Elf',
-                icon='E',
-                color=config.order_color,
-                description='Expert mages and librarians, the elves have given the world'
-                            ' a lot of legendary heroes.',
-                sort_key=3)
-orc_race = Race(name='Orc',
-                icon='O',
-                color=config.chaos_color,
-                description='The most aggressive of races, orcs crave combat above all else.'
-                            ' They always keep a spare weapon around, just in case.',
-                sort_key=4)
-troll_race = Race(name='Troll',
-                  icon='T',
-                  color=config.chaos_color,
-                  description="Finding a tasty rock to eat makes a troll's day. Having "
-                              "someone to throw a rock at is a bonus that only a troll can appreciate in full.",
-                  sort_key=5)
-goblin_race = Race(name='Goblin',
-                   icon='G',
-                   color=config.chaos_color,
-                   description="For a goblin, everything can come in handy one day. They are"
-                               " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
-                   sort_key=6)
-kraken_race = Race(name='Kraken',
-                   icon='K',
-                   color=config.chaos_color,
-                   description="Descendants of deep sea monsters, the kraken have learned to "
-                               "reap even the most disgusting of water dwellers for useful substances.",
-                   sort_key=7)
-imp_race = Race(name='Imp',
-                icon='I',
-                color=config.chaos_color,
-                description="Fire burns in an imp's veins and dances over their fingers."
-                            " To burn is to feel alive!",
-                sort_key=8)
-dryad_race = Race(name='Dryad',
-                  icon='D',
-                  color=config.nature_color,
-                  description="The kin of plants, dryads are champions of the forest. They give"
-                              " trees their all and received undying love in return.",
-                  sort_key=9)
-shifter_race = Race(name='Shifter',
-                    icon='S',
-                    color=config.nature_color,
-                    description="A shifter can easily pass as a human if they cut their talon-like nails "
-                                "and keep their totemic tattoos hidden. They rarely do.",
-                    sort_key=10)
-water_elemental_race = Race(name='Water Elemental',
-                            icon='W',
-                            color=config.nature_color,
-                            description="To make other living beings see the beauty of water, elementals "
-                                        "turn it into art, home, and sustenance.",
-                            sort_key=11)
-fay_race = Race(name='Fay',
-                icon='F',
-                color=config.nature_color,
-                description="The fay are born from the natural magic of the world, and "
-                            "they have developed methods to manipulate it. Their ability to "
-                            "trespass into the dreams of others is an insignificant side effect.",
-                sort_key=12)
+class AnimalSpecies(Species):
+    @property
+    def base_stats(self) -> dict[str, int]:
+        return self._base_stats
+
+    def __init__(self, base_stats: dict[str, int] = None, **kwargs):
+        super().__init__(**kwargs)
+        self._base_stats = base_stats or {'Str': 5, 'End': 5, 'Will': 5, 'Dex': 5}
+        self.equipment = base_animal_equipment.copy()
+
+
+human_race = SentientSpecies(name='Human',
+                             icon='H',
+                             color=config.order_color,
+                             description='Explorers and treasure seekers, the human race combines the primal need '
+                                         'of discovery with the perseverance that gave birth to all great empires.',
+                             sort_key=0)
+dwarf_race = SentientSpecies(name='Dwarf',
+                             icon='D',
+                             color=config.order_color,
+                             description='Masters of the forge, they are drawn down into the depths of the world by '
+                                         'an ancient instinct that rivals the bravery of human explorers.',
+                             sort_key=1)
+gnome_race = SentientSpecies(name='Gnome',
+                             icon='G',
+                             color=config.order_color,
+                             description='The only race that views rocks as living things,'
+                                         ' gnomes are friendly and easygoing.',
+                             sort_key=2)
+elf_race = SentientSpecies(name='Elf',
+                           icon='E',
+                           color=config.order_color,
+                           description='Expert mages and librarians, the elves have given the world'
+                                       ' a lot of legendary heroes.',
+                           sort_key=3)
+orc_race = SentientSpecies(name='Orc',
+                           icon='O',
+                           color=config.chaos_color,
+                           description='The most aggressive of races, orcs crave combat above all else.'
+                                       ' They always keep a spare weapon around, just in case.',
+                           sort_key=4)
+troll_race = SentientSpecies(name='Troll',
+                             icon='T',
+                             color=config.chaos_color,
+                             description="Finding a tasty rock to eat makes a troll's day. Having "
+                                         "someone to throw a rock at is a bonus that only a troll "
+                                         "can appreciate in full.",
+                             sort_key=5)
+goblin_race = SentientSpecies(name='Goblin',
+                              icon='G',
+                              color=config.chaos_color,
+                              description="For a goblin, everything can come in handy one day. They are"
+                                          " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
+                              sort_key=6)
+kraken_race = SentientSpecies(name='Kraken',
+                              icon='K',
+                              color=config.chaos_color,
+                              description="Descendants of deep sea monsters, the kraken have learned to "
+                                          "reap even the most disgusting of water dwellers for useful substances.",
+                              sort_key=7)
+imp_race = SentientSpecies(name='Imp',
+                           icon='I',
+                           color=config.chaos_color,
+                           description="Fire burns in an imp's veins and dances over their fingers."
+                                       " To burn is to feel alive!",
+                           sort_key=8)
+dryad_race = SentientSpecies(name='Dryad',
+                             icon='D',
+                             color=config.nature_color,
+                             description="The kin of plants, dryads are champions of the forest. They give"
+                                         " trees their all and received undying love in return.",
+                             sort_key=9)
+shifter_race = SentientSpecies(name='Shifter',
+                               icon='S',
+                               color=config.nature_color,
+                               description="A shifter can easily pass as a human if they cut their talon-like nails "
+                                           "and keep their totemic tattoos hidden. They rarely do.",
+                               sort_key=10)
+water_elemental_race = SentientSpecies(name='Water Elemental',
+                                       icon='W',
+                                       color=config.nature_color,
+                                       description="To make other living beings see the beauty of water, elementals "
+                                                   "turn it into art, home, and sustenance.",
+                                       sort_key=11)
+fay_race = SentientSpecies(name='Fay',
+                           icon='F',
+                           color=config.nature_color,
+                           description="The fay are born from the natural magic of the world, and "
+                                       "they have developed methods to manipulate it. Their ability to "
+                                       "trespass into the dreams of others is an insignificant side effect.",
+                           sort_key=12)
+fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred)
 
 
 class Creature(GameObject):
     # TODO: Creatures have goals and they ask the Location for the path to the closest
     #  Tile that satisfies the goal
-    def __init__(self, race=None, **kwargs):
+    def __init__(self, race: Species = None, **kwargs):
         super().__init__(**kwargs)
         self.race = race
-        self.strength = 5
-        self.dexterity = 5
-        self.will = 5
-        self.endurance = 5
+        self.stats = self.race.base_stats.copy()
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self.hp = self.max_hp
         self.mana = self.max_mana
@@ -187,24 +257,24 @@ class Creature(GameObject):
 
     @property
     def max_hp(self):
-        return self.strength + 2 * self.endurance
+        return self.stats['Str'] + 2 * self.stats['End']
 
     @property
     def max_mana(self):
-        return self.will * 10
+        return self.stats['Will'] * 10
 
     @property
     def max_energy(self):
-        return self.endurance * 10
+        return self.stats['End'] * 10
 
     @property
     def max_load(self):
-        return self.strength * 5
+        return self.stats['Str'] * 5
 
 
 class Fox(Creature):
     def __init__(self):
-        super().__init__(race='animal', name='fox', icon='f', color=console.fg.lightred)
+        super().__init__(race=fox_species, name='fox', icon='f', color=console.fg.lightred)
 
 
 class Game:
@@ -223,7 +293,7 @@ class Game:
     map_substate = 'world_map'
     high_score_state = 'high_score'
     ended_state = 'ended'
-    races = races
+    races = sentient_races
 
     def __init__(self):
         self.character: Optional[Creature] = None
@@ -457,11 +527,11 @@ junk_pile = FlavorTerrain(color=console.fg.lightblack, description='junk pile', 
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 lava = FlavorTerrain(color=console.fg.red, description='lava', icon='~', passable=False,
                      required_base_terrains=all_base_terrains, required_climates=[HOT_CLIMATE])
-gold_vein = FlavorTerrain(color=console.fg.lightblack, description='gold vein', icon='%', passable=False,
+gold_vein = FlavorTerrain(color=console.fg.lightyellow, description='gold vein', icon='%', passable=False,
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
-silver_vein = FlavorTerrain(color=console.fg.lightblack, description='silver vein', icon='%', passable=False,
+silver_vein = FlavorTerrain(color=console.fg.lightcyan, description='silver vein', icon='%', passable=False,
                             required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
-iron_vein = FlavorTerrain(color=console.fg.lightblack, description='iron vein', icon='%', passable=False,
+iron_vein = FlavorTerrain(color=console.fg.lightblue, description='iron vein', icon='%', passable=False,
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, description='mossy rock', icon='%', passable=False,
                            required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
@@ -629,12 +699,12 @@ class Location(Container):
         return local_creatures
 
     def _random_coords(self):
-        return random.randint(self._top_left[0], self._top_left[0] + self._height - 1),\
+        return random.randint(self._top_left[0], self._top_left[0] + self._height - 1), \
             random.randint(self._top_left[1], self._top_left[1] + self._width - 1)
 
     @staticmethod
     def _generate_weights(list_length):
-        return [1/x for x in range(1, list_length + 1)]
+        return [1 / x for x in range(1, list_length + 1)]
 
     def _main_force(self) -> str:
         rev_forces = {v: k for k, v in self._forces.items()}

@@ -1,5 +1,26 @@
-Game passes to Location the creatures to add to the data?
+FEATURES
+Inventory
+    Equipment
+    Bag (Inventory screen)
+    Basic items
+    Equip command (from Inventory/Tile to Equipment)
+    Unequip command (from Equipment to Inventory/Tile)
+    Pick up command (from Tile to Inventory)
+    Drop (from Inventory to Tile)
+    ---
+    Consume item
+Combat
+    Creature disposition
+    Normal mode
+    Combat mechanics
+    Item drops (chance to break based on race and equipment slot, i.e., animals give hide,
+        but not always claws)
 
+Character
+    Character screen
+    Stats improvement
+    Skills
+    Skills improvement
 
 Creatures:
     Random: disappear when you leave the Location, rerolled every time. Terrains define the number,
@@ -12,7 +33,7 @@ Creatures:
       boss if the first one is still around).
     Random creatures can become permanent by taming or convincing to stay (need a home terrain).
     Respawning creatures are automatically created permanent.
-    When refreshing a location:
+    When entering a location:
         1) all permanents are loaded
         2) the spawn profile is updated using the terrains
         2) the roles of the permanents are subtracted from the spawn profile and any remaining
