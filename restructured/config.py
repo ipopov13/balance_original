@@ -1,5 +1,6 @@
 import console
 
+tile_size = 5  # Width&height of Tile as container
 location_height: int = 21
 location_width: int = 78
 region_size: int = 9  # Locations per row & column
@@ -17,6 +18,8 @@ energy_color = console.bg.lightgreen
 load_color = console.bg.white
 brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
+
+multiple_items_icon = '?'
 
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '

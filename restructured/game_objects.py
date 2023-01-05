@@ -55,7 +55,7 @@ class Container(GameObject):
         super().__init__(**kwargs)
         self._width = width
         self._height = height
-        self._contents: list[list] = []
+        self._contents: list[list] = [[] for _ in range(self._height)]
 
     @property
     def contents(self):
@@ -68,8 +68,6 @@ class Container(GameObject):
         Can be overridden by subclasses for extra functionality
         """
         pass
-        # TODO: items get the correct sort_key when being added into a physical container.
-        #  The key is their location inside the container!
 
     def data(self) -> str:
         rows = [[c.icon for c in row]
@@ -327,6 +325,10 @@ class Game:
         self._creature_coords[initial_coords] = self.character
         self._current_location = self.world.get_location(initial_coords)
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
+        self._current_location.put_item(short_sword, initial_coords)
+        self._current_location.put_item(short_sword, initial_coords)
+        self._current_location.put_item(short_sword, initial_coords)
+
         self.state = Game.playing_state
         self.substate = Game.scene_substate
 
@@ -405,7 +407,8 @@ class Game:
         return self.character.current_equipment
 
     def get_available_equipment(self) -> list[GameObject]:
-        return [short_sword]
+        tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
+        return tile_items
 
     def equip_item(self, item):
         if item is not None:
@@ -418,8 +421,8 @@ class Game:
         if self._equipping_for is None:
             self.substate = Game.scene_substate
         else:
-            if self.character.current_equipment[slot] is not None:
-                self.character.current_equipment[slot] = None
+            if self.character.current_equipment[self._equipping_for] is not None:
+                self.character.current_equipment[self._equipping_for] = None
                 self._equipping_for = None
             else:
                 self.substate = Game.equip_for_substate
@@ -666,7 +669,7 @@ structures = {
 
 class Tile(Container):
     def __init__(self, terrain: Terrain):
-        super().__init__(height=3, width=3)
+        super().__init__(height=config.tile_size, width=config.tile_size)
         self.terrain = terrain
 
     @property
@@ -675,15 +678,36 @@ class Tile(Container):
         return self._contents
 
     @property
+    def item_list(self):
+        full_list = []
+        for line in self.contents:
+            full_list += line
+        return full_list
+
+    @property
     def description(self):
         return self.terrain.description
 
     @property
     def icon(self):
+        items = self.item_list
+        if len(items) == 1:
+            return items[0].icon
+        elif len(items) > 1:
+            return config.multiple_items_icon
         return self.terrain.icon
 
     def is_passable_for(self, creature: Creature):
         return self.terrain.is_passable_for(creature)
+
+    def has_space_for_items(self):
+        return self.terrain.passable and len(self.item_list) < self._height * self._width
+
+    def add_item(self, item: Item):
+        for row_index in range(self._height):
+            if len(self._contents[row_index]) < self._width:
+                self._contents[row_index].append(item)
+                break
 
 
 # TODO: Structures&NPCs generation
@@ -699,7 +723,6 @@ class Location(Container):
 
     def __init__(self, top_left: tuple[int, int] = (0, 0), forces: dict[str, int] = None,
                  main_terrain: Terrain = None, climate: str = None, region_name: str = None):
-        self._contents: list[list[Tile]] = []
         self._top_left = top_left
         self._forces = forces
         self._climate = climate
@@ -718,6 +741,7 @@ class Location(Container):
         name = f'{str(self._top_left)}, {self._region_name}'
         super().__init__(height=config.location_height, width=config.location_width,
                          icon=visual.raw_icon, color=visual.color, name=name)
+        self._contents: list[list[Tile]] = []
 
     def load_creatures(self, local_creatures: dict[tuple[int, int], Creature]) -> dict[tuple[int, int], Creature]:
         # TODO: Get random creatures from the filler/base/flavor
@@ -819,6 +843,16 @@ class Location(Container):
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
+    def items_at(self, coords: tuple[int, int]) -> list[GameObject]:
+        return self._tile_at(coords).item_list
+
+    def put_item(self, item: Item, coords: tuple[int, int]) -> None:
+        tile = self._tile_at(coords)
+        if tile.has_space_for_items():
+            tile.add_item(item)
+        else:
+            raise NotImplementedError(f'Implement flood fill algorithm for getting a tile with enough space.')
+
 
 # TODO: Rolls the base terrains on init
 # TODO: PoI selection and randomization
@@ -857,7 +891,7 @@ class Region(Container):
                          name=name, icon=self._main_terrain.raw_icon, color=self._main_terrain.color)
 
     def _data_prep(self) -> None:
-        if not self._contents:
+        if not self._contents[0]:
             self._generate_locations()
 
     @property

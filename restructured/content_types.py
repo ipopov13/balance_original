@@ -163,7 +163,7 @@ class PagedList(WindowContent):
         current_start_index = 0
         for i, content in enumerate(contents):
             if current_size + content > config.max_text_lines_on_page \
-                    or i - current_start_index > 10:
+                    or i - current_start_index > 9:
                 pages.append((current_start_index, i))
                 current_size = content
                 current_start_index = i
