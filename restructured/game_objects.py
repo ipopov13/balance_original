@@ -129,6 +129,8 @@ class Meat(Item):
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
                                  'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
 base_animal_equipment_slots = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
+# Items
+short_sword = MainHand(name='short sword', icon='|', color=console.fg.default, description='Made for stabbing.')
 
 
 class Species(GameObject):
@@ -403,7 +405,7 @@ class Game:
         return self.character.current_equipment
 
     def get_available_equipment(self) -> list[GameObject]:
-        return []
+        return [short_sword]
 
     def equip_item(self, item):
         if item is not None:
@@ -416,7 +418,11 @@ class Game:
         if self._equipping_for is None:
             self.substate = Game.scene_substate
         else:
-            self.substate = Game.equip_for_substate
+            if self.character.current_equipment[slot] is not None:
+                self.character.current_equipment[slot] = None
+                self._equipping_for = None
+            else:
+                self.substate = Game.equip_for_substate
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
