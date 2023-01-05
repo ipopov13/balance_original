@@ -315,7 +315,9 @@ class Game:
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
 
-    def start_game(self, character_race):
+    def start_game(self, character_race) -> None:
+        if character_race is None:
+            return
         self.character = Creature(name=self.character_name, race=character_race,
                                   description='You are standing here.', color=console.fg.default,
                                   icon='@')
@@ -345,11 +347,9 @@ class Game:
                     commands.Map(): self._open_map,
                     commands.Equipment(): self._open_equipment}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
-            # TODO: Move_map_focus should be a content command
-            return {commands.Move(): self._move_map_focus,
-                    commands.Close(): self._back_to_scene}
-        elif self.state is Game.playing_state and self.substate is Game.equipment_substate:
             return {commands.Close(): self._back_to_scene}
+        else:
+            return {}
 
     def _open_equipment(self, _) -> bool:
         self.substate = Game.equipment_substate
@@ -358,9 +358,6 @@ class Game:
     def _back_to_scene(self, _) -> bool:
         self.substate = Game.scene_substate
         return True
-
-    def _move_map_focus(self, _):
-        raise NotImplementedError
 
     def _open_map(self, _) -> bool:
         self.substate = Game.map_substate
@@ -409,12 +406,17 @@ class Game:
         return []
 
     def equip_item(self, item):
-        self.character.current_equipment[self._equipping_for] = item
+        if item is not None:
+            self.character.current_equipment[self._equipping_for] = item
         self.substate = Game.equipment_substate
+        self._equipping_for = None
 
     def equip_for(self, slot: str):
         self._equipping_for = slot
-        self.substate = Game.equip_for_substate
+        if self._equipping_for is None:
+            self.substate = Game.scene_substate
+        else:
+            self.substate = Game.equip_for_substate
 
     def get_current_location_name(self) -> str:
         return self._current_location.name

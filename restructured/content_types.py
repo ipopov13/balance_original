@@ -72,7 +72,11 @@ class MapScreen(WindowContent):
         self._map_top_left = {MapScreen.WORLD: (1, 1),
                               MapScreen.REGION: (4 + config.world_size, 1)}
         self._selected_pos = (0, 0)
-        self._own_commands = {commands.SwitchMaps(): self._switch_maps}
+        self._own_commands = {commands.Move(): self._move_map_focus,
+                              commands.SwitchMaps(): self._switch_maps}
+
+    def _move_map_focus(self, direction):
+        raise NotImplementedError
 
     def _switch_maps(self, _) -> bool:
         if self._active_map is MapScreen.WORLD:
@@ -115,8 +119,10 @@ class PagedList(WindowContent):
         raise NotImplementedError(f'Class {self.__class__} must implement _get_items()!')
 
     def commands(self) -> dict:
-        return {commands.NextPage(): self._next_page,
-                commands.PreviousPage(): self._previous_page}
+        if len(self._pages) > 1:
+            return {commands.NextPage(): self._next_page,
+                    commands.PreviousPage(): self._previous_page}
+        return {}
 
     def _next_page(self, _):
         self._current_page = min(self._current_page + 1, len(self._pages) - 1)
