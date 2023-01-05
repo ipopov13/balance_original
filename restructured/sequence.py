@@ -80,6 +80,7 @@ class GameSequence:
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:
             return Window(ui=ui, content=MapScreen(ui.game), border=True, title='Map')
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.equipment_substate:
-            return SelectionWindow(ui=ui, content=EquipmentScreen(ui.game), border=True, title='Equipment')
+            return SelectionWindow(ui=ui, content=EquipmentScreen(ui.game), border=True, title='Equipment',
+                                   target=ui.game.equip_for)
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

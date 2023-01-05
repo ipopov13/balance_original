@@ -44,9 +44,10 @@ class EquipmentScreen(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
         self._own_commands = {}
-        equipment_slot, equipment = self.game_object.get_equipment_data()
+        equipment = self.game_object.get_equipment_data()
+        self._listing = dict(enumerate(equipment.items()))
         self._content = []
-        for number, (slot, item) in enumerate(equipment.items()):
+        for number, (slot, item) in self._listing.items():
             item_name = 'empty' if item is None else item.name
             self._content.append(f'{number}) {slot}: {item_name}')
 
@@ -57,8 +58,8 @@ class EquipmentScreen(WindowContent):
     def max_choice(self) -> int:
         return len(self._content)
 
-    def return_object(self, chosen_slot: int):
-        raise NotImplementedError
+    def return_object(self, chosen_slot: str) -> str:
+        return self._listing[int(chosen_slot)][0]
 
 
 class MapScreen(WindowContent):
@@ -120,7 +121,7 @@ class PagedList(WindowContent):
     def _previous_page(self, _):
         self._current_page = max(self._current_page - 1, 0)
 
-    def return_object(self, object_number_in_page_as_string):
+    def return_object(self, object_number_in_page_as_string: str):
         absolute_object_number = self._pages[self._current_page][0] + int(object_number_in_page_as_string)
         return self.game_object[absolute_object_number]
 

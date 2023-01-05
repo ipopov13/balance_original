@@ -300,6 +300,7 @@ class Game:
     scene_substate = 'game_scene'
     map_substate = 'world_map'
     equipment_substate = 'equipment_screen'
+    equip_for_substate = 'equip_for_screen'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -308,6 +309,7 @@ class Game:
         self.character: Optional[Creature] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
+        self._equipping_for: Optional[str] = None
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -400,8 +402,12 @@ class Game:
                 return coords
         raise ValueError(f'Creature {creature.name} cannot be found in coords dictionary!')
 
-    def get_equipment_data(self) -> tuple[dict, dict]:
-        return self.character.equipment_slots, self.character.current_equipment
+    def get_equipment_data(self) -> dict[str, Item]:
+        return self.character.current_equipment
+
+    def equip_for(self, slot: str):
+        self._equipping_for = slot
+        self.substate = Game.equip_for_substate
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
