@@ -58,7 +58,7 @@ The window Content:
 
 """
 from windows import Window, InputWindow, SelectionWindow
-from content_types import WindowContent, PagedList, TextInputField, GameScene, MapScreen
+from content_types import WindowContent, PagedList, TextInputField, GameScene, MapScreen, EquipmentScreen
 from game_objects import Game
 import config
 
@@ -79,5 +79,7 @@ class GameSequence:
                           content=GameScene(ui.game))
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:
             return Window(ui=ui, content=MapScreen(ui.game), border=True, title='Map')
+        elif ui.game.state is Game.playing_state and ui.game.substate is Game.equipment_substate:
+            return Window(ui=ui, content=EquipmentScreen(ui.game), border=True, title='Equipment')
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')

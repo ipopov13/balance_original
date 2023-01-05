@@ -155,7 +155,7 @@ class AnimalSpecies(Species):
 
     def __init__(self, base_stats: dict[str, int] = None, **kwargs):
         super().__init__(**kwargs)
-        self._base_stats = base_stats or {'Str': 5, 'End': 5, 'Will': 5, 'Dex': 5}
+        self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1}
         self.equipment = base_animal_equipment.copy()
 
 
@@ -291,6 +291,7 @@ class Game:
     # TODO: Implement subs: inventory, equipment, open_container, etc.
     scene_substate = 'game_scene'
     map_substate = 'world_map'
+    equipment_substate = 'equipment_screen'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -331,13 +332,20 @@ class Game:
                     commands.LoadGame(): self._initiate_load}
         elif self.state is Game.playing_state and self.substate is Game.scene_substate:
             return {commands.Move(): self._move_character,
-                    commands.Map(): self._open_map}
+                    commands.Map(): self._open_map,
+                    commands.Equipment(): self._open_equipment}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
             # TODO: Move_map_focus should be a content command
             return {commands.Move(): self._move_map_focus,
-                    commands.Close(): self._close_map}
+                    commands.Close(): self._back_to_scene}
+        elif self.state is Game.playing_state and self.substate is Game.equipment_substate:
+            return {commands.Close(): self._back_to_scene}
 
-    def _close_map(self, _) -> bool:
+    def _open_equipment(self, _) -> bool:
+        self.substate = Game.equipment_substate
+        return True
+
+    def _back_to_scene(self, _) -> bool:
         self.substate = Game.scene_substate
         return True
 

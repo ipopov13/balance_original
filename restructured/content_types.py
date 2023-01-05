@@ -43,6 +43,11 @@ class GameScene(WindowContent):
         return self.game_object.get_character_position_in_location()
 
 
+class EquipmentScreen(WindowContent):
+    def data(self) -> str:
+        return ''
+
+
 class MapScreen(WindowContent):
     WORLD = 'World'
     REGION = 'Region'
