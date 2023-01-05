@@ -45,7 +45,12 @@ class GameScene(WindowContent):
 
 class EquipmentScreen(WindowContent):
     def data(self) -> str:
-        return ''
+        equipment_slot, equipment = self.game_object.get_equipment_data()
+        content = []
+        for number, (slot, item) in enumerate(equipment.items(), 1):
+            item_name = 'empty' if item is None else item.name
+            content.append(f'{number}) {slot}: {item_name}')
+        return '\n'.join(content)
 
 
 class MapScreen(WindowContent):

@@ -126,15 +126,21 @@ class Meat(Item):
     pass
 
 
-base_sentient_equipment = {'Helmet': Helmet, 'Armor': Armor, 'Back': Back,
-                           'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
-base_animal_equipment = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
+base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
+                                 'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
+base_animal_equipment_slots = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
 
 
 class Species(GameObject):
+    _equipment_slots = {}
+
     @property
     def base_stats(self) -> dict[str, int]:
         raise NotImplementedError(f'Class {self.__class__} must implement base stats!')
+
+    @property
+    def equipment_slots(self):
+        return self._equipment_slots
 
 
 class SentientSpecies(Species):
@@ -145,7 +151,7 @@ class SentientSpecies(Species):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         sentient_races.append(self)
-        self.equipment = base_sentient_equipment.copy()
+        self._equipment_slots = base_sentient_equipment_slots.copy()
 
 
 class AnimalSpecies(Species):
@@ -156,7 +162,7 @@ class AnimalSpecies(Species):
     def __init__(self, base_stats: dict[str, int] = None, **kwargs):
         super().__init__(**kwargs)
         self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1}
-        self.equipment = base_animal_equipment.copy()
+        self._equipment_slots = base_animal_equipment_slots.copy()
 
 
 human_race = SentientSpecies(name='Human',
@@ -249,6 +255,8 @@ class Creature(GameObject):
         super().__init__(**kwargs)
         self.race = race
         self.stats = self.race.base_stats.copy()
+        self.equipment_slots = self.race.equipment_slots
+        self.current_equipment = {k: None for k in self.equipment_slots}
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self.hp = self.max_hp
         self.mana = self.max_mana
@@ -391,6 +399,9 @@ class Game:
             if self._creature_coords[coords] is creature:
                 return coords
         raise ValueError(f'Creature {creature.name} cannot be found in coords dictionary!')
+
+    def get_equipment_data(self) -> tuple[dict, dict]:
+        return self.character.equipment_slots, self.character.current_equipment
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
