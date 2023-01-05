@@ -102,14 +102,17 @@ class MapScreen(WindowContent):
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
-        sorted_list = sorted(self.game_object, key=lambda x: x.sort_key)
+        self.sorted_item_list = self._get_items()
         self._item_descriptions = [f'{console.fg.yellow}#)'
                                    f' {self._line_up(f"{item.name}: {item.description}")}'
                                    .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
-                                   for number, item in enumerate(sorted_list)]
+                                   for number, item in enumerate(self.sorted_item_list)]
         description_lines = [len(desc.split('\n')) for desc in self._item_descriptions]
         self._pages = self._paginate(description_lines)
         self._current_page = 0
+
+    def _get_items(self) -> list:
+        raise NotImplementedError(f'Class {self.__class__} must implement _get_items()!')
 
     def commands(self) -> dict:
         return {commands.NextPage(): self._next_page,
@@ -123,24 +126,27 @@ class PagedList(WindowContent):
 
     def return_object(self, object_number_in_page_as_string: str):
         absolute_object_number = self._pages[self._current_page][0] + int(object_number_in_page_as_string)
-        return self.game_object[absolute_object_number]
+        return self.sorted_item_list[absolute_object_number]
 
-    def _current_page_content(self):
+    def _current_page_content(self) -> list[str]:
+        if not self.sorted_item_list:
+            return ['There is no suitable item to use here.']
         curr_start, curr_end = self._pages[self._current_page]
         return self._item_descriptions[curr_start:curr_end]
 
     def data(self) -> str:
         contents = self._current_page_content()
-        numbered_contents = [content.replace('#)', f'{n})') for content, n
-                             in zip(contents, range(len(contents)))]
-        hint_line = ' ' * config.max_text_line_length
-        if self._current_page < len(self._pages) - 1:
-            hint = commands.NextPage.hint
-            hint_line = hint_line[:-1 * len(hint)] + hint
-        if self._current_page > 0:
-            hint = commands.PreviousPage.hint
-            hint_line = hint + hint_line[len(hint):]
-        final_contents = numbered_contents + [hint_line]
+        final_contents = [content.replace('#)', f'{n})') for content, n
+                          in zip(contents, range(len(contents)))]
+        if len(self._pages) > 1:
+            hint_line = ' ' * config.max_text_line_length
+            if self._current_page < len(self._pages) - 1:
+                hint = commands.NextPage.hint
+                hint_line = hint_line[:-1 * len(hint)] + hint
+            if self._current_page > 0:
+                hint = commands.PreviousPage.hint
+                hint_line = hint + hint_line[len(hint):]
+            final_contents = final_contents + [hint_line]
         return '\n'.join(final_contents)
 
     @staticmethod
@@ -163,7 +169,10 @@ class PagedList(WindowContent):
 
     @property
     def max_choice(self):
-        return len(self._current_page_content())
+        if self.sorted_item_list:
+            return len(self._current_page_content())
+        else:
+            return 0
 
     @staticmethod
     def _line_up(text: str) -> str:
@@ -180,6 +189,16 @@ class PagedList(WindowContent):
             lines.append(padding + a_line.strip())
             text = text[len(a_line):].strip()
         return '\n'.join(lines)
+
+
+class SentientSpeciesList(PagedList):
+    def _get_items(self) -> list:
+        return sorted(self.game_object.races, key=lambda x: x.sort_key)
+
+
+class EquipmentList(PagedList):
+    def _get_items(self) -> list:
+        return sorted(self.game_object.get_available_equipment(), key=lambda x: x.sort_key)
 
 
 class DescriptionList(WindowContent):

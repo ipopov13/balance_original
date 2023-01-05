@@ -405,6 +405,13 @@ class Game:
     def get_equipment_data(self) -> dict[str, Item]:
         return self.character.current_equipment
 
+    def get_available_equipment(self) -> list[GameObject]:
+        return []
+
+    def equip_item(self, item):
+        self.character.current_equipment[self._equipping_for] = item
+        self.substate = Game.equipment_substate
+
     def equip_for(self, slot: str):
         self._equipping_for = slot
         self.substate = Game.equip_for_substate

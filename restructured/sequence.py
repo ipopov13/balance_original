@@ -58,7 +58,8 @@ The window Content:
 
 """
 from windows import Window, InputWindow, SelectionWindow
-from content_types import WindowContent, PagedList, TextInputField, GameScene, MapScreen, EquipmentScreen
+from content_types import WindowContent, TextInputField, GameScene, MapScreen,\
+    EquipmentScreen, EquipmentList, SentientSpeciesList
 from game_objects import Game
 import config
 
@@ -73,7 +74,7 @@ class GameSequence:
                                content=TextInputField(), target=ui.game.set_character_name)
         elif ui.game.state is Game.new_game_state and ui.game.substate is Game.race_selection_substate:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
-                                   content=PagedList(Game.races), target=ui.game.start_game)
+                                   content=SentientSpeciesList(ui.game), target=ui.game.start_game)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.scene_substate:
             return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True,
                           content=GameScene(ui.game))
@@ -82,5 +83,8 @@ class GameSequence:
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.equipment_substate:
             return SelectionWindow(ui=ui, content=EquipmentScreen(ui.game), border=True, title='Equipment',
                                    target=ui.game.equip_for)
+        elif ui.game.state is Game.playing_state and ui.game.substate is Game.equip_for_substate:
+            return SelectionWindow(ui=ui, content=EquipmentList(ui.game), border=True,
+                                   title='What do you want to equip?', target=ui.game.equip_item)
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')
