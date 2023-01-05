@@ -6,15 +6,12 @@ import console
 class WindowContent:
     def __init__(self, game_object):
         self.game_object = game_object
-
-    @staticmethod
-    def _own_commands() -> dict:
-        return {}
+        self._own_commands = {}
 
     def commands(self) -> dict:
         """Combine the content-specific and object-specific commands"""
         return {**self._object_commands(),
-                **self._own_commands()}
+                **self._own_commands}
 
     def data(self) -> str:
         return self.game_object.data()
@@ -44,13 +41,24 @@ class GameScene(WindowContent):
 
 
 class EquipmentScreen(WindowContent):
-    def data(self) -> str:
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self._own_commands = {}
         equipment_slot, equipment = self.game_object.get_equipment_data()
-        content = []
-        for number, (slot, item) in enumerate(equipment.items(), 1):
+        self._content = []
+        for number, (slot, item) in enumerate(equipment.items()):
             item_name = 'empty' if item is None else item.name
-            content.append(f'{number}) {slot}: {item_name}')
-        return '\n'.join(content)
+            self._content.append(f'{number}) {slot}: {item_name}')
+
+    def data(self) -> str:
+        return '\n'.join(self._content)
+
+    @property
+    def max_choice(self) -> int:
+        return len(self._content)
+
+    def return_object(self, chosen_slot: int):
+        raise NotImplementedError
 
 
 class MapScreen(WindowContent):
@@ -63,9 +71,7 @@ class MapScreen(WindowContent):
         self._map_top_left = {MapScreen.WORLD: (1, 1),
                               MapScreen.REGION: (4 + config.world_size, 1)}
         self._selected_pos = (0, 0)
-
-    def _own_commands(self) -> dict:
-        return {commands.SwitchMaps(): self._switch_maps}
+        self._own_commands = {commands.SwitchMaps(): self._switch_maps}
 
     def _switch_maps(self, _) -> bool:
         if self._active_map is MapScreen.WORLD:
