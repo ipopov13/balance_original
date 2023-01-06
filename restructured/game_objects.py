@@ -309,7 +309,7 @@ class Game:
         self.character: Optional[Creature] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
-        self._equipping_for: Optional[str] = None
+        self._equipping_slot: Optional[str] = None
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -408,22 +408,27 @@ class Game:
 
     def get_available_equipment(self) -> list[GameObject]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
-        return tile_items
+        if self._equipping_slot is None:
+            raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
+        else:
+            item_type = self.character.equipment_slots[self._equipping_slot]
+        filtered_items = [item for item in tile_items if isinstance(item, item_type)]
+        return filtered_items
 
     def equip_item(self, item):
         if item is not None:
-            self.character.current_equipment[self._equipping_for] = item
+            self.character.current_equipment[self._equipping_slot] = item
         self.substate = Game.equipment_substate
-        self._equipping_for = None
+        self._equipping_slot = None
 
     def equip_for(self, slot: str):
-        self._equipping_for = slot
-        if self._equipping_for is None:
+        self._equipping_slot = slot
+        if self._equipping_slot is None:
             self.substate = Game.scene_substate
         else:
-            if self.character.current_equipment[self._equipping_for] is not None:
-                self.character.current_equipment[self._equipping_for] = None
-                self._equipping_for = None
+            if self.character.current_equipment[self._equipping_slot] is not None:
+                self.character.current_equipment[self._equipping_slot] = None
+                self._equipping_slot = None
             else:
                 self.substate = Game.equip_for_substate
 

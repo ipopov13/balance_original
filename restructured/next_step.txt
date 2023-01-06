@@ -1,8 +1,11 @@
 FEATURES
 Inventory
     Equipment
+     *  Removing items from the previous container
     Bag (Inventory screen)
+    Equipping from bag & tile
     Basic items
+    Character load (sum of equipment weight; physical containers should have weight property own+contents)
     Equip command (from Inventory/Tile to Equipment)
     Unequip command (from Equipment to Inventory/Tile)
     Pick up command (from Tile to Inventory)
@@ -43,7 +46,7 @@ Creatures:
     Creature priority: permanent > respawning. Random are always rerolled and added.
 Locations:
     Add Structure flavors from the excel
-  * Add creature profile to Locations (automatic from the terrains/Structures?)
+    Add creature profile to Locations (automatic from the terrains/Structures?)
     Creature profile includes respawn times, location keeps track (the Creature sends a message to the
         Location when it dies)
 Modes / Terrain interactions:
