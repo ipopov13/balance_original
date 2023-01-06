@@ -100,7 +100,7 @@ class DualContainerScreen(WindowContent):
         top_border = top_border_raw.center(self._max_view_width, ' ')
         bottom_border = bottom_border_raw.center(self._max_view_width, ' ')
         left_pad = ' ' * ((self._max_view_width - container_size[1]) // 2)
-        self._extra_pads[self._active_container] = len(left_pad)
+        self._extra_pads[container_name] = len(left_pad)
         right_pad = ' ' * (self._max_view_width - container_size[1] - len(left_pad))
         newline_replacement = right_pad + '\n' + left_pad
         padded_content = left_pad + container_data.replace('\n', newline_replacement) + right_pad
