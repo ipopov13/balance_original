@@ -77,6 +77,12 @@ class Container(GameObject):
 
 
 class Item(GameObject):
+    def __init__(self, weight: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self._own_weight = weight
+
+
+class PhysicalContainer(Container, Item):
     pass
 
 
@@ -88,7 +94,8 @@ class Armor(Item):
     pass
 
 
-class Back(Item):
+class Back(PhysicalContainer):
+    """Includes cloaks and backpacks"""
     pass
 
 
@@ -301,6 +308,7 @@ class Game:
     map_substate = 'world_map'
     equipment_substate = 'equipment_screen'
     equip_for_substate = 'equip_for_screen'
+    inventory_substate = 'inventory_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -1096,7 +1104,6 @@ of the Wolf""".split('\n')}
 
 
 if __name__ == '__main__':
-    location = Location((0, 0), {}, grass)
-    data = location.data()
-    print(len(location.data()))
-    print([data[:30]])
+    bag = PhysicalContainer(1, 1)
+    print(bag._width)
+    print(bag._own_weight)

@@ -103,6 +103,10 @@ class MapScreen(WindowContent):
             self._map_top_left[self._active_map][1] + self._selected_pos[1]
 
 
+class InventoryScreen(WindowContent):
+    pass
+
+
 class PagedList(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
