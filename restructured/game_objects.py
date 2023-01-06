@@ -18,6 +18,9 @@ COLD_CLIMATE = 'Cold'
 TEMPERATE_CLIMATE = 'Temperate'
 HOT_CLIMATE = 'Hot'
 ALL_CLIMATES = [COLD_CLIMATE, HOT_CLIMATE, TEMPERATE_CLIMATE]
+climate_colors = {COLD_CLIMATE: console.fg.lightblue,
+                  TEMPERATE_CLIMATE: console.fg.lightgreen,
+                  HOT_CLIMATE: console.fg.lightred}
 
 
 class GameObject:
@@ -482,6 +485,12 @@ class Game:
             coords = self._get_coords_of_creature(self.character)
         return self.world.get_region_data(coords)
 
+    def get_region_map_details(self, coords: tuple[int, int]) -> str:
+        return self.world.contents[coords[0]][coords[1]].map_details
+
+    def get_location_map_details(self, coords: tuple[int, int]) -> str:
+        return '(empty details)'
+
     def _move_creature(self, creature: Creature, direction: str) -> None:
         # TODO: Once the character moves to a new location,
         #     the Game sends the old Location to the World for saving and requests a new one.
@@ -914,6 +923,12 @@ class Region(Container):
         name = f'{force_colors[self._main_force]}{raw_name}{console.fx.end}'
         super().__init__(height=config.region_size, width=config.region_size,
                          name=name, icon=self._main_terrain.raw_icon, color=self._main_terrain.color)
+
+    @property
+    def map_details(self) -> str:
+        colored_force = force_colors[self._main_force] + self._main_force + console.fx.end
+        colored_climate = climate_colors[self._climate] + self._climate + console.fx.end
+        return f"""Region: {self.name}\nForce: {colored_force}\nClimate: {colored_climate}"""
 
     def _data_prep(self) -> None:
         if not self._contents[0]:

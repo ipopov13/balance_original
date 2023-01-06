@@ -82,6 +82,9 @@ class DualContainerScreen(WindowContent):
     def _get_container_data(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _get_containers()!')
 
+    def _get_details(self) -> tuple[str, str]:
+        raise NotImplementedError(f'Class {self.__class__} must implement _get_details()!')
+
     def _move_item_focus(self, direction):
         raise NotImplementedError
 
@@ -108,18 +111,28 @@ class DualContainerScreen(WindowContent):
                           padded_content,
                           border_color + bottom_border + console.fx.end])
 
-    def data(self) -> str:
-        pretty_left = self._prettify_container(self._left_name, self._left_data, self._left_size)
-        pretty_right = self._prettify_container(self._right_name, self._right_data, self._right_size)
-        # Add empty lines to match the two views
-        extra_rows_on_the_right = len(pretty_right.split('\n')) - len(pretty_left.split('\n'))
+    def _equalize_rows(self, left_view, right_view):
+        extra_rows_on_the_right = len(right_view.split('\n')) - len(left_view.split('\n'))
         if extra_rows_on_the_right > 0:
-            pretty_left += ('\n' + ' ' * self._max_view_width) * extra_rows_on_the_right
+            left_view += ('\n' + ' ' * self._max_view_width) * extra_rows_on_the_right
         else:
-            pretty_right += '\n' * (-1 * extra_rows_on_the_right)
+            right_view += '\n' * (-1 * extra_rows_on_the_right)
+        return left_view, right_view
+
+    def data(self) -> str:
+        pretty_left = self._prettify_container(self._left_name, self._left_data, self._left_size) + '\n\n'
+        pretty_right = self._prettify_container(self._right_name, self._right_data, self._right_size) + '\n\n'
+        # TODO: Add item descriptions
+        left_details, right_details = self._get_details()
+        left_details = [line.center(self._max_view_width, ' ') for line in left_details.split('\n')]
+        right_details = [line.center(self._max_view_width, ' ') for line in right_details.split('\n')]
+        pretty_left += '\n'.join(left_details)
+        pretty_right += '\n'.join(right_details)
+        # Add empty lines to match the two views
+        equal_left, equal_right = self._equalize_rows(pretty_left, pretty_right)
         # Combine the rows of the two
         combined_content = [''.join(pair) for pair
-                            in zip(pretty_left.split('\n'), pretty_right.split('\n'))]
+                            in zip(equal_left.split('\n'), equal_right.split('\n'))]
         return '\n'.join(combined_content)
 
     def cursor_pos(self) -> tuple[int, int]:
@@ -136,8 +149,13 @@ class MapScreen(DualContainerScreen):
         self._right_data = self.game_object.get_region_data()
         self._left_size = (config.world_size, config.world_size)
         self._right_size = (config.region_size, config.region_size)
-        self._left_name = 'World'
-        self._right_name = 'Region'
+        self._left_name = 'Regions'
+        self._right_name = 'Locations'
+
+    def _get_details(self) -> tuple[str, str]:
+        region_details = self.game_object.get_region_map_details(self._selected_pos[self._left_name])
+        location_details = self.game_object.get_location_map_details(self._selected_pos[self._right_name])
+        return region_details, location_details
 
 
 class InventoryScreen(DualContainerScreen):
