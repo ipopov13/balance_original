@@ -69,16 +69,15 @@ class DualContainerScreen(WindowContent):
         self._right_data = None
         self._left_size: tuple[int, int] = (0, 0)
         self._right_size: tuple[int, int] = (0, 0)
+        self._extra_pads = {}
         self._left_name = 'left_container'
         self._right_name = 'right_container'
         self._get_container_data()
-        self._pads = {}
         self._active_container = self._left_name
-        self._map_top_left = {self._left_name: (1, 1),
-                              self._right_name: (4 + config.world_size, 1)}
         self._selected_pos = (0, 0)
         self._own_commands = {commands.Move(): self._move_item_focus,
                               commands.SwitchContainers(): self._switch_containers}
+        self._max_view_width = config.max_text_line_length // 2
 
     def _get_container_data(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _get_containers()!')
@@ -96,23 +95,38 @@ class DualContainerScreen(WindowContent):
     def _prettify_container(self, container_name: str = None, container_data: str = None,
                             container_size: tuple[int, int] = None):
         border_color = console.fg.default if container_name is self._active_container else console.fx.dim
-        top_border = container_name.center(max(container_size[1] + 2, len(container_name) + 2), '-')
-        left_pad = ' ' * ((len(top_border) - container_size[1]) // 2)
-        right_pad = ' ' * (len(top_border) - container_size[1] - len(left_pad))
-        newline_replacement = left_pad + '\n' + right_pad
-        bottom_border = '-' * len(top_border)
+        top_border_raw = container_name.center(max(container_size[1] + 2, len(container_name) + 2), '-')
+        bottom_border_raw = '-' * len(top_border_raw)
+        top_border = top_border_raw.center(self._max_view_width, ' ')
+        bottom_border = bottom_border_raw.center(self._max_view_width, ' ')
+        left_pad = ' ' * ((self._max_view_width - container_size[1]) // 2)
+        self._extra_pads[self._active_container] = len(left_pad)
+        right_pad = ' ' * (self._max_view_width - container_size[1] - len(left_pad))
+        newline_replacement = right_pad + '\n' + left_pad
+        padded_content = left_pad + container_data.replace('\n', newline_replacement) + right_pad
         return '\n'.join([border_color + top_border + console.fx.end,
-                          left_pad + container_data.replace('\n', newline_replacement) + right_pad,
+                          padded_content,
                           border_color + bottom_border + console.fx.end])
 
     def data(self) -> str:
         pretty_left = self._prettify_container(self._left_name, self._left_data, self._left_size)
         pretty_right = self._prettify_container(self._right_name, self._right_data, self._right_size)
-        return '\n\n'.join([pretty_left, pretty_right])
+        # Add empty lines to match the two views
+        extra_rows_on_the_right = len(pretty_right.split('\n')) - len(pretty_left.split('\n'))
+        if extra_rows_on_the_right > 0:
+            pretty_left += ('\n' + ' ' * self._max_view_width) * extra_rows_on_the_right
+        else:
+            pretty_right += '\n' * (-1 * extra_rows_on_the_right)
+        # Combine the rows of the two
+        combined_content = [''.join(pair) for pair
+                            in zip(pretty_left.split('\n'), pretty_right.split('\n'))]
+        return '\n'.join(combined_content)
 
     def cursor_pos(self) -> tuple[int, int]:
-        return self._map_top_left[self._active_container][0] + self._selected_pos[0], \
-            self._map_top_left[self._active_container][1] + self._selected_pos[1]
+        left_pad = self._extra_pads[self._active_container]
+        if self._active_container is self._right_name:
+            left_pad += self._max_view_width
+        return self._selected_pos[0] + 1, self._selected_pos[1] + left_pad
 
 
 class MapScreen(DualContainerScreen):
@@ -121,7 +135,7 @@ class MapScreen(DualContainerScreen):
         self._right_data = self.game_object.get_region_data()
         self._left_size = (config.world_size, config.world_size)
         self._right_size = (config.region_size, config.region_size)
-        self._left_name = 'World_test_test'
+        self._left_name = 'World'
         self._right_name = 'Region'
 
 
