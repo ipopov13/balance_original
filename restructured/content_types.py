@@ -74,7 +74,7 @@ class DualContainerScreen(WindowContent):
         self._right_name = 'right_container'
         self._get_container_data()
         self._active_container = self._left_name
-        self._selected_pos = (0, 0)
+        self._selected_pos = {self._left_name: (0, 0), self._right_name: (0, 0)}
         self._own_commands = {commands.Move(): self._move_item_focus,
                               commands.SwitchContainers(): self._switch_containers}
         self._max_view_width = config.max_text_line_length // 2
@@ -126,7 +126,8 @@ class DualContainerScreen(WindowContent):
         left_pad = self._extra_pads[self._active_container]
         if self._active_container is self._right_name:
             left_pad += self._max_view_width
-        return self._selected_pos[0] + 1, self._selected_pos[1] + left_pad
+        return self._selected_pos[self._active_container][0] + 1,\
+            self._selected_pos[self._active_container][1] + left_pad
 
 
 class MapScreen(DualContainerScreen):
