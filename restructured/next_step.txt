@@ -4,13 +4,16 @@ Inventory
      *  Removing items from the previous container
     Bag (Inventory screen)
     Equipping from bag & tile
+    Unequip command (from Equipment to Inventory/Tile)
+        bag with space
+        bag with no space
+        no bag
     Basic items
     Character load (sum of equipment weight; physical containers should have weight property own+contents)
-    Equip command (from Inventory/Tile to Equipment)
-    Unequip command (from Equipment to Inventory/Tile)
     Pick up command (from Tile to Inventory)
     Drop (from Inventory to Tile)
     ---
+    Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
     Consume item
 Combat
     Creature disposition

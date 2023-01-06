@@ -5,7 +5,7 @@ import console
 import config
 
 # TODO: Split the objects in modules by level of abstraction:
-#  GameObject/Container <- SentientSpecies|Item|Creature|world|etc. <- Game
+#  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
 
 sentient_races = []
 NATURE_FORCE = 'Nature'
@@ -143,7 +143,7 @@ class Species(GameObject):
         return self._equipment_slots
 
 
-class SentientSpecies(Species):
+class HumanoidSpecies(Species):
     @property
     def base_stats(self) -> dict[str, int]:
         return {'Str': 5, 'End': 5, 'Will': 5, 'Dex': 5}
@@ -165,80 +165,80 @@ class AnimalSpecies(Species):
         self._equipment_slots = base_animal_equipment_slots.copy()
 
 
-human_race = SentientSpecies(name='Human',
+human_race = HumanoidSpecies(name='Human',
                              icon='H',
                              color=config.order_color,
                              description='Explorers and treasure seekers, the human race combines the primal need '
                                          'of discovery with the perseverance that gave birth to all great empires.',
                              sort_key=0)
-dwarf_race = SentientSpecies(name='Dwarf',
+dwarf_race = HumanoidSpecies(name='Dwarf',
                              icon='D',
                              color=config.order_color,
                              description='Masters of the forge, they are drawn down into the depths of the world by '
                                          'an ancient instinct that rivals the bravery of human explorers.',
                              sort_key=1)
-gnome_race = SentientSpecies(name='Gnome',
+gnome_race = HumanoidSpecies(name='Gnome',
                              icon='G',
                              color=config.order_color,
                              description='The only race that views rocks as living things,'
                                          ' gnomes are friendly and easygoing.',
                              sort_key=2)
-elf_race = SentientSpecies(name='Elf',
+elf_race = HumanoidSpecies(name='Elf',
                            icon='E',
                            color=config.order_color,
                            description='Expert mages and librarians, the elves have given the world'
                                        ' a lot of legendary heroes.',
                            sort_key=3)
-orc_race = SentientSpecies(name='Orc',
+orc_race = HumanoidSpecies(name='Orc',
                            icon='O',
                            color=config.chaos_color,
                            description='The most aggressive of races, orcs crave combat above all else.'
                                        ' They always keep a spare weapon around, just in case.',
                            sort_key=4)
-troll_race = SentientSpecies(name='Troll',
+troll_race = HumanoidSpecies(name='Troll',
                              icon='T',
                              color=config.chaos_color,
                              description="Finding a tasty rock to eat makes a troll's day. Having "
                                          "someone to throw a rock at is a bonus that only a troll "
                                          "can appreciate in full.",
                              sort_key=5)
-goblin_race = SentientSpecies(name='Goblin',
+goblin_race = HumanoidSpecies(name='Goblin',
                               icon='G',
                               color=config.chaos_color,
                               description="For a goblin, everything can come in handy one day. They are"
                                           " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
                               sort_key=6)
-kraken_race = SentientSpecies(name='Kraken',
+kraken_race = HumanoidSpecies(name='Kraken',
                               icon='K',
                               color=config.chaos_color,
                               description="Descendants of deep sea monsters, the kraken have learned to "
                                           "reap even the most disgusting of water dwellers for useful substances.",
                               sort_key=7)
-imp_race = SentientSpecies(name='Imp',
+imp_race = HumanoidSpecies(name='Imp',
                            icon='I',
                            color=config.chaos_color,
                            description="Fire burns in an imp's veins and dances over their fingers."
                                        " To burn is to feel alive!",
                            sort_key=8)
-dryad_race = SentientSpecies(name='Dryad',
+dryad_race = HumanoidSpecies(name='Dryad',
                              icon='D',
                              color=config.nature_color,
                              description="The kin of plants, dryads are champions of the forest. They give"
                                          " trees their all and received undying love in return.",
                              sort_key=9)
-shifter_race = SentientSpecies(name='Shifter',
+shifter_race = HumanoidSpecies(name='Shifter',
                                icon='S',
                                color=config.nature_color,
                                description="A shifter can easily pass as a human if they cut their talon-like nails "
                                            "and keep their totemic tattoos hidden. They rarely do.",
                                sort_key=10)
-water_elemental_race = SentientSpecies(name='Water Elemental',
+water_elemental_race = HumanoidSpecies(name='Water Elemental',
                                        icon='W',
                                        color=config.nature_color,
                                        description="To make other living beings see the beauty of water, elementals "
                                                    "turn it into art, home, and sustenance.",
                                        sort_key=11)
-fay_race = SentientSpecies(name='Fay',
+fay_race = HumanoidSpecies(name='Fay',
                            icon='F',
                            color=config.nature_color,
                            description="The fay are born from the natural magic of the world, and "
@@ -310,6 +310,7 @@ class Game:
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
         self._equipping_slot: Optional[str] = None
+        self._equipment_locations: dict[Item, str] = {}
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -321,12 +322,11 @@ class Game:
         self.character = Creature(name=self.character_name, race=character_race,
                                   description='You are standing here.', color=console.fg.default,
                                   icon='@')
+        # TODO: This is the initial testing configuration. Add the selected starting location here.
         initial_coords = (0, 0)
         self._creature_coords[initial_coords] = self.character
         self._current_location = self.world.get_location(initial_coords)
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
-        self._current_location.put_item(short_sword, initial_coords)
-        self._current_location.put_item(short_sword, initial_coords)
         self._current_location.put_item(short_sword, initial_coords)
 
         self.state = Game.playing_state
@@ -413,11 +413,14 @@ class Game:
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
         filtered_items = [item for item in tile_items if isinstance(item, item_type)]
+        for item in filtered_items:
+            self._equipment_locations[item] = 'tile'
         return filtered_items
 
     def equip_item(self, item):
         if item is not None:
             self.character.current_equipment[self._equipping_slot] = item
+            self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
         self.substate = Game.equipment_substate
         self._equipping_slot = None
 
@@ -714,6 +717,12 @@ class Tile(Container):
                 self._contents[row_index].append(item)
                 break
 
+    def remove_item(self, item: Item):
+        for row in self._contents:
+            if item in row:
+                row.remove(item)
+                break
+
 
 # TODO: Structures&NPCs generation
 # TODO: Tile neighboring
@@ -848,7 +857,7 @@ class Location(Container):
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
-    def items_at(self, coords: tuple[int, int]) -> list[GameObject]:
+    def items_at(self, coords: tuple[int, int]) -> list[Item]:
         return self._tile_at(coords).item_list
 
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
@@ -857,6 +866,9 @@ class Location(Container):
             tile.add_item(item)
         else:
             raise NotImplementedError(f'Implement flood fill algorithm for getting a tile with enough space.')
+
+    def remove_item(self, item: Item, coords: tuple[int, int]) -> None:
+        self._tile_at(coords).remove_item(item)
 
 
 # TODO: Rolls the base terrains on init
