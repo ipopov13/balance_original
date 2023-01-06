@@ -63,19 +63,19 @@ class EquipmentScreen(WindowContent):
 
 
 class DualContainerScreen(WindowContent):
-    LEFT = 'left_container'
-    RIGHT = 'right_container'
-
     def __init__(self, game_object):
         super().__init__(game_object)
         self._left_data = None
         self._right_data = None
         self._left_size: tuple[int, int] = (0, 0)
         self._right_size: tuple[int, int] = (0, 0)
+        self._left_name = 'left_container'
+        self._right_name = 'right_container'
         self._get_container_data()
-        self._active_container = self.LEFT
-        self._map_top_left = {self.LEFT: (1, 1),
-                              self.RIGHT: (4 + config.world_size, 1)}
+        self._pads = {}
+        self._active_container = self._left_name
+        self._map_top_left = {self._left_name: (1, 1),
+                              self._right_name: (4 + config.world_size, 1)}
         self._selected_pos = (0, 0)
         self._own_commands = {commands.Move(): self._move_item_focus,
                               commands.SwitchContainers(): self._switch_containers}
@@ -87,22 +87,27 @@ class DualContainerScreen(WindowContent):
         raise NotImplementedError
 
     def _switch_containers(self, _) -> bool:
-        if self._active_container is self.LEFT:
-            self._active_container = self.RIGHT
+        if self._active_container is self._left_name:
+            self._active_container = self._right_name
         else:
-            self._active_container = self.LEFT
+            self._active_container = self._left_name
         return True
 
     def _prettify_container(self, container_name: str = None, container_data: str = None,
                             container_size: tuple[int, int] = None):
         border_color = console.fg.default if container_name is self._active_container else console.fx.dim
-        return '\n'.join([border_color + container_name.center(container_size[1] + 2, '-') + console.fx.end,
-                          ' ' + container_data.replace('\n', '\n '),
-                          border_color + '-' * (container_size[1] + 2) + console.fx.end])
+        top_border = container_name.center(max(container_size[1] + 2, len(container_name) + 2), '-')
+        left_pad = ' ' * ((len(top_border) - container_size[1]) // 2)
+        right_pad = ' ' * (len(top_border) - container_size[1] - len(left_pad))
+        newline_replacement = left_pad + '\n' + right_pad
+        bottom_border = '-' * len(top_border)
+        return '\n'.join([border_color + top_border + console.fx.end,
+                          left_pad + container_data.replace('\n', newline_replacement) + right_pad,
+                          border_color + bottom_border + console.fx.end])
 
     def data(self) -> str:
-        pretty_left = self._prettify_container(self.LEFT, self._left_data, self._left_size)
-        pretty_right = self._prettify_container(self.RIGHT, self._right_data, self._right_size)
+        pretty_left = self._prettify_container(self._left_name, self._left_data, self._left_size)
+        pretty_right = self._prettify_container(self._right_name, self._right_data, self._right_size)
         return '\n\n'.join([pretty_left, pretty_right])
 
     def cursor_pos(self) -> tuple[int, int]:
@@ -111,58 +116,16 @@ class DualContainerScreen(WindowContent):
 
 
 class MapScreen(DualContainerScreen):
-    LEFT = 'World'
-    RIGHT = 'Region'
-
     def _get_container_data(self) -> None:
         self._left_data = self.game_object.get_world_data()
         self._right_data = self.game_object.get_region_data()
         self._left_size = (config.world_size, config.world_size)
         self._right_size = (config.region_size, config.region_size)
+        self._left_name = 'World_test_test'
+        self._right_name = 'Region'
 
 
-# class MapScreen(WindowContent):
-#     WORLD = 'World'
-#     REGION = 'Region'
-#
-#     def __init__(self, game_object):
-#         super().__init__(game_object)
-#         self._active_map = MapScreen.WORLD
-#         self._map_top_left = {MapScreen.WORLD: (1, 1),
-#                               MapScreen.REGION: (4 + config.world_size, 1)}
-#         self._selected_pos = (0, 0)
-#         self._own_commands = {commands.Move(): self._move_map_focus,
-#                               commands.SwitchMaps(): self._switch_maps}
-#
-#     def _move_map_focus(self, direction):
-#         raise NotImplementedError
-#
-#     def _switch_maps(self, _) -> bool:
-#         if self._active_map is MapScreen.WORLD:
-#             self._active_map = MapScreen.REGION
-#         else:
-#             self._active_map = MapScreen.WORLD
-#         return True
-#
-#     def _prettify_map(self, map_name: str = None, map_: str = None, map_size: int = None):
-#         border_color = console.fg.default if map_name is self._active_map else console.fx.dim
-#         return '\n'.join([border_color + map_name.center(map_size + 2, '-') + console.fx.end,
-#                           ' ' + map_.replace('\n', '\n '),
-#                           border_color + '-' * (map_size + 2) + console.fx.end])
-#
-#     def data(self) -> str:
-#         world_map = self.game_object.get_world_data()
-#         pretty_world_map = self._prettify_map(MapScreen.WORLD, world_map, config.world_size)
-#         region_map = self.game_object.get_region_data()
-#         pretty_region_map = self._prettify_map(MapScreen.REGION, region_map, config.region_size)
-#         return '\n\n'.join([pretty_world_map, pretty_region_map])
-#
-#     def cursor_pos(self) -> tuple[int, int]:
-#         return self._map_top_left[self._active_map][0] + self._selected_pos[0], \
-#             self._map_top_left[self._active_map][1] + self._selected_pos[1]
-
-
-class InventoryScreen(WindowContent):
+class InventoryScreen(DualContainerScreen):
     pass
 
 
