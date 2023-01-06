@@ -32,10 +32,10 @@ class Map(Command):
     changes_window = True
 
 
-class SwitchMaps(Command):
+class SwitchContainers(Command):
     character = 's'
     hint = '(s)witch'
-    description = 'Switch between the two maps'
+    description = 'Switch between the two views'
 
 
 class Close(Command):

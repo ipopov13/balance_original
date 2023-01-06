@@ -2,10 +2,11 @@ FEATURES
 Inventory
   * Bag (Inventory screen)
         Rework the map content to hold two containers (left&right)
-        Descriptions are provided by the selected items directly (the Content holds the actual Containers)
-        Commands for moving items are provided by the concrete Content type (drop/pick up, buy/sell)
-        Commands for equipping/consuming items are provided by the items themselves
-        The restrictions for moving/equipping (weight, money) are provided by the containers
+        Descriptions are provided by the Game on request
+        Commands for moving items are provided by the Game based on active container (drop/pick up, buy/sell)
+        Commands for equipping/consuming items are provided by the Game
+        The restrictions for moving/equipping (weight, money) are provided by the Game (e.g., no commands appear
+          if item is too heavy (maybe color the offending property in red!))
         The same interface will handle trading with creatures!
     Basic bags
     Equipping from bag & tile
