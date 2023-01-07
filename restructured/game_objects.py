@@ -485,11 +485,11 @@ class Game:
             coords = self._get_coords_of_creature(self.character)
         return self.world.get_region_data(coords)
 
-    def get_region_map_details(self, coords: tuple[int, int]) -> str:
+    def get_region_map_details(self, coords: tuple[int, int]) -> list[str]:
         return self.world.contents[coords[0]][coords[1]].map_details
 
-    def get_location_map_details(self, coords: tuple[int, int]) -> str:
-        return '(empty details)'
+    def get_location_map_details(self, coords: tuple[int, int]) -> list[str]:
+        return ['(empty details)']
 
     def _move_creature(self, creature: Creature, direction: str) -> None:
         # TODO: Once the character moves to a new location,
@@ -925,10 +925,10 @@ class Region(Container):
                          name=name, icon=self._main_terrain.raw_icon, color=self._main_terrain.color)
 
     @property
-    def map_details(self) -> str:
+    def map_details(self) -> list[str]:
         colored_force = force_colors[self._main_force] + self._main_force + console.fx.end
         colored_climate = climate_colors[self._climate] + self._climate + console.fx.end
-        return f"""Region: {self.name}\nForce: {colored_force}\nClimate: {colored_climate}"""
+        return [f'Region: {self.name}', f'Force: {colored_force}', f'Climate: {colored_climate}']
 
     def _data_prep(self) -> None:
         if not self._contents[0]:

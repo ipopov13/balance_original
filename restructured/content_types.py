@@ -1,6 +1,7 @@
 import commands
 import config
 import console
+from utils import horizontal_pad
 
 
 class WindowContent:
@@ -77,12 +78,12 @@ class DualContainerScreen(WindowContent):
         self._selected_pos = {self._left_name: (0, 0), self._right_name: (0, 0)}
         self._own_commands = {commands.Move(): self._move_item_focus,
                               commands.SwitchContainers(): self._switch_containers}
-        self._max_view_width = config.max_text_line_length // 2
+        self._max_view_width = config.location_width // 2
 
     def _get_container_data(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _get_containers()!')
 
-    def _get_details(self) -> tuple[str, str]:
+    def _get_details(self) -> tuple[list[str], list[str]]:
         raise NotImplementedError(f'Class {self.__class__} must implement _get_details()!')
 
     def _move_item_focus(self, direction):
@@ -100,16 +101,13 @@ class DualContainerScreen(WindowContent):
         border_color = console.fg.default if container_name is self._active_container else console.fx.dim
         top_border_raw = container_name.center(max(container_size[1] + 2, len(container_name) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
-        top_border = top_border_raw.center(self._max_view_width, ' ')
-        bottom_border = bottom_border_raw.center(self._max_view_width, ' ')
-        left_pad = ' ' * ((self._max_view_width - container_size[1]) // 2)
-        self._extra_pads[container_name] = len(left_pad)
-        right_pad = ' ' * (self._max_view_width - container_size[1] - len(left_pad))
-        newline_replacement = right_pad + '\n' + left_pad
-        padded_content = left_pad + container_data.replace('\n', newline_replacement) + right_pad
-        return '\n'.join([border_color + top_border + console.fx.end,
-                          padded_content,
-                          border_color + bottom_border + console.fx.end])
+        padded_data, inner_left_pad, _ = horizontal_pad(container_data.split('\n'), len(top_border_raw))
+        content_data = ([border_color + top_border_raw + console.fx.end]
+                        + padded_data
+                        + [border_color + bottom_border_raw + console.fx.end])
+        content_data, left_pad, _ = horizontal_pad(content_data, self._max_view_width)
+        self._extra_pads[container_name] = left_pad + inner_left_pad
+        return '\n'.join(content_data)
 
     def _equalize_rows(self, left_view, right_view):
         extra_rows_on_the_right = len(right_view.split('\n')) - len(left_view.split('\n'))
@@ -124,8 +122,8 @@ class DualContainerScreen(WindowContent):
         pretty_right = self._prettify_container(self._right_name, self._right_data, self._right_size) + '\n\n'
         # TODO: Add item descriptions
         left_details, right_details = self._get_details()
-        left_details = [line.center(self._max_view_width, ' ') for line in left_details.split('\n')]
-        right_details = [line.center(self._max_view_width, ' ') for line in right_details.split('\n')]
+        left_details, _, _ = horizontal_pad(left_details, self._max_view_width)
+        right_details, _, _ = horizontal_pad(right_details, self._max_view_width)
         pretty_left += '\n'.join(left_details)
         pretty_right += '\n'.join(right_details)
         # Add empty lines to match the two views
@@ -139,8 +137,8 @@ class DualContainerScreen(WindowContent):
         left_pad = self._extra_pads[self._active_container]
         if self._active_container is self._right_name:
             left_pad += self._max_view_width
-        return self._selected_pos[self._active_container][0] + 1,\
-            self._selected_pos[self._active_container][1] + left_pad
+        return (self._selected_pos[self._active_container][0] + 1,
+                self._selected_pos[self._active_container][1] + left_pad)
 
 
 class MapScreen(DualContainerScreen):
@@ -152,7 +150,7 @@ class MapScreen(DualContainerScreen):
         self._left_name = 'Regions'
         self._right_name = 'Locations'
 
-    def _get_details(self) -> tuple[str, str]:
+    def _get_details(self) -> tuple[list[str], list[str]]:
         region_details = self.game_object.get_region_map_details(self._selected_pos[self._left_name])
         location_details = self.game_object.get_location_map_details(self._selected_pos[self._right_name])
         return region_details, location_details
