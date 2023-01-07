@@ -1,7 +1,7 @@
 from abc import ABC
 from content_types import DescriptionList
 import commands
-from utils import strip_ansi_escape_sequences
+from utils import strip_ansi_escape_sequences, horizontal_pad
 
 
 class Window(ABC):
@@ -26,20 +26,7 @@ class Window(ABC):
 
     def get_display_data(self) -> tuple[dict, tuple[int, int]]:
         """Pad the content to size and position, apply borders and hints"""
-        content_data = self._content.data()
-        raw_content_data = strip_ansi_escape_sequences(content_data)
-        raw_content_data = raw_content_data.split('\n')
-        content_data = content_data.split('\n')
-        # Horizontal pad: center the longest content line
-        longest_line_len = max([len(line) for line in raw_content_data])
-        left_pad = (self.size[-1] - longest_line_len) // 2
-        min_right_pad = self.size[-1]
-        for row_index in range(len(content_data)):
-            content_data[row_index] = ' ' * left_pad + content_data[row_index]
-        for row_index in range(len(content_data)):
-            right_pad = (self.size[1] - len(raw_content_data[row_index]))
-            content_data[row_index] += ' ' * right_pad
-            min_right_pad = min(right_pad, min_right_pad)
+        content_data, left_pad, min_right_pad = horizontal_pad(self._content.data(), self.size[-1])
         # Vertical pad: center within window size
         top_pad = (self.size[0] - len(content_data)) // 2
         bottom_pad = self.size[0] - len(content_data) - top_pad
