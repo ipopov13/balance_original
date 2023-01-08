@@ -77,9 +77,11 @@ class Container(GameObject):
         """
         pass
 
-    def data(self) -> str:
+    def data(self, blink_at: tuple[int, int] = None) -> str:
         rows = [[c.icon for c in row]
                 for row in self.contents]
+        if blink_at is not None:
+            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
@@ -602,7 +604,7 @@ engraved_column = FlavorTerrain(color=config.brown_fg_color, description='engrav
                                 required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 fireplace = FlavorTerrain(color=console.fg.lightyellow, description='fireplace', icon='o', passable=False,
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-farmland = FlavorTerrain(color=console.fg.black + config.brown_bg_color, description='farmland', icon='|',
+farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, description='farmland', icon='=',
                          required_base_terrains=[grass, dirt, tree, jungle, bush, swamp],
                          required_climates=ALL_CLIMATES)
 # Structure building blocks
@@ -971,14 +973,6 @@ class Region(Container):
         location_column = local_column_in_tiles // config.location_width
         return self.contents[location_row][location_column]
 
-    def data(self, blink_at: tuple[int, int] = None) -> str:
-        rows = [[c.icon for c in row]
-                for row in self.contents]
-        if blink_at is not None:
-            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
-        rows = [''.join(row) for row in rows]
-        return '\n'.join(rows)
-
 
 # TODO: Randomize forces and pass to regions on init
 class World(Container):
@@ -1116,14 +1110,6 @@ of the Wolf""".split('\n')}
     def size(self) -> tuple[int, int]:
         return config.world_size * config.region_size * config.location_height, \
                config.world_size * config.region_size * config.location_width
-
-    def data(self, blink_at: tuple[int, int] = None) -> str:
-        rows = [[c.icon for c in row]
-                for row in self.contents]
-        if blink_at is not None:
-            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
-        rows = [''.join(row) for row in rows]
-        return '\n'.join(rows)
 
 
 if __name__ == '__main__':
