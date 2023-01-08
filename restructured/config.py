@@ -24,6 +24,7 @@ multiple_items_icon = '?'
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')
+ground = 'Ground'
 
 if __name__ == '__main__':
     print(len(str(race_selection_title)))

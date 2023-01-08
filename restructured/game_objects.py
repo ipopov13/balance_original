@@ -27,7 +27,7 @@ climate_colors = {COLD_CLIMATE: console.fg.lightblue,
 class GameObject:
     def __init__(self, name=None, icon='.', color=console.fg.black,
                  description='(empty)', sort_key=0):
-        self._name = name or description
+        self._name = name
         self.raw_icon = icon
         self.color = color
         self._description = description
@@ -110,7 +110,7 @@ class Item(GameObject):
         return self._own_weight
 
 
-empty_space = Item(icon='.', color=console.fg.lightblack)
+empty_space = Item(icon='.', color=console.fg.lightblack, name='(empty)')
 
 
 class PhysicalContainer(Container, Item):
@@ -125,6 +125,21 @@ class PhysicalContainer(Container, Item):
         for row in padded_contents:
             row += [empty_space] * (self._width - len(row))
         return padded_contents
+
+    def add_item(self, item: Item):
+        for row_index in range(self._height):
+            if len(self._contents[row_index]) < self._width:
+                self._contents[row_index].append(item)
+                break
+
+    def remove_item(self, item: Item):
+        for row in self._contents:
+            if item in row:
+                row.remove(item)
+                break
+
+    def has_space(self) -> bool:
+        return len(self.item_list) < self._height * self._width
 
 
 class Helmet(Item):
@@ -377,6 +392,8 @@ class Game:
         self.character_name: Optional[str] = None
         self._equipping_slot: Optional[str] = None
         self._equipment_locations: dict[Item, str] = {}
+        self._selected_ground_item = empty_space
+        self._active_inventory_container_name = '(none)'
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -421,12 +438,24 @@ class Game:
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
-            return {commands.Close(): self._back_to_scene}
+            inventory_commands = {commands.Close(): self._back_to_scene}
+            if self.character.bag is not empty_space \
+               and self.character.bag.has_space() \
+               and self._selected_ground_item is not empty_space \
+               and self._active_inventory_container_name == self.get_ground_name():
+                inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
+            return inventory_commands
         else:
             return {}
 
+    def _pick_up_item(self, _) -> bool:
+        self._ground_container.remove_item(self._selected_ground_item)
+        self.character.bag.add_item(self._selected_ground_item)
+        return True
+
     def _open_inventory(self, _) -> bool:
         self.substate = Game.inventory_substate
+        self._ground_container = self._current_location.tile_at(self._get_coords_of_creature(self.character))
         return True
 
     def _open_equipment(self, _) -> bool:
@@ -509,8 +538,14 @@ class Game:
             else:
                 self.substate = Game.equip_for_substate
 
+    def set_active_container(self, container_name: str) -> None:
+        self._active_inventory_container_name = container_name
+
     def get_bag_name(self) -> str:
         return '(no bag)' if self.character.bag is empty_space else f'Your {self.character.bag.name}'
+
+    def get_ground_name(self) -> str:
+        return config.ground if not self._ground_container.name else self._ground_container.name
 
     def get_ground_items(self) -> str:
         return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
@@ -522,16 +557,17 @@ class Game:
         return (0, 0) if self.character.bag is empty_space else self.character.bag.size
 
     def get_ground_item_details(self, item_coords: tuple[int, int]) -> list[str]:
-        character_coords = self._get_coords_of_creature(self.character)
-        item = self._current_location.get_item_at(character_coords, item_coords)
+        # character_coords = self._get_coords_of_creature(self.character)
+        # item = self._current_location.get_item_at(character_coords, item_coords)
+        self._selected_ground_item = self._ground_container.contents[item_coords[0]][item_coords[1]]
         weight_color = console.fg.default
-        if item.weight > self.character.max_load - self.character.load:
+        if self._selected_ground_item.weight > self.character.max_load - self.character.load:
             weight_color = console.fg.lightred
-        return item.details(weight_color=weight_color)
+        return self._selected_ground_item.details(weight_color=weight_color)
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         try:
-            item = self.character.bag[item_coords[0]][item_coords[1]]
+            item = self.character.bag.contents[item_coords[0]][item_coords[1]]
         except TypeError:
             item = empty_space
         return item.details()
@@ -798,20 +834,8 @@ class Tile(PhysicalContainer):
     def is_passable_for(self, creature: Creature):
         return self.terrain.is_passable_for(creature)
 
-    def has_space_for_items(self):
+    def has_space(self):
         return self.terrain.passable and len(self.item_list) < self._height * self._width
-
-    def add_item(self, item: Item):
-        for row_index in range(self._height):
-            if len(self._contents[row_index]) < self._width:
-                self._contents[row_index].append(item)
-                break
-
-    def remove_item(self, item: Item):
-        for row in self._contents:
-            if item in row:
-                row.remove(item)
-                break
 
 
 # TODO: Structures&NPCs generation
@@ -852,10 +876,10 @@ class Location(Container):
         self._contents: list[list[Tile]] = []
 
     def get_items_data_at(self, coords: tuple[int, int]) -> str:
-        return self._tile_at(coords).data()
+        return self.tile_at(coords).data()
 
     def get_item_at(self, character_coords: tuple[int, int], item_coords: tuple[int, int]) -> Item:
-        return self._tile_at(character_coords).contents[item_coords[0]][item_coords[1]]
+        return self.tile_at(character_coords).contents[item_coords[0]][item_coords[1]]
 
     @property
     def map_details(self) -> list[str]:
@@ -941,9 +965,9 @@ class Location(Container):
         return self._contents
 
     def can_ocupy(self, creature: Creature, coords: tuple[int, int]) -> bool:
-        return self._tile_at(coords).is_passable_for(creature)
+        return self.tile_at(coords).is_passable_for(creature)
 
-    def _tile_at(self, coords: tuple[int, int]) -> Tile:
+    def tile_at(self, coords: tuple[int, int]) -> Tile:
         new_coords = self._local_coords(coords)
         try:
             return self.contents[new_coords[0]][new_coords[1]]
@@ -963,17 +987,17 @@ class Location(Container):
         return '\n'.join(rows)
 
     def items_at(self, coords: tuple[int, int]) -> list[Item]:
-        return self._tile_at(coords).item_list
+        return self.tile_at(coords).item_list
 
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
-        tile = self._tile_at(coords)
-        if tile.has_space_for_items():
+        tile = self.tile_at(coords)
+        if tile.has_space():
             tile.add_item(item)
         else:
             raise NotImplementedError(f'Implement flood fill algorithm for getting a tile with enough space.')
 
     def remove_item(self, item: Item, coords: tuple[int, int]) -> None:
-        self._tile_at(coords).remove_item(item)
+        self.tile_at(coords).remove_item(item)
 
 
 # TODO: Rolls the base terrains on init

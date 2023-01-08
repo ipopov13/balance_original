@@ -181,8 +181,21 @@ class MapScreen(DualContainerScreen):
 
 
 class InventoryScreen(DualContainerScreen):
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self.game_object.set_active_container(self._left_name)
+
+    def _switch_containers(self, _) -> bool:
+        if self._active_container is self._left_name:
+            self._active_container = self._right_name
+            self.game_object.set_active_container(self._right_name)
+        else:
+            self._active_container = self._left_name
+            self.game_object.set_active_container(self._left_name)
+        return True
+
     def _set_names(self) -> None:
-        self._left_name = 'Ground'
+        self._left_name = config.ground
         self._right_name = self.game_object.get_bag_name()
 
     def _get_container_data(self) -> None:

@@ -32,6 +32,13 @@ class Inventory(Command):
     changes_window = True
 
 
+class InventoryPickUp(Command):
+    character = 'p'
+    hint = '(p)ick up'
+    description = 'Put the selected item in your inventory'
+    changes_window = True
+
+
 class Map(Command):
     character = 'M'
     hint = '(M)ap'
