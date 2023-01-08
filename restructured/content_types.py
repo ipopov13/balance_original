@@ -7,7 +7,10 @@ from utils import horizontal_pad, calculate_new_position
 class WindowContent:
     def __init__(self, game_object):
         self.game_object = game_object
-        self._own_commands = {}
+
+    @property
+    def _own_commands(self):
+        return {}
 
     def commands(self) -> dict:
         """Combine the content-specific and object-specific commands"""
@@ -44,7 +47,6 @@ class GameScene(WindowContent):
 class EquipmentScreen(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
-        self._own_commands = {}
         equipment = self.game_object.get_equipment_data()
         self._listing = dict(enumerate(equipment.items()))
         self._content = []
@@ -75,9 +77,14 @@ class DualContainerScreen(WindowContent):
         self._get_container_data()
         self._extra_pads = {}
         self._active_container = self._left_name
-        self._own_commands = {commands.Move(): self._move_item_focus,
-                              commands.SwitchContainers(): self._switch_containers}
         self._max_view_width = config.location_width // 2
+
+    @property
+    def _own_commands(self):
+        own_commands = {commands.Move(): self._move_item_focus}
+        if self._data[self._right_name]:
+            own_commands[commands.SwitchContainers()] = self._switch_containers
+        return own_commands
 
     def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
         return {self._left_name: (0, 0), self._right_name: (0, 0)}
@@ -176,7 +183,7 @@ class MapScreen(DualContainerScreen):
 class InventoryScreen(DualContainerScreen):
     def _set_names(self) -> None:
         self._left_name = 'Ground'
-        self._right_name = f'Your {self.game_object.get_bag_name()}'
+        self._right_name = self.game_object.get_bag_name()
 
     def _get_container_data(self) -> None:
         self._data[self._left_name] = self.game_object.get_ground_items()
