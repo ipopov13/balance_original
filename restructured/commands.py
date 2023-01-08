@@ -25,6 +25,13 @@ class Equipment(Command):
     changes_window = True
 
 
+class Inventory(Command):
+    character = 'I'
+    hint = '(I)nventory'
+    description = 'Open the inventory screen'
+    changes_window = True
+
+
 class Map(Command):
     character = 'M'
     hint = '(M)ap'

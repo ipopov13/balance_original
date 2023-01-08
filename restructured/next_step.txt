@@ -1,8 +1,7 @@
 FEATURES
 Inventory
-  * Bag (Inventory screen)
-        Rework the map content to hold two containers (left&right)
-        Descriptions are provided by the Game on request
+    Bag (Inventory screen)
+      * Implement Dual view with the tile and bag contents
         Commands for moving items are provided by the Game based on active container (drop/pick up, buy/sell)
         Commands for equipping/consuming items are provided by the Game
         The restrictions for moving/equipping (weight, money) are provided by the Game (e.g., no commands appear
@@ -12,12 +11,14 @@ Inventory
     Equipping from bag & tile
         Removing from the correct container
     Unequip command (from Equipment to Inventory/Tile)
-        bag with space
-        bag with no space
-        no bag
+        bag with space (to bag)
+        bag with no space (to tile)
+        no bag (to tile)
     Basic items
     Character load (sum of equipment weight; physical containers should have weight property own+contents)
-    Pick up command (from Tile to Inventory)
+    Pick up command from Inventory
+    Pick up command from Scene (no hint, no window switching,
+        picks up first item from the list that the character can carry)
     Drop (from Inventory to Tile)
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
@@ -61,10 +62,7 @@ Locations:
         Location when it dies)
 Modes / Terrain interactions:
     Masquerading terrains (ore veins, poisonous flowers, venom bushes)
-Region:
-    Flavors define the name of a region
 Map screen:
-    Character location
     Exploration details
     Set destination command, add destination directions to HUD
 Optional: split the data into string and color (list[list[str]]), and let the UI combine the two at the end

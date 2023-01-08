@@ -85,15 +85,46 @@ class Container(GameObject):
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
+    @property
+    def size(self) -> tuple[int, int]:
+        return self._height, self._width
+
+    @property
+    def item_list(self):
+        full_list = []
+        for line in self._contents:
+            full_list += line
+        return full_list
+
 
 class Item(GameObject):
     def __init__(self, weight: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._own_weight = weight
 
+    def details(self, weight_color=console.fg.default) -> list[str]:
+        return [self.name, weight_color + f'Weight: {self._own_weight}' + console.fx.end]
+
+    @property
+    def weight(self):
+        return self._own_weight
+
+
+empty_space = Item(icon='.', color=console.fg.lightblack)
+
 
 class PhysicalContainer(Container, Item):
-    pass
+    @property
+    def weight(self):
+        return self._own_weight + sum(item.weight for item in self.item_list)
+
+    @property
+    def contents(self) -> list[list[Item]]:
+        self._data_prep()
+        padded_contents = [row[:] for row in self._contents]
+        for row in padded_contents:
+            row += [empty_space] * (self._width - len(row))
+        return padded_contents
 
 
 class Helmet(Item):
@@ -296,6 +327,10 @@ class Creature(GameObject):
     def max_load(self):
         return self.stats['Str'] * 5
 
+    @property
+    def bag(self):
+        return self.current_equipment['Back']
+
 
 class Fox(Creature):
     def __init__(self):
@@ -367,11 +402,18 @@ class Game:
         elif self.state is Game.playing_state and self.substate is Game.scene_substate:
             return {commands.Move(): self._move_character,
                     commands.Map(): self._open_map,
-                    commands.Equipment(): self._open_equipment}
+                    commands.Equipment(): self._open_equipment,
+                    commands.Inventory(): self._open_inventory}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
+            return {commands.Close(): self._back_to_scene}
+        elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
             return {commands.Close(): self._back_to_scene}
         else:
             return {}
+
+    def _open_inventory(self, _) -> bool:
+        self.substate = Game.inventory_substate
+        return True
 
     def _open_equipment(self, _) -> bool:
         self.substate = Game.equipment_substate
@@ -453,6 +495,39 @@ class Game:
             else:
                 self.substate = Game.equip_for_substate
 
+    def get_bag_name(self) -> str:
+        return '(no bag)' if self.character.bag is None else self.character.bag.name
+
+    def get_ground_items(self) -> str:
+        return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
+
+    def get_bag_items(self) -> str:
+        try:
+            return self.character.bag.data
+        except AttributeError:
+            return ''
+
+    def get_bag_size(self) -> tuple[int, int]:
+        try:
+            return self.character.bag.size
+        except AttributeError:
+            return 0, 0
+
+    def get_ground_item_details(self, item_coords: tuple[int, int]) -> list[str]:
+        character_coords = self._get_coords_of_creature(self.character)
+        item = self._current_location.get_item_at(character_coords, item_coords)
+        weight_color = console.fg.default
+        if item.weight > self.character.max_load - self.character.load:
+            weight_color = console.fg.lightred
+        return item.details(weight_color=weight_color)
+
+    def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
+        try:
+            item = self.character.bag[item_coords[0]][item_coords[1]]
+        except TypeError:
+            item = empty_space
+        return item.details()
+
     def get_current_location_name(self) -> str:
         return self._current_location.name
 
@@ -464,8 +539,7 @@ class Game:
         mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
-        hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n' \
-              f'{self._current_location._forces}'
+        hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
         return hud
 
     @staticmethod
@@ -695,22 +769,10 @@ structures = {
                   ORDER_FORCE: [well]}}
 
 
-class Tile(Container):
+class Tile(PhysicalContainer):
     def __init__(self, terrain: Terrain):
         super().__init__(height=config.tile_size, width=config.tile_size)
         self.terrain = terrain
-
-    @property
-    def contents(self) -> list[list[Item]]:
-        self._data_prep()
-        return self._contents
-
-    @property
-    def item_list(self):
-        full_list = []
-        for line in self.contents:
-            full_list += line
-        return full_list
 
     @property
     def description(self):
@@ -780,6 +842,12 @@ class Location(Container):
         super().__init__(height=config.location_height, width=config.location_width,
                          icon=visual.raw_icon, color=visual.color, name=name)
         self._contents: list[list[Tile]] = []
+
+    def get_items_data_at(self, coords: tuple[int, int]) -> str:
+        return self._tile_at(coords).data()
+
+    def get_item_at(self, character_coords: tuple[int, int], item_coords: tuple[int, int]) -> Item:
+        return self._tile_at(character_coords).contents[item_coords[0]][item_coords[1]]
 
     @property
     def map_details(self) -> list[str]:

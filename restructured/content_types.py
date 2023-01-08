@@ -174,7 +174,20 @@ class MapScreen(DualContainerScreen):
 
 
 class InventoryScreen(DualContainerScreen):
-    pass
+    def _set_names(self) -> None:
+        self._left_name = 'Ground'
+        self._right_name = f'Your {self.game_object.get_bag_name()}'
+
+    def _get_container_data(self) -> None:
+        self._data[self._left_name] = self.game_object.get_ground_items()
+        self._data[self._right_name] = self.game_object.get_bag_items()
+        self._container_sizes[self._left_name] = (config.tile_size, config.tile_size)
+        self._container_sizes[self._right_name] = self.game_object.get_bag_size()
+
+    def _get_details(self) -> tuple[list[str], list[str]]:
+        ground_details = self.game_object.get_ground_item_details(self._selected_pos[self._left_name])
+        bag_details = self.game_object.get_bag_item_details(self._selected_pos[self._right_name])
+        return ground_details, bag_details
 
 
 class PagedList(WindowContent):
