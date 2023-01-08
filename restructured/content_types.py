@@ -149,12 +149,13 @@ class DualContainerScreen(WindowContent):
 
 class MapScreen(DualContainerScreen):
     def _set_names(self) -> None:
-        self._left_name = 'Regions'
-        self._right_name = 'Locations'
+        self._left_name = 'World'
+        self._right_name = 'Region'
 
     def _get_container_data(self) -> None:
-        self._data[self._left_name] = self.game_object.get_world_data()
-        self._data[self._right_name] = self.game_object.get_region_data(self._selected_pos[self._left_name])
+        self._data[self._left_name] = self.game_object.get_world_data(blink_at=self._selected_pos[self._left_name])
+        self._data[self._right_name] = self.game_object.get_region_data(self._selected_pos[self._left_name],
+                                                                        blink_at=self._selected_pos[self._right_name])
         self._container_sizes[self._left_name] = (config.world_size, config.world_size)
         self._container_sizes[self._right_name] = (config.region_size, config.region_size)
 

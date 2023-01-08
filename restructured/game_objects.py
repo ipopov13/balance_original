@@ -45,6 +45,10 @@ class GameObject:
     def icon(self):
         return self.color + self.raw_icon + console.fx.end
 
+    @property
+    def blinking_icon(self):
+        return console.fx.blink + self.color + self.raw_icon + console.fx.end
+
     @staticmethod
     def commands() -> dict:
         return {}
@@ -478,11 +482,11 @@ class Game:
         return self._get_coords_of_creature(self.character)[0] % config.location_height, \
                self._get_coords_of_creature(self.character)[1] % config.location_width
 
-    def get_world_data(self) -> str:
-        return self.world.data()
+    def get_world_data(self, blink_at: tuple[int, int]) -> str:
+        return self.world.data(blink_at)
 
-    def get_region_data(self, coords: tuple[int, int]) -> str:
-        return self.world.contents[coords[0]][coords[1]].data()
+    def get_region_data(self, coords: tuple[int, int], blink_at: tuple[int, int]) -> str:
+        return self.world.contents[coords[0]][coords[1]].data(blink_at)
 
     def get_region_map_details(self, coords: tuple[int, int]) -> list[str]:
         return self.world.contents[coords[0]][coords[1]].map_details
@@ -967,6 +971,14 @@ class Region(Container):
         location_column = local_column_in_tiles // config.location_width
         return self.contents[location_row][location_column]
 
+    def data(self, blink_at: tuple[int, int] = None) -> str:
+        rows = [[c.icon for c in row]
+                for row in self.contents]
+        if blink_at is not None:
+            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
+        rows = [''.join(row) for row in rows]
+        return '\n'.join(rows)
+
 
 # TODO: Randomize forces and pass to regions on init
 class World(Container):
@@ -1104,6 +1116,14 @@ of the Wolf""".split('\n')}
     def size(self) -> tuple[int, int]:
         return config.world_size * config.region_size * config.location_height, \
                config.world_size * config.region_size * config.location_width
+
+    def data(self, blink_at: tuple[int, int] = None) -> str:
+        rows = [[c.icon for c in row]
+                for row in self.contents]
+        if blink_at is not None:
+            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
+        rows = [''.join(row) for row in rows]
+        return '\n'.join(rows)
 
 
 if __name__ == '__main__':
