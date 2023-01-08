@@ -1,15 +1,12 @@
 FEATURES
 Inventory
     Bag (Inventory screen)
-      * Implement Dual view with the tile and bag contents
+      * Equip from Inventory
+        Drop from Inventory
         Commands for moving items are provided by the Game based on active container (drop/pick up, buy/sell)
         Commands for equipping/consuming items are provided by the Game
         The restrictions for moving/equipping (weight, money) are provided by the Game (e.g., no commands appear
           if item is too heavy (maybe color the offending property in red!))
-        The same interface will handle trading with creatures!
-    Basic bags
-    Equipping from bag & tile
-        Removing from the correct container
     Unequip command (from Equipment to Inventory/Tile)
         bag with space (to bag)
         bag with no space (to tile)
@@ -60,7 +57,8 @@ Locations:
     Add creature profile to Locations (automatic from the terrains/Structures?)
     Creature profile includes respawn times, location keeps track (the Creature sends a message to the
         Location when it dies)
-Modes / Terrain interactions:
+Modes:
+    Trade with creatures
     Masquerading terrains (ore veins, poisonous flowers, venom bushes)
 Map screen:
     Exploration details

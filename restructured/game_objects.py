@@ -412,6 +412,9 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
         self._current_location.put_item(Satchel(), initial_coords)
         self._current_location.put_item(ShortSword(), initial_coords)
+        self._current_location.put_item(ShortSword(), initial_coords)
+        self._current_location.put_item(ShortSword(), initial_coords)
+        self._current_location.put_item(ShortSword(), initial_coords)
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
