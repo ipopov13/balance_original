@@ -3,6 +3,7 @@ import random
 import commands
 import console
 import config
+from utils import calculate_new_position
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -480,10 +481,8 @@ class Game:
     def get_world_data(self) -> str:
         return self.world.data()
 
-    def get_region_data(self, coords: tuple[int, int] = None) -> str:
-        if coords is None:
-            coords = self._get_coords_of_creature(self.character)
-        return self.world.get_region_data(coords)
+    def get_region_data(self, coords: tuple[int, int]) -> str:
+        return self.world.contents[coords[0]][coords[1]].data()
 
     def get_region_map_details(self, coords: tuple[int, int]) -> list[str]:
         return self.world.contents[coords[0]][coords[1]].map_details
@@ -501,7 +500,8 @@ class Game:
         if creature_location is not self._current_location:
             raise ValueError(f'Creatures outside of current location should not be moving! '
                              f'{creature.name} {self._get_coords_of_creature(creature)}')
-        new_coords = self._calculate_new_position(self._get_coords_of_creature(creature), direction)
+        new_coords = calculate_new_position(self._get_coords_of_creature(creature),
+                                            direction, *self.world.size)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
         if new_location.can_ocupy(creature, new_coords) and new_coords not in self._creature_coords:
@@ -516,26 +516,6 @@ class Game:
         elif creature is self.character:
             # TODO: Implement log message describing why the move is impossible
             pass
-
-    def _calculate_new_position(self, old_pos: tuple[int, int], direction: str) -> tuple[int, int]:
-        row, column = old_pos
-        if direction in '789':
-            row -= 1
-            if row == -1:
-                row = self.world.size[0] - 1
-        elif direction in '123':
-            row += 1
-            if row == self.world.size[0]:
-                row = 0
-        if direction in '147':
-            column -= 1
-            if column == -1:
-                column = self.world.size[1] - 1
-        elif direction in '369':
-            column += 1
-            if column == self.world.size[1]:
-                column = 0
-        return row, column
 
 
 # TODO: Add Terrains
@@ -772,11 +752,11 @@ class Location(Container):
         self._select_terrains()
         visual = self._structure or self._flavor or main_terrain
         # TODO: Add the structure name
-        self._local_name = '' if self._structure is None else self._structure.name
+        self._local_name = None if self._structure is None else self._structure.name
         if self._local_name:
             name = ', '.join([self._local_name, self._region_name])
         else:
-            name = self._local_name
+            name = self._region_name
         super().__init__(height=config.location_height, width=config.location_width,
                          icon=visual.raw_icon, color=visual.color, name=name)
         self._contents: list[list[Tile]] = []
@@ -1111,10 +1091,6 @@ of the Wolf""".split('\n')}
             raise IndexError(f'Wrong region coords ({row}, {column}) from absolute coords {coords}!')
         return region
 
-    def get_region_data(self, coords: tuple[int, int]) -> str:
-        region = self._get_region_from_absolute_coords(coords)
-        return region.data()
-
     def get_location(self, coords: tuple[int, int]) -> Location:
         region = self._get_region_from_absolute_coords(coords)
         return region.get_location(coords)
@@ -1132,5 +1108,5 @@ of the Wolf""".split('\n')}
 
 if __name__ == '__main__':
     bag = PhysicalContainer(1, 1)
-    print(bag._width)
-    print(bag._own_weight)
+    # print(bag._width)
+    # print(bag._own_weight)

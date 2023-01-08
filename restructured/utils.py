@@ -27,3 +27,25 @@ def horizontal_pad(content_data: list[str], max_width: int, pad_character: str =
         content_data[row_index] = content_data[row_index] + (pad_character * right_pad)
         min_right_pad = min(right_pad, min_right_pad)
     return content_data, left_pad, min_right_pad
+
+
+def calculate_new_position(old_pos: tuple[int, int], direction: str,
+                           max_row: int, max_column: int) -> tuple[int, int]:
+    row, column = old_pos
+    if direction in '789':
+        row -= 1
+        if row == -1:
+            row = max_row - 1
+    elif direction in '123':
+        row += 1
+        if row == max_row:
+            row = 0
+    if direction in '147':
+        column -= 1
+        if column == -1:
+            column = max_column - 1
+    elif direction in '369':
+        column += 1
+        if column == max_column:
+            column = 0
+    return row, column
