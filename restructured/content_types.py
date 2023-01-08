@@ -209,6 +209,22 @@ class InventoryScreen(DualContainerScreen):
         bag_details = self.game_object.get_bag_item_details(self._selected_pos[self._right_name])
         return ground_details, bag_details
 
+    def _decorate_callback(self, callback):
+
+        def wrapper(*args, **kwargs):
+            result = callback(*args, **kwargs)
+            self._get_container_data()
+            return result
+
+        return wrapper
+
+    def _object_commands(self) -> dict:
+        """The mapping of commands&methods specific for the underlying object(s)"""
+        object_commands = self.game_object.commands()
+        for command, callback in object_commands.items():
+            object_commands[command] = self._decorate_callback(callback)
+        return object_commands
+
 
 class PagedList(WindowContent):
     def __init__(self, game_object):

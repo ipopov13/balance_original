@@ -43,7 +43,12 @@ class InventoryEquip(Command):
     character = 'e'
     hint = '(e)quip'
     description = 'Equip the selected item'
-    changes_window = True
+
+
+class InventoryDrop(Command):
+    character = 'd'
+    hint = '(d)rop'
+    description = 'Drop the selected item'
 
 
 class Map(Command):

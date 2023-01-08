@@ -414,7 +414,9 @@ class Game:
         self._equipping_slot: Optional[str] = None
         self._equipment_locations: dict[Item, str] = {}
         self._selected_ground_item = empty_space
+        self._selected_bag_item = empty_space
         self._active_inventory_container_name = '(none)'
+        self._ground_container = None
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -473,9 +475,18 @@ class Game:
                and self._selected_ground_item is not empty_space \
                and self._active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
+            if self._selected_bag_item is not empty_space \
+               and self._ground_container.has_space() \
+               and self._active_inventory_container_name == self.get_bag_name():
+                inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
             return inventory_commands
         else:
             return {}
+
+    def _drop_from_inventory_screen(self, _) -> bool:
+        self.character.bag.remove_item(self._selected_bag_item)
+        self._ground_container.add_item(self._selected_bag_item)
+        return True
 
     def _equip_from_ground_in_inventory_screen(self, _):
         self._ground_container.remove_item(self._selected_ground_item)
@@ -483,7 +494,6 @@ class Game:
         if dropped_item is not empty_space:
             self._ground_container.add_item(dropped_item)
         return True
-
 
     def _pick_up_item(self, _) -> bool:
         self._ground_container.remove_item(self._selected_ground_item)
@@ -602,10 +612,10 @@ class Game:
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         try:
-            item = self.character.bag.contents[item_coords[0]][item_coords[1]]
-        except TypeError:
-            item = empty_space
-        return item.details()
+            self._selected_bag_item = self.character.bag.contents[item_coords[0]][item_coords[1]]
+        except AttributeError:
+            self._selected_bag_item = empty_space
+        return self._selected_bag_item.details()
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
