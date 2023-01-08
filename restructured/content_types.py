@@ -71,13 +71,16 @@ class DualContainerScreen(WindowContent):
         self._set_names()
         self._data = {}
         self._container_sizes: dict[str, tuple[int, int]] = {}
-        self._selected_pos = {self._left_name: (0, 0), self._right_name: (0, 0)}
+        self._selected_pos = self._get_initial_selected_position()
         self._get_container_data()
         self._extra_pads = {}
         self._active_container = self._left_name
         self._own_commands = {commands.Move(): self._move_item_focus,
                               commands.SwitchContainers(): self._switch_containers}
         self._max_view_width = config.location_width // 2
+
+    def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
+        return {self._left_name: (0, 0), self._right_name: (0, 0)}
 
     def _set_names(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _set_names()!')
@@ -151,6 +154,10 @@ class MapScreen(DualContainerScreen):
     def _set_names(self) -> None:
         self._left_name = 'World'
         self._right_name = 'Region'
+
+    def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
+        return {self._left_name: self.game_object.get_character_position_in_world(),
+                self._right_name: self.game_object.get_character_position_in_region()}
 
     def _get_container_data(self) -> None:
         self._data[self._left_name] = self.game_object.get_world_data(blink_at=self._selected_pos[self._left_name])

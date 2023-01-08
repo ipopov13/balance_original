@@ -484,6 +484,18 @@ class Game:
         return self._get_coords_of_creature(self.character)[0] % config.location_height, \
                self._get_coords_of_creature(self.character)[1] % config.location_width
 
+    def get_character_position_in_region(self) -> tuple[int, int]:
+        row, column = self._get_coords_of_creature(self.character)
+        row = (row % (config.region_size * config.location_height)) // config.location_height
+        column = (column % (config.region_size * config.location_width)) // config.location_width
+        return row, column
+
+    def get_character_position_in_world(self) -> tuple[int, int]:
+        row, column = self._get_coords_of_creature(self.character)
+        row = row // (config.region_size * config.location_height)
+        column = column // (config.region_size * config.location_width)
+        return row, column
+
     def get_world_data(self, blink_at: tuple[int, int]) -> str:
         return self.world.data(blink_at, character_at=self._get_coords_of_creature(self.character))
 
