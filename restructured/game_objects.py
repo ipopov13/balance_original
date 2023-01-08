@@ -140,12 +140,24 @@ class Back(PhysicalContainer):
     pass
 
 
+class Satchel(Back):
+    def __init__(self):
+        super().__init__(name='satchel', width=3, height=1, icon='=',
+                         color=console.fg.default, description='A very small bag')
+
+
 class Boots(Item):
     pass
 
 
 class MainHand(Item):
     pass
+
+
+class ShortSword(MainHand):
+    def __init__(self):
+        super().__init__(name='short sword', icon='|', color=console.fg.default,
+                         description='Made for stabbing')
 
 
 class Offhand(Item):
@@ -175,8 +187,6 @@ class Meat(Item):
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
                                  'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
 base_animal_equipment_slots = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
-# Items
-short_sword = MainHand(name='short sword', icon='|', color=console.fg.default, description='Made for stabbing.')
 
 
 class Species(GameObject):
@@ -380,7 +390,8 @@ class Game:
         self._creature_coords[initial_coords] = self.character
         self._current_location = self.world.get_location(initial_coords)
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
-        self._current_location.put_item(short_sword, initial_coords)
+        self._current_location.put_item(Satchel(), initial_coords)
+        self._current_location.put_item(ShortSword(), initial_coords)
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
