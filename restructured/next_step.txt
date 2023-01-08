@@ -65,6 +65,6 @@ Region:
     Flavors define the name of a region
 Map screen:
     Character location
-    Region / Location details
     Exploration details
+    Set destination command, add destination directions to HUD
 Optional: split the data into string and color (list[list[str]]), and let the UI combine the two at the end

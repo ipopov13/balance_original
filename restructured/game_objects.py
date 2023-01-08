@@ -485,10 +485,12 @@ class Game:
                self._get_coords_of_creature(self.character)[1] % config.location_width
 
     def get_world_data(self, blink_at: tuple[int, int]) -> str:
-        return self.world.data(blink_at)
+        return self.world.data(blink_at, character_at=self._get_coords_of_creature(self.character))
 
     def get_region_data(self, coords: tuple[int, int], blink_at: tuple[int, int]) -> str:
-        return self.world.contents[coords[0]][coords[1]].data(blink_at)
+        return (self.world
+                .contents[coords[0]][coords[1]]
+                .data(blink_at, character_at=self._get_coords_of_creature(self.character)))
 
     def get_region_map_details(self, coords: tuple[int, int]) -> list[str]:
         return self.world.contents[coords[0]][coords[1]].map_details
@@ -966,12 +968,29 @@ class Region(Container):
         location_top_left_column = self._top_left[1] + column * config.location_width
         return location_top_left_row, location_top_left_column
 
-    def get_location(self, coords: tuple[int, int]) -> Location:
+    def _get_location_coords_from_absolute_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
         local_row_in_tiles = coords[0] - self._top_left[0]
         local_column_in_tiles = coords[1] - self._top_left[1]
         location_row = local_row_in_tiles // config.location_height
         location_column = local_column_in_tiles // config.location_width
-        return self.contents[location_row][location_column]
+        return location_row, location_column
+
+    def get_location(self, coords: tuple[int, int]) -> Location:
+        row, column = self._get_location_coords_from_absolute_coords(coords)
+        return self.contents[row][column]
+
+    def data(self, blink_at: tuple[int, int] = None, character_at: tuple[int, int] = None) -> str:
+        rows = [[c.icon for c in row]
+                for row in self.contents]
+        if blink_at is not None:
+            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
+        if character_at is not None:
+            character_position = self._get_location_coords_from_absolute_coords(character_at)
+            if -1 < character_position[0] < config.region_size \
+                    and -1 < character_position[1] < config.region_size:
+                rows[character_position[0]][character_position[1]] = '@'
+        rows = [''.join(row) for row in rows]
+        return '\n'.join(rows)
 
 
 # TODO: Randomize forces and pass to regions on init
@@ -1088,17 +1107,13 @@ of the Wolf""".split('\n')}
         region_top_left_column = column * Region.width_in_tiles
         return region_top_left_row, region_top_left_column
 
-    def _get_region_from_absolute_coords(self, coords: tuple[int, int]) -> Region:
-        row = coords[0] // Region.height_in_tiles
-        column = coords[1] // Region.width_in_tiles
-        try:
-            region = self.contents[row][column]
-        except IndexError:
-            raise IndexError(f'Wrong region coords ({row}, {column}) from absolute coords {coords}!')
-        return region
+    @staticmethod
+    def _get_region_coords_from_absolute_coords(coords: tuple[int, int]) -> tuple[int, int]:
+        return coords[0] // Region.height_in_tiles, coords[1] // Region.width_in_tiles
 
     def get_location(self, coords: tuple[int, int]) -> Location:
-        region = self._get_region_from_absolute_coords(coords)
+        row, column = self._get_region_coords_from_absolute_coords(coords)
+        region = self.contents[row][column]
         return region.get_location(coords)
 
     @property
@@ -1110,6 +1125,17 @@ of the Wolf""".split('\n')}
     def size(self) -> tuple[int, int]:
         return config.world_size * config.region_size * config.location_height, \
                config.world_size * config.region_size * config.location_width
+
+    def data(self, blink_at: tuple[int, int] = None, character_at: tuple[int, int] = None) -> str:
+        rows = [[c.icon for c in row]
+                for row in self.contents]
+        if blink_at is not None:
+            rows[blink_at[0]][blink_at[1]] = self.contents[blink_at[0]][blink_at[1]].blinking_icon
+        if character_at is not None:
+            character_position = self._get_region_coords_from_absolute_coords(character_at)
+            rows[character_position[0]][character_position[1]] = '@'
+        rows = [''.join(row) for row in rows]
+        return '\n'.join(rows)
 
 
 if __name__ == '__main__':
