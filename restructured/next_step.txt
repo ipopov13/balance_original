@@ -1,8 +1,11 @@
 FEATURES
 Inventory
     Bag (Inventory screen)
-      * Equip from Inventory
-        Drop from Inventory
+      * Equip from bag
+        Add Load info on Inventory screen
+        Drop from bag
+        Open inner container on ground
+        Open inner container in bag
         Commands for moving items are provided by the Game based on active container (drop/pick up, buy/sell)
         Commands for equipping/consuming items are provided by the Game
         The restrictions for moving/equipping (weight, money) are provided by the Game (e.g., no commands appear

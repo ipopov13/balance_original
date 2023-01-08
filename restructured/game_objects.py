@@ -170,8 +170,8 @@ class MainHand(Item):
 
 
 class ShortSword(MainHand):
-    def __init__(self):
-        super().__init__(name='short sword', weight=3, icon='|', color=console.fg.default,
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='short sword', weight=8, icon='|', color=color,
                          description='Made for stabbing')
 
 
@@ -359,6 +359,27 @@ class Creature(GameObject):
     def bag(self):
         return self.current_equipment['Back']
 
+    def can_equip(self, item: Item) -> bool:
+        return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
+
+    def can_carry(self, item: Item) -> bool:
+        return item.weight <= self.max_load - self.load
+
+    def can_swap_equipment(self, item: Item) -> bool:
+        for slot, slot_type in self.equipment_slots.items():
+            if isinstance(item, slot_type):
+                available_load = self.max_load - self.load
+                load_difference = item.weight - self.current_equipment[slot].weight
+                return available_load >= load_difference
+        return False
+
+    def swap_equipment(self, item: Item) -> Item:
+        for slot, slot_type in self.equipment_slots.items():
+            if isinstance(item, slot_type):
+                old_item = self.current_equipment[slot]
+                self.current_equipment[slot] = item
+                return old_item
+
 
 class Fox(Creature):
     def __init__(self):
@@ -411,10 +432,10 @@ class Game:
         self._current_location = self.world.get_location(initial_coords)
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
         self._current_location.put_item(Satchel(), initial_coords)
+        self._current_location.put_item(ShortSword(color=console.fg.red), initial_coords)
+        self._current_location.put_item(ShortSword(color=console.fg.blue), initial_coords)
         self._current_location.put_item(ShortSword(), initial_coords)
-        self._current_location.put_item(ShortSword(), initial_coords)
-        self._current_location.put_item(ShortSword(), initial_coords)
-        self._current_location.put_item(ShortSword(), initial_coords)
+        self._current_location.put_item(ShortSword(color=console.fg.lightgreen), initial_coords)
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
@@ -444,12 +465,25 @@ class Game:
             inventory_commands = {commands.Close(): self._back_to_scene}
             if self.character.bag is not empty_space \
                and self.character.bag.has_space() \
+               and self.character.can_carry(self._selected_ground_item) \
                and self._selected_ground_item is not empty_space \
                and self._active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
+            if self.character.can_swap_equipment(self._selected_ground_item) \
+               and self._selected_ground_item is not empty_space \
+               and self._active_inventory_container_name == self.get_ground_name():
+                inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
             return inventory_commands
         else:
             return {}
+
+    def _equip_from_ground_in_inventory_screen(self, _):
+        self._ground_container.remove_item(self._selected_ground_item)
+        dropped_item = self.character.swap_equipment(self._selected_ground_item)
+        if dropped_item is not empty_space:
+            self._ground_container.add_item(dropped_item)
+        return True
+
 
     def _pick_up_item(self, _) -> bool:
         self._ground_container.remove_item(self._selected_ground_item)
@@ -523,7 +557,7 @@ class Game:
             self._equipment_locations[item] = 'tile'
         return filtered_items
 
-    def equip_item(self, item):
+    def equip_item_from_ground(self, item):
         if item is not None:
             self.character.current_equipment[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
@@ -560,11 +594,9 @@ class Game:
         return (0, 0) if self.character.bag is empty_space else self.character.bag.size
 
     def get_ground_item_details(self, item_coords: tuple[int, int]) -> list[str]:
-        # character_coords = self._get_coords_of_creature(self.character)
-        # item = self._current_location.get_item_at(character_coords, item_coords)
-        self._selected_ground_item = self._ground_container.contents[item_coords[0]][item_coords[1]]
         weight_color = console.fg.default
-        if self._selected_ground_item.weight > self.character.max_load - self.character.load:
+        self._selected_ground_item = self._ground_container.contents[item_coords[0]][item_coords[1]]
+        if not self.character.can_carry(self._selected_ground_item):
             weight_color = console.fg.lightred
         return self._selected_ground_item.details(weight_color=weight_color)
 
