@@ -488,8 +488,11 @@ class Game:
     def get_region_map_details(self, coords: tuple[int, int]) -> list[str]:
         return self.world.contents[coords[0]][coords[1]].map_details
 
-    def get_location_map_details(self, coords: tuple[int, int]) -> list[str]:
-        return ['(empty details)']
+    def get_location_map_details(self, region_coords: tuple[int, int],
+                                 location_coords: tuple[int, int]) -> list[str]:
+        region = self.world.contents[region_coords[0]][region_coords[1]]
+        location = region.contents[location_coords[0]][location_coords[1]]
+        return location.map_details
 
     def _move_creature(self, creature: Creature, direction: str) -> None:
         # TODO: Once the character moves to a new location,
@@ -769,10 +772,19 @@ class Location(Container):
         self._select_terrains()
         visual = self._structure or self._flavor or main_terrain
         # TODO: Add the structure name
-        name = f'{str(self._top_left)}, {self._region_name}'
+        self._local_name = '' if self._structure is None else self._structure.name
+        if self._local_name:
+            name = ', '.join([self._local_name, self._region_name])
+        else:
+            name = self._local_name
         super().__init__(height=config.location_height, width=config.location_width,
                          icon=visual.raw_icon, color=visual.color, name=name)
         self._contents: list[list[Tile]] = []
+
+    @property
+    def map_details(self) -> list[str]:
+        flavor_name = None if self._flavor is None else self._flavor.name
+        return [f'Landmark: {self._local_name}', f'Features: {flavor_name}']
 
     def load_creatures(self, local_creatures: dict[tuple[int, int], Creature]) -> dict[tuple[int, int], Creature]:
         # TODO: Get random creatures from the filler/base/flavor

@@ -152,7 +152,8 @@ class MapScreen(DualContainerScreen):
 
     def _get_details(self) -> tuple[list[str], list[str]]:
         region_details = self.game_object.get_region_map_details(self._selected_pos[self._left_name])
-        location_details = self.game_object.get_location_map_details(self._selected_pos[self._right_name])
+        location_details = self.game_object.get_location_map_details(self._selected_pos[self._left_name],
+                                                                     self._selected_pos[self._right_name])
         return region_details, location_details
 
 
