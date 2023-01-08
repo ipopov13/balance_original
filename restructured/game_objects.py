@@ -142,7 +142,7 @@ class Back(PhysicalContainer):
 
 class Satchel(Back):
     def __init__(self):
-        super().__init__(name='satchel', width=3, height=1, icon='=',
+        super().__init__(name='satchel', weight=1, width=3, height=1, icon='=',
                          color=console.fg.default, description='A very small bag')
 
 
@@ -156,7 +156,7 @@ class MainHand(Item):
 
 class ShortSword(MainHand):
     def __init__(self):
-        super().__init__(name='short sword', icon='|', color=console.fg.default,
+        super().__init__(name='short sword', weight=3, icon='|', color=console.fg.default,
                          description='Made for stabbing')
 
 
@@ -314,12 +314,15 @@ class Creature(GameObject):
         self.race = race
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
-        self.current_equipment = {k: None for k in self.equipment_slots}
+        self.current_equipment = {k: empty_space for k in self.equipment_slots}
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self.hp = self.max_hp
         self.mana = self.max_mana
         self.energy = self.max_energy
-        self.load = 0
+
+    @property
+    def load(self):
+        return sum([item.weight for item in self.current_equipment.values()])
 
     @property
     def max_hp(self):
@@ -500,29 +503,23 @@ class Game:
         if self._equipping_slot is None:
             self.substate = Game.scene_substate
         else:
-            if self.character.current_equipment[self._equipping_slot] is not None:
-                self.character.current_equipment[self._equipping_slot] = None
+            if self.character.current_equipment[self._equipping_slot] is not empty_space:
+                self.character.current_equipment[self._equipping_slot] = empty_space
                 self._equipping_slot = None
             else:
                 self.substate = Game.equip_for_substate
 
     def get_bag_name(self) -> str:
-        return '(no bag)' if self.character.bag is None else self.character.bag.name
+        return '(no bag)' if self.character.bag is empty_space else f'Your {self.character.bag.name}'
 
     def get_ground_items(self) -> str:
         return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
 
     def get_bag_items(self) -> str:
-        try:
-            return self.character.bag.data
-        except AttributeError:
-            return ''
+        return '' if self.character.bag is empty_space else self.character.bag.data()
 
     def get_bag_size(self) -> tuple[int, int]:
-        try:
-            return self.character.bag.size
-        except AttributeError:
-            return 0, 0
+        return (0, 0) if self.character.bag is empty_space else self.character.bag.size
 
     def get_ground_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         character_coords = self._get_coords_of_creature(self.character)
