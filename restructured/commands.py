@@ -36,7 +36,6 @@ class InventoryPickUp(Command):
     character = 'p'
     hint = '(p)ick up'
     description = 'Put the selected item in your inventory'
-    changes_window = True
 
 
 class InventoryEquip(Command):

@@ -127,12 +127,16 @@ class PhysicalContainer(Container, Item):
         return padded_contents
 
     def add_item(self, item: Item):
+        if item is empty_space:
+            raise TypeError(f"Cannot add empty_space to container!")
         for row_index in range(self._height):
             if len(self._contents[row_index]) < self._width:
                 self._contents[row_index].append(item)
                 break
 
     def remove_item(self, item: Item):
+        if item is empty_space:
+            raise TypeError(f"Cannot remove empty_space from container!")
         for row in self._contents:
             if item in row:
                 row.remove(item)
@@ -479,6 +483,9 @@ class Game:
                and self._ground_container.has_space() \
                and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
+            # if self.character.can_equip(self._selected_bag_item) \
+            #    and self._active_inventory_container_name == self.get_bag_name():
+            #     inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
             return inventory_commands
         else:
             return {}
@@ -486,6 +493,13 @@ class Game:
     def _drop_from_inventory_screen(self, _) -> bool:
         self.character.bag.remove_item(self._selected_bag_item)
         self._ground_container.add_item(self._selected_bag_item)
+        return True
+
+    def _equip_from_bag_in_inventory_screen(self, _):
+        self.character.bag.remove_item(self._selected_bag_item)
+        unequipped_item = self.character.swap_equipment(self._selected_bag_item)
+        if unequipped_item is not empty_space:
+            self.character.bag.add_item(unequipped_item)
         return True
 
     def _equip_from_ground_in_inventory_screen(self, _):

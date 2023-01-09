@@ -66,28 +66,30 @@ class EquipmentScreen(WindowContent):
 
 
 class DualContainerScreen(WindowContent):
+    LEFT = 'left one'
+    RIGHT = 'right one'
+
     def __init__(self, game_object):
         super().__init__(game_object)
-        self._left_name = '(left_container)'
-        self._right_name = '(right_container)'
+        self._names = {self.LEFT: '(left_container)', self.RIGHT: '(right_container)'}
         self._set_names()
         self._data = {}
         self._container_sizes: dict[str, tuple[int, int]] = {}
         self._selected_pos = self._get_initial_selected_position()
         self._get_container_data()
         self._extra_pads = {}
-        self._active_container = self._left_name
+        self._active_container = self.LEFT
         self._max_view_width = config.location_width // 2
 
     @property
     def _own_commands(self):
         own_commands = {commands.Move(): self._move_item_focus}
-        if self._data[self._right_name]:
+        if self._data[self.RIGHT]:
             own_commands[commands.SwitchContainers()] = self._switch_containers
         return own_commands
 
     def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
-        return {self._left_name: (0, 0), self._right_name: (0, 0)}
+        return {self.LEFT: (0, 0), self.RIGHT: (0, 0)}
 
     def _set_names(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _set_names()!')
@@ -106,24 +108,24 @@ class DualContainerScreen(WindowContent):
         return True
 
     def _switch_containers(self, _) -> bool:
-        if self._active_container is self._left_name:
-            self._active_container = self._right_name
+        if self._active_container is self.LEFT:
+            self._active_container = self.RIGHT
         else:
-            self._active_container = self._left_name
+            self._active_container = self.LEFT
         return True
 
-    def _prettify_container(self, container_name: str = None):
-        container_data = self._data[container_name]
-        container_size = self._container_sizes[container_name]
-        border_color = console.fg.default if container_name is self._active_container else console.fx.dim
-        top_border_raw = container_name.center(max(container_size[1] + 2, len(container_name) + 2), '-')
+    def _prettify_container(self, container_tag: str = None):
+        container_data = self._data[container_tag]
+        container_size = self._container_sizes[container_tag]
+        border_color = console.fg.default if container_tag is self._active_container else console.fx.dim
+        top_border_raw = self._names[container_tag].center(max(container_size[1] + 2, len(container_tag) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
         padded_data, inner_left_pad, _ = horizontal_pad(container_data.split('\n'), len(top_border_raw))
         content_data = ([border_color + top_border_raw + console.fx.end]
                         + padded_data
                         + [border_color + bottom_border_raw + console.fx.end])
         content_data, left_pad, _ = horizontal_pad(content_data, self._max_view_width)
-        self._extra_pads[container_name] = left_pad + inner_left_pad
+        self._extra_pads[container_tag] = left_pad + inner_left_pad
         return '\n'.join(content_data)
 
     def _equalize_rows(self, left_view, right_view):
@@ -135,8 +137,8 @@ class DualContainerScreen(WindowContent):
         return left_view, right_view
 
     def data(self) -> str:
-        pretty_left = self._prettify_container(self._left_name) + '\n\n'
-        pretty_right = self._prettify_container(self._right_name) + '\n\n'
+        pretty_left = self._prettify_container(self.LEFT) + '\n\n'
+        pretty_right = self._prettify_container(self.RIGHT) + '\n\n'
         left_details, right_details = self._get_details()
         left_details, _, _ = horizontal_pad(left_details, self._max_view_width)
         right_details, _, _ = horizontal_pad(right_details, self._max_view_width)
@@ -151,7 +153,7 @@ class DualContainerScreen(WindowContent):
 
     def cursor_pos(self) -> tuple[int, int]:
         left_pad = self._extra_pads[self._active_container]
-        if self._active_container is self._right_name:
+        if self._active_container is self.RIGHT:
             left_pad += self._max_view_width
         return (self._selected_pos[self._active_container][0] + 1,
                 self._selected_pos[self._active_container][1] + left_pad)
@@ -159,60 +161,62 @@ class DualContainerScreen(WindowContent):
 
 class MapScreen(DualContainerScreen):
     def _set_names(self) -> None:
-        self._left_name = 'World'
-        self._right_name = 'Region'
+        self._names[self.LEFT] = 'World'
+        self._names[self.RIGHT] = 'Region'
 
     def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
-        return {self._left_name: self.game_object.get_character_position_in_world(),
-                self._right_name: self.game_object.get_character_position_in_region()}
+        return {self.LEFT: self.game_object.get_character_position_in_world(),
+                self.RIGHT: self.game_object.get_character_position_in_region()}
 
     def _get_container_data(self) -> None:
-        self._data[self._left_name] = self.game_object.get_world_data(blink_at=self._selected_pos[self._left_name])
-        self._data[self._right_name] = self.game_object.get_region_data(self._selected_pos[self._left_name],
-                                                                        blink_at=self._selected_pos[self._right_name])
-        self._container_sizes[self._left_name] = (config.world_size, config.world_size)
-        self._container_sizes[self._right_name] = (config.region_size, config.region_size)
+        self._data[self.LEFT] = self.game_object.get_world_data(blink_at=self._selected_pos[self.LEFT])
+        self._data[self.RIGHT] = self.game_object.get_region_data(self._selected_pos[self.LEFT],
+                                                                  blink_at=self._selected_pos[self.RIGHT])
+        self._container_sizes[self.LEFT] = (config.world_size, config.world_size)
+        self._container_sizes[self.RIGHT] = (config.region_size, config.region_size)
 
     def _get_details(self) -> tuple[list[str], list[str]]:
-        region_details = self.game_object.get_region_map_details(self._selected_pos[self._left_name])
-        location_details = self.game_object.get_location_map_details(self._selected_pos[self._left_name],
-                                                                     self._selected_pos[self._right_name])
+        region_details = self.game_object.get_region_map_details(self._selected_pos[self.LEFT])
+        location_details = self.game_object.get_location_map_details(self._selected_pos[self.LEFT],
+                                                                     self._selected_pos[self.RIGHT])
         return region_details, location_details
 
 
 class InventoryScreen(DualContainerScreen):
     def __init__(self, game_object):
         super().__init__(game_object)
-        self.game_object.set_active_container(self._left_name)
+        self.game_object.set_active_container(self._names[self.LEFT])
 
     def _switch_containers(self, _) -> bool:
-        if self._active_container is self._left_name:
-            self._active_container = self._right_name
-            self.game_object.set_active_container(self._right_name)
+        if self._active_container is self.LEFT:
+            self._active_container = self.RIGHT
+            self.game_object.set_active_container(self._names[self.RIGHT])
         else:
-            self._active_container = self._left_name
-            self.game_object.set_active_container(self._left_name)
+            self._active_container = self.LEFT
+            self.game_object.set_active_container(self._names[self.LEFT])
         return True
 
     def _set_names(self) -> None:
-        self._left_name = config.ground
-        self._right_name = self.game_object.get_bag_name()
+        self._names[self.LEFT] = config.ground
+        self._names[self.RIGHT] = self.game_object.get_bag_name()
 
     def _get_container_data(self) -> None:
-        self._data[self._left_name] = self.game_object.get_ground_items()
-        self._data[self._right_name] = self.game_object.get_bag_items()
-        self._container_sizes[self._left_name] = (config.tile_size, config.tile_size)
-        self._container_sizes[self._right_name] = self.game_object.get_bag_size()
+        self._data[self.LEFT] = self.game_object.get_ground_items()
+        self._data[self.RIGHT] = self.game_object.get_bag_items()
+        self._container_sizes[self.LEFT] = (config.tile_size, config.tile_size)
+        self._container_sizes[self.RIGHT] = self.game_object.get_bag_size()
 
     def _get_details(self) -> tuple[list[str], list[str]]:
-        ground_details = self.game_object.get_ground_item_details(self._selected_pos[self._left_name])
-        bag_details = self.game_object.get_bag_item_details(self._selected_pos[self._right_name])
+        ground_details = self.game_object.get_ground_item_details(self._selected_pos[self.LEFT])
+        bag_details = self.game_object.get_bag_item_details(self._selected_pos[self.RIGHT])
         return ground_details, bag_details
 
     def _decorate_callback(self, callback):
 
         def wrapper(*args, **kwargs):
             result = callback(*args, **kwargs)
+            self._set_names()
+            self._get_initial_selected_position()
             self._get_container_data()
             return result
 
