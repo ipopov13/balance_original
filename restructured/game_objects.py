@@ -412,6 +412,7 @@ class Game:
     races = sentient_races
 
     def __init__(self):
+        self._turn = 0
         self.character: Optional[Creature] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
@@ -461,7 +462,7 @@ class Game:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
         elif self.state is Game.playing_state and self.substate is Game.scene_substate:
-            return {commands.Move(): self._move_character,
+            return {commands.Move(): self._player_move,
                     commands.Map(): self._open_map,
                     commands.Equipment(): self._open_equipment,
                     commands.Inventory(): self._open_inventory}
@@ -483,9 +484,9 @@ class Game:
                and self._ground_container.has_space() \
                and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
-            # if self.character.can_equip(self._selected_bag_item) \
-            #    and self._active_inventory_container_name == self.get_bag_name():
-            #     inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
+            if self.character.can_equip(self._selected_bag_item) \
+               and self._active_inventory_container_name == self.get_bag_name():
+                inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
             return inventory_commands
         else:
             return {}
@@ -531,8 +532,9 @@ class Game:
         self.substate = Game.map_substate
         return True
 
-    def _move_character(self, direction):
-        self._move_creature(self.character, direction)
+    def _player_move(self, direction):
+        self._move_character(direction)
+        self._move_world()
         return True
 
     def _new_game(self, _):
@@ -560,6 +562,15 @@ class Game:
 
                     ver 0.7
                   Ivan Popov'''
+
+    def _move_world(self):
+        # TODO: Move creatures
+        # TODO: Change effect visuals (blinking fires, etc)
+        self._turn += 1
+        for creature in self._creature_coords.values():
+            goal = creature.get_goal()
+            next_coords = self._current_location.get_goal_step(goal)
+            self._move_creature(creature, direction)
 
     def _get_coords_of_creature(self, creature: Creature) -> tuple[int, int]:
         for coords in self._creature_coords:
@@ -690,27 +701,27 @@ class Game:
         location = region.contents[location_coords[0]][location_coords[1]]
         return location.map_details
 
-    def _move_creature(self, creature: Creature, direction: str) -> None:
+    def _move_character(self, direction: str) -> None:
         # TODO: Once the character moves to a new location,
         #     the Game sends the old Location to the World for saving and requests a new one.
-        creature_location = self.world.get_location(self._get_coords_of_creature(creature))
-        if creature_location is not self._current_location:
-            raise ValueError(f'Creatures outside of current location should not be moving! '
-                             f'{creature.name} {self._get_coords_of_creature(creature)}')
-        new_coords = calculate_new_position(self._get_coords_of_creature(creature),
+        # creature_location = self.world.get_location(self._get_coords_of_creature(self.character))
+        # if creature_location is not self._current_location:
+        #     raise ValueError(f'Creatures outside of current location should not be moving! '
+        #                      f'{creature.name} {self._get_coords_of_creature(creature)}')
+        new_coords = calculate_new_position(self._get_coords_of_creature(self.character),
                                             direction, *self.world.size)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
-        if new_location.can_ocupy(creature, new_coords) and new_coords not in self._creature_coords:
-            self._creature_coords.pop(self._get_coords_of_creature(creature))
-            self._creature_coords[new_coords] = creature
+        if new_location.can_ocupy(self.character, new_coords) and new_coords not in self._creature_coords:
+            self._creature_coords.pop(self._get_coords_of_creature(self.character))
+            self._creature_coords[new_coords] = self.character
             self._current_location = new_location
             if self._current_location is not old_location:
                 for coords in list(self._creature_coords.keys()):
                     if self._creature_coords[coords] is not self.character:
                         self._creature_coords.pop(coords)
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords)
-        elif creature is self.character:
+        else:
             # TODO: Implement log message describing why the move is impossible
             pass
 
