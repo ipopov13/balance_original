@@ -30,7 +30,7 @@ class GameObject:
         self._name = name
         self.raw_icon = icon
         self.color = color
-        self._description = description
+        self._description = description or name
         self.sort_key = sort_key
 
     @property
@@ -746,61 +746,61 @@ class FlavorTerrain(Terrain):
 
 
 # Ground fillers
-grass = Terrain(color=console.fg.lightgreen, description='grass')
-ashes = Terrain(color=console.fg.lightblack, description='ashes')
-dirt = Terrain(color=config.brown_fg_color, description='dirt')
-snow = Terrain(color=console.fg.white, description='snow')
-sand = Terrain(color=console.fg.yellow, description='sand')
-ice = Terrain(color=console.fg.lightblue, description='ice')
+grass = Terrain(color=console.fg.lightgreen, name='grass')
+ashes = Terrain(color=console.fg.lightblack, name='ashes')
+dirt = Terrain(color=config.brown_fg_color, name='dirt')
+snow = Terrain(color=console.fg.white, name='snow')
+sand = Terrain(color=console.fg.yellow, name='sand')
+ice = Terrain(color=console.fg.lightblue, name='ice')
 # Other base terrains
-tree = Terrain(color=console.fg.lightgreen, description='tree', icon='T')
-dead_tree = Terrain(color=console.fg.lightblack, description='dead tree', icon='T')
-frozen_tree = Terrain(color=console.fg.lightblue, description='frozen tree', icon='T')
-ice_block = Terrain(color=console.fg.lightblue, description='ice block', icon='%', passable=False)
-rocks = Terrain(color=console.fg.lightblack, description='rocks', icon='%', passable=False)
-bush = Terrain(color=console.fg.lightgreen, description='bush', icon='#')
-swamp = Terrain(color=console.fg.lightgreen, description='swamp', icon='~')
-quick_sand = Terrain(color=console.fg.yellow, description='quicksand')
-jungle = Terrain(color=console.fg.green, description='tree', icon='T', passable=False)
+tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T')
+dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T')
+frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T')
+ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False)
+rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False)
+bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#')
+swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~')
+quick_sand = Terrain(color=console.fg.yellow, name='quicksand')
+jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False)
 all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
                      rocks, bush, swamp, quick_sand, jungle]
 # Flavor terrains
-poisonous_flowers = FlavorTerrain(color=console.fg.purple, description='poisonous flowers', icon='*',
+poisonous_flowers = FlavorTerrain(color=console.fg.purple, name='poisonous flowers', icon='*',
                                   required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-bones = FlavorTerrain(color=console.fg.lightwhite, description='bones', icon='~',
+bones = FlavorTerrain(color=console.fg.lightwhite, name='bones', icon='~',
                       required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-venomous_thorns = FlavorTerrain(color=console.fg.lightgreen, description='venomous thorns', icon='#',
+venomous_thorns = FlavorTerrain(color=console.fg.lightgreen, name='venomous thorns', icon='#',
                                 required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-junk_pile = FlavorTerrain(color=console.fg.lightblack, description='junk pile', icon='o',
+junk_pile = FlavorTerrain(color=console.fg.lightblack, name='junk pile', icon='o',
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-lava = FlavorTerrain(color=console.fg.red, description='lava', icon='~', passable=False,
+lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~', passable=False,
                      required_base_terrains=all_base_terrains, required_climates=[HOT_CLIMATE])
-gold_vein = FlavorTerrain(color=console.fg.lightyellow, description='gold vein', icon='%', passable=False,
+gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%', passable=False,
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
-silver_vein = FlavorTerrain(color=console.fg.lightcyan, description='silver vein', icon='%', passable=False,
+silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%', passable=False,
                             required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
-iron_vein = FlavorTerrain(color=console.fg.lightblue, description='iron vein', icon='%', passable=False,
+iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%', passable=False,
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
-mossy_rock = FlavorTerrain(color=console.fg.lightgreen, description='mossy rock', icon='%', passable=False,
+mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%', passable=False,
                            required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-lichen_clump = FlavorTerrain(color=console.fg.lightgreen, description='lichen clump', icon='o',
+lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
                              required_base_terrains=all_base_terrains, required_climates=[COLD_CLIMATE])
-flowers = FlavorTerrain(color=console.fg.purple, description='flowers', icon='*',
+flowers = FlavorTerrain(color=console.fg.purple, name='flowers', icon='*',
                         required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-old_pavement = FlavorTerrain(color=console.fg.lightyellow, description='old pavement',
+old_pavement = FlavorTerrain(color=console.fg.lightyellow, name='old pavement',
                              required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-ruined_wall = FlavorTerrain(color=config.brown_fg_color, description='ruined wall', icon='#', passable=False,
+ruined_wall = FlavorTerrain(color=config.brown_fg_color, name='ruined wall', icon='#', passable=False,
                             required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-engraved_column = FlavorTerrain(color=config.brown_fg_color, description='engraved column', icon='|', passable=False,
+engraved_column = FlavorTerrain(color=config.brown_fg_color, name='engraved column', icon='|', passable=False,
                                 required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-fireplace = FlavorTerrain(color=console.fg.lightyellow, description='fireplace', icon='o', passable=False,
+fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o', passable=False,
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
-farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, description='farmland', icon='=',
+farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='farmland', icon='=',
                          required_base_terrains=[grass, dirt, tree, jungle, bush, swamp],
                          required_climates=ALL_CLIMATES)
 # Structure building blocks
-poisoned_water = Terrain(color=console.fg.lightblack, description='poisoned water', icon='~')
-water = Terrain(color=console.fg.blue, description='water', icon='~')
+poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~')
+water = Terrain(color=console.fg.blue, name='water', icon='~')
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well')
 
 
@@ -826,7 +826,7 @@ class Well(FlavorTerrain):
                 self._data[coords] = filler
 
 
-well = Well(color=console.fg.blue, description='a well', icon='o',
+well = Well(color=console.fg.blue, name='a well', icon='o',
             required_base_terrains=all_base_terrains,
             required_climates=ALL_CLIMATES)
 
@@ -1083,7 +1083,7 @@ class Region(Container):
                                   bush: 'Dry bushland',
                                   jungle: 'Jungles',
                                   quick_sand: 'Desert',
-                                  rocks: 'Rocky dunes'}}
+                                  rocks: 'Crag'}}
 
     def __init__(self, top_left: tuple[int, int], main_force: str, climate: str, suffix: str = ' of tests'):
         self._top_left = top_left
