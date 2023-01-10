@@ -384,6 +384,10 @@ class Creature(GameObject):
                 self.current_equipment[slot] = item
                 return old_item
 
+    @staticmethod
+    def get_goals() -> list[str]:
+        return ['random']
+
 
 class Fox(Creature):
     def __init__(self):
@@ -567,10 +571,17 @@ class Game:
         # TODO: Move creatures
         # TODO: Change effect visuals (blinking fires, etc)
         self._turn += 1
-        for creature in self._creature_coords.values():
-            goal = creature.get_goal()
-            next_coords = self._current_location.get_goal_step(goal)
-            self._move_creature(creature, direction)
+        self._move_npcs()
+
+    def _move_npcs(self):
+        for old_coords in list(self._creature_coords.keys()):
+            creature = self._creature_coords.get(old_coords)
+            if creature is self.character or creature is None:
+                continue
+            goals = creature.get_goals()
+            next_coords = self._current_location.get_goal_step(creature, old_coords, goals)
+            self._creature_coords.pop(old_coords)
+            self._creature_coords[next_coords] = creature
 
     def _get_coords_of_creature(self, creature: Creature) -> tuple[int, int]:
         for coords in self._creature_coords:
@@ -708,12 +719,12 @@ class Game:
         # if creature_location is not self._current_location:
         #     raise ValueError(f'Creatures outside of current location should not be moving! '
         #                      f'{creature.name} {self._get_coords_of_creature(creature)}')
-        new_coords = calculate_new_position(self._get_coords_of_creature(self.character),
-                                            direction, *self.world.size)
+        old_coords = self._get_coords_of_creature(self.character)
+        new_coords = calculate_new_position(old_coords, direction, *self.world.size)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
         if new_location.can_ocupy(self.character, new_coords) and new_coords not in self._creature_coords:
-            self._creature_coords.pop(self._get_coords_of_creature(self.character))
+            self._creature_coords.pop(old_coords)
             self._creature_coords[new_coords] = self.character
             self._current_location = new_location
             if self._current_location is not old_location:
@@ -944,6 +955,36 @@ class Location(Container):
         super().__init__(height=config.location_height, width=config.location_width,
                          icon=visual.raw_icon, color=visual.color, name=name)
         self._contents: list[list[Tile]] = []
+
+    def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
+                      goals: list[str]) -> tuple[int, int]:
+        local_coords = self._local_coords(current_coords)
+        for goal in goals:
+            if goal == 'random':
+                return self._choose_random_passable_neighbor(creature, local_coords)
+
+    def _all_neighbors(self, coords: tuple[int, int]) -> list[tuple[int, int]]:
+        neighbors = []
+        for change_x in [-1, 0, 1]:
+            for change_y in [-1, 0, 1]:
+                new_coords = (coords[0] + change_y, coords[1] + change_x)
+                try:
+                    self.tile_at(new_coords)
+                except IndexError:
+                    continue
+                if new_coords != coords:
+                    neighbors.append(new_coords)
+        return neighbors
+
+    def _choose_random_passable_neighbor(self, creature: Creature,
+                                         coords: tuple[int, int]) -> tuple[int, int]:
+        neighbors = self._all_neighbors(coords)
+        random.shuffle(neighbors)
+        for new_coords in neighbors:
+            if self.tile_at(new_coords).is_passable_for(creature):
+                return new_coords
+        else:
+            return coords
 
     def get_items_data_at(self, coords: tuple[int, int]) -> str:
         return self.tile_at(coords).data()
