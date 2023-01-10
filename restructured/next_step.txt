@@ -1,4 +1,21 @@
 FEATURES
+Creatures
+    AI
+        The creature knows the GOALS it wants (e.g., @, grass, rocks, a rabbit)
+        The creature has priorities: a list of GOALS from which the current ones are chosen
+        The creature passes the current list of GOALS to the Game
+        The location finds the first GOAL the creature SEES and gives the next STEP towards it, calculating paths
+        The Game gives the Location the coordinates of creatures, to make them available as GOALS
+        The Game moves the creature on the STEP to the first GOAL
+        ----
+        The list of GOALS is the creature AI. Example fox priorities:
+            0) meat (eat it)
+            1) rabbit (kill a SmallAnimal instance to "make" meat)
+            2) run(radius, distance) (protective mechanism, if a SentientSpecies is nearby)
+            3) chosen random point in location
+            4) hideout (hide on the terrain tile that generated the creature
+        A subset of the list is chosen by the creature when the situation changes
+        The list can be reordered based on the situation
 Inventory
     Merge Inventory and Equipment?
         Add a third container (6x1) with slot names that are dimmed and replaced by the descriptions
