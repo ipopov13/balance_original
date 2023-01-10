@@ -958,22 +958,22 @@ class Location(Container):
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
                       goals: list[str]) -> tuple[int, int]:
-        local_coords = self._local_coords(current_coords)
         for goal in goals:
             if goal == 'random':
-                return self._choose_random_passable_neighbor(creature, local_coords)
+                return self._choose_random_passable_neighbor(creature, current_coords)
 
     def _all_neighbors(self, coords: tuple[int, int]) -> list[tuple[int, int]]:
         neighbors = []
         for change_x in [-1, 0, 1]:
             for change_y in [-1, 0, 1]:
-                new_coords = (coords[0] + change_y, coords[1] + change_x)
-                try:
-                    self.tile_at(new_coords)
-                except IndexError:
+                new_y = coords[0] + change_y
+                new_x = coords[1] + change_x
+                if new_x < self._top_left[1] or new_y < self._top_left[0] \
+                   or new_x >= self._width + self._top_left[1] \
+                   or new_y >= self._height + self._top_left[0] \
+                   or (new_y, new_x) == coords:
                     continue
-                if new_coords != coords:
-                    neighbors.append(new_coords)
+                neighbors.append((new_y, new_x))
         return neighbors
 
     def _choose_random_passable_neighbor(self, creature: Creature,
@@ -1093,7 +1093,10 @@ class Location(Container):
                 for row in self.contents]
         for coords, creature in creatures.items():
             local_coords = self._local_coords(coords)
-            rows[local_coords[0]][local_coords[1]] = creature.icon
+            try:
+                rows[local_coords[0]][local_coords[1]] = creature.icon
+            except:
+                input(local_coords)
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
