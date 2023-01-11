@@ -400,6 +400,13 @@ class Creature(GameObject):
         if random.random() > self.stats['Dex'] / config.max_stat_value * load_modifier:
             self.hp -= damage
 
+    def rest(self):
+        self.energy += 1
+        if self.energy > self.max_energy:
+            self.energy = self.max_energy
+            if random.random() < self.stats['End'] / config.max_stat_value and self.hp < self.max_hp:
+                self.hp += 1
+
     @property
     def is_dead(self) -> bool:
         return self.hp <= 0
@@ -483,6 +490,7 @@ class Game:
                     commands.LoadGame(): self._initiate_load}
         elif self.state is Game.playing_state and self.substate is Game.scene_substate:
             return {commands.Move(): self._player_move,
+                    commands.Rest(): self._character_rests,
                     commands.Map(): self._open_map,
                     commands.Equipment(): self._open_equipment,
                     commands.Inventory(): self._open_inventory}
@@ -510,6 +518,11 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _character_rests(self, _) -> bool:
+        self.character.rest()
+        self._move_world()
+        return True
 
     def _drop_from_inventory_screen(self, _) -> bool:
         self.character.bag.remove_item(self._selected_bag_item)

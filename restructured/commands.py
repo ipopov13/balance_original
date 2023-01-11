@@ -83,7 +83,7 @@ class TextInput(Command):
 
 
 class Move(Command):
-    character = string.digits
+    character = '12346789'
     hint = '(0-9) Move'
     description = 'Move in a num-pad direction'
 
@@ -92,6 +92,12 @@ class Move(Command):
 
     def __hash__(self):
         return hash(self.character)
+
+
+class Rest(Command):
+    character = '5'
+    hint = ''
+    description = 'Rest and restore energy and hit points'
 
 
 class NextPage(Command):
