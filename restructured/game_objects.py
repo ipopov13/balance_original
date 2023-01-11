@@ -344,6 +344,10 @@ class Creature(GameObject):
         return sum([item.weight for item in self.current_equipment.values()])
 
     @property
+    def damage(self):
+        return random.randint(self.stats['Str'], int(self.stats['Str'] + self.stats['Dex'] / 2))
+
+    @property
     def max_hp(self):
         return self.stats['Str'] + 2 * self.stats['End']
 
@@ -387,6 +391,18 @@ class Creature(GameObject):
     @staticmethod
     def get_goals() -> list[str]:
         return ['random']
+
+    def bump_with(self, other_creature: 'Creature') -> None:
+        other_creature.receive_damage(self.damage)
+
+    def receive_damage(self, damage: int) -> None:
+        load_modifier = (self.max_load - self.load) / self.max_load
+        if random.random() > self.stats['Dex'] / config.max_stat_value * load_modifier:
+            self.hp -= damage
+
+    @property
+    def is_dead(self) -> bool:
+        return self.hp <= 0
 
 
 class Fox(Creature):
@@ -568,7 +584,6 @@ class Game:
                   Ivan Popov'''
 
     def _move_world(self):
-        # TODO: Move creatures
         # TODO: Change effect visuals (blinking fires, etc)
         self._turn += 1
         self._move_npcs()
@@ -580,8 +595,13 @@ class Game:
                 continue
             goals = creature.get_goals()
             next_coords = self._current_location.get_goal_step(creature, old_coords, goals)
-            self._creature_coords.pop(old_coords)
-            self._creature_coords[next_coords] = creature
+            if next_coords in self._creature_coords:
+                creature.bump_with(self._creature_coords[next_coords])
+                if self._creature_coords[next_coords].is_dead:
+                    self._creature_coords.pop(next_coords)
+            else:
+                self._creature_coords.pop(old_coords)
+                self._creature_coords[next_coords] = creature
 
     def _get_coords_of_creature(self, creature: Creature) -> tuple[int, int]:
         for coords in self._creature_coords:
@@ -715,18 +735,19 @@ class Game:
     def _move_character(self, direction: str) -> None:
         # TODO: Once the character moves to a new location,
         #     the Game sends the old Location to the World for saving and requests a new one.
-        # creature_location = self.world.get_location(self._get_coords_of_creature(self.character))
-        # if creature_location is not self._current_location:
-        #     raise ValueError(f'Creatures outside of current location should not be moving! '
-        #                      f'{creature.name} {self._get_coords_of_creature(creature)}')
         old_coords = self._get_coords_of_creature(self.character)
         new_coords = calculate_new_position(old_coords, direction, *self.world.size)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
-        if new_location.can_ocupy(self.character, new_coords) and new_coords not in self._creature_coords:
-            self._creature_coords.pop(old_coords)
-            self._creature_coords[new_coords] = self.character
-            self._current_location = new_location
+        if new_location.can_ocupy(self.character, new_coords):
+            if new_coords in self._creature_coords:
+                self.character.bump_with(self._creature_coords[new_coords])
+                if self._creature_coords[new_coords].is_dead:
+                    self._creature_coords.pop(new_coords)
+            else:
+                self._creature_coords.pop(old_coords)
+                self._creature_coords[new_coords] = self.character
+                self._current_location = new_location
             if self._current_location is not old_location:
                 for coords in list(self._creature_coords.keys()):
                     if self._creature_coords[coords] is not self.character:

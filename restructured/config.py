@@ -20,11 +20,12 @@ brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
 
 multiple_items_icon = '?'
-
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')
 ground = 'Ground'
+
+max_stat_value = 20
 
 if __name__ == '__main__':
     print(len(str(race_selection_title)))
