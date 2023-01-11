@@ -3,7 +3,7 @@ import random
 import commands
 import console
 import config
-from utils import calculate_new_position
+from utils import calculate_new_position, coord_distance, direct_path
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -323,14 +323,21 @@ fay_race = HumanoidSpecies(name='Fay',
                                        "trespass into the dreams of others is an insignificant side effect.",
                            sort_key=12)
 fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred)
+wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
+                             base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7})
 
 
 class Creature(GameObject):
     # TODO: Creatures have goals and they ask the Location for the path to the closest
     #  Tile that satisfies the goal
     def __init__(self, race: Species = None, **kwargs):
+        if kwargs.get('icon') is None:
+            kwargs['icon'] = race.raw_icon
+        if kwargs.get('color') is None:
+            kwargs['color'] = race.color
         super().__init__(**kwargs)
         self.race = race
+        self._ai = ['random/']
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
@@ -345,7 +352,7 @@ class Creature(GameObject):
 
     @property
     def damage(self):
-        return random.randint(self.stats['Str'], int(self.stats['Str'] + self.stats['Dex'] / 2))
+        return random.randint(1, int(self.stats['Str'] + self.stats['Dex'] / 2))
 
     @property
     def hp(self):
@@ -412,9 +419,8 @@ class Creature(GameObject):
                 self.current_equipment[slot] = item
                 return old_item
 
-    @staticmethod
-    def get_goals() -> list[str]:
-        return ['random']
+    def get_goals(self) -> list[str]:
+        return self._ai
 
     def bump_with(self, other_creature: 'Creature') -> None:
         other_creature.receive_damage(self.damage)
@@ -434,9 +440,17 @@ class Creature(GameObject):
         return self.hp <= 0
 
 
+# These hold the AI, so they are more like roles than species
 class Fox(Creature):
     def __init__(self):
-        super().__init__(race=fox_species, name='fox', icon='f', color=console.fg.lightred)
+        super().__init__(race=fox_species, name='fox')
+        self._ai = ['random/']
+
+
+class Wolf(Creature):
+    def __init__(self):
+        super().__init__(race=wolf_species, name='wolf')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
 
 
 class Game:
@@ -629,7 +643,8 @@ class Game:
             if creature is self.character or creature is None:
                 continue
             goals = creature.get_goals()
-            next_coords = self._current_location.get_goal_step(creature, old_coords, goals)
+            next_coords = self._current_location.get_goal_step(creature, old_coords,
+                                                               goals, self._creature_coords)
             if next_coords in self._creature_coords:
                 creature.bump_with(self._creature_coords[next_coords])
                 if self._creature_coords[next_coords].is_dead:
@@ -798,7 +813,7 @@ class Terrain(GameObject):
     instances = []
 
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
-                 spawned_creatures: tuple[Creature] = (Fox,), **kwargs):
+                 spawned_creatures: tuple[Creature] = (Fox, Wolf), **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
@@ -1013,10 +1028,26 @@ class Location(Container):
         self._contents: list[list[Tile]] = []
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
-                      goals: list[str]) -> tuple[int, int]:
+                      goals: list[str], creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
         for goal in goals:
-            if goal == 'random':
+            goal_type, param = goal.split('/')
+            if goal_type == 'chase':
+                step = self._find_prey(current_coords, distance=int(param), creatures=creatures)
+                if step == current_coords:
+                    continue
+                else:
+                    return step
+            elif goal_type == 'random':
                 return self._choose_random_passable_neighbor(creature, current_coords)
+
+    @staticmethod
+    def _find_prey(coords, distance: int,
+                   creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
+        for prey_coords, prey in creatures.items():
+            if isinstance(prey.race, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
+                path = direct_path(coords, prey_coords)
+                return path[1]
+        return coords
 
     def _all_neighbors(self, coords: tuple[int, int]) -> list[tuple[int, int]]:
         neighbors = []
@@ -1149,10 +1180,7 @@ class Location(Container):
                 for row in self.contents]
         for coords, creature in creatures.items():
             local_coords = self._local_coords(coords)
-            try:
-                rows[local_coords[0]][local_coords[1]] = creature.icon
-            except:
-                input(local_coords)
+            rows[local_coords[0]][local_coords[1]] = creature.icon
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 

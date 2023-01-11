@@ -49,3 +49,29 @@ def calculate_new_position(old_pos: tuple[int, int], direction: str,
         if column == max_column:
             column = 0
     return row, column
+
+
+def coord_distance(coords1: tuple[int, int], coords2: tuple[int, int]) -> int:
+    return max(abs(coords1[0] - coords2[0]), abs(coords1[1] - coords2[1]))
+
+
+def direct_path(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
+    path = [a[:]]
+    dif = [abs(a[0] - b[0]), abs(a[1] - b[1])]
+    direction_steps = [0, 0]
+    if abs(a[0] - b[0]):
+        direction_steps[0] = (b[0] - a[0]) // abs(a[0] - b[0])
+    if abs(a[1] - b[1]):
+        direction_steps[1] = (b[1] - a[1]) // abs(a[1] - b[1])
+    longer = dif.index(max(dif))
+    shorter = [1, 0][longer]
+    if dif[longer]:
+        floater = float(dif[shorter]) / dif[longer]
+    else:
+        return [a, b]
+    for x in range(dif[longer]):
+        point = list(a)
+        point[longer] += (x + 1) * direction_steps[longer]
+        point[shorter] += int(round((x + 1) * floater)) * direction_steps[shorter]
+        path.append(tuple(point))
+    return path

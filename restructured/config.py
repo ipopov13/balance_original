@@ -3,7 +3,7 @@ import console
 tile_size = 5  # Width&height of Tile as container
 location_height: int = 21
 location_width: int = 78
-region_size: int = 9  # Locations per row & column
+region_size: int = 1  # Locations per row & column
 world_size: int = 9  # Regions per row & column
 
 max_text_lines_on_page: int = 21
