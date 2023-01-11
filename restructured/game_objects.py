@@ -335,9 +335,9 @@ class Creature(GameObject):
         self.equipment_slots = self.race.equipment_slots
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
-        self.hp = self.max_hp
+        self._hp = self.max_hp
         self.mana = self.max_mana
-        self.energy = self.max_energy
+        self._energy = self.max_energy
 
     @property
     def load(self):
@@ -346,6 +346,30 @@ class Creature(GameObject):
     @property
     def damage(self):
         return random.randint(self.stats['Str'], int(self.stats['Str'] + self.stats['Dex'] / 2))
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, value):
+        self._hp = min(self.max_hp, value)
+
+    @property
+    def energy(self):
+        return self._energy
+
+    @energy.setter
+    def energy(self, value):
+        self._energy = min(self.max_energy, value)
+
+    @property
+    def mana(self):
+        return self._mana
+
+    @mana.setter
+    def mana(self, value):
+        self._mana = min(self.max_mana, value)
 
     @property
     def max_hp(self):
@@ -401,11 +425,9 @@ class Creature(GameObject):
             self.hp -= damage
 
     def rest(self):
-        self.energy += 1
-        if self.energy > self.max_energy:
-            self.energy = self.max_energy
-            if random.random() < self.stats['End'] / config.max_stat_value and self.hp < self.max_hp:
-                self.hp += 1
+        self.energy += random.randint(1, max(self.stats['End'] // 5, 1))
+        if random.random() < (self.stats['End'] / config.max_stat_value / 2) * (self.energy / self.max_energy):
+            self.hp += 1
 
     @property
     def is_dead(self) -> bool:
