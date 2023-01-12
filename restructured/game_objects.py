@@ -113,6 +113,10 @@ class Item(GameObject):
 empty_space = Item(icon='.', color=console.fg.lightblack, name='(empty)')
 
 
+class Consumable(Item):
+    pass
+
+
 class PhysicalContainer(Container, Item):
     @property
     def weight(self):
@@ -242,7 +246,7 @@ class Tail(Item):
     pass
 
 
-class Meat(Item):
+class Meat(Consumable):
     def __init__(self):
         super().__init__(name='meat', weight=1, icon=',', color=console.fg.red,
                          description='The meat of an animal')
@@ -474,6 +478,10 @@ class Creature(GameObject):
     def bag(self):
         return self.current_equipment['Back']
 
+    @staticmethod
+    def can_consume(item: Item):
+        return isinstance(item, Consumable)
+
     def can_equip(self, item: Item) -> bool:
         return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
 
@@ -628,9 +636,15 @@ class Game:
             if self.character.can_equip(self._selected_bag_item) \
                and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
+            if self.character.can_consume(self._selected_bag_item) \
+               and self._active_inventory_container_name == self.get_bag_name():
+                inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             return inventory_commands
         else:
             return {}
+
+    def _consume_from_bag_in_inventory_screen(self, _):
+        pass
 
     def _character_rests(self, _) -> bool:
         self.character.rest()

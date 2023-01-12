@@ -50,6 +50,12 @@ class InventoryDrop(Command):
     description = 'Drop the selected item'
 
 
+class InventoryConsume(Command):
+    character = 'c'
+    hint = '(c)onsume'
+    description = 'Eat/drink the selected item'
+
+
 class Map(Command):
     character = 'M'
     hint = '(M)ap'
