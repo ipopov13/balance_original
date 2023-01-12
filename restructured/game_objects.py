@@ -154,6 +154,27 @@ class Armor(Item):
     pass
 
 
+class HideArmor(Armor):
+    def __init__(self):
+        super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
+                         description='Armor made from light hide')
+        self.armor = 1
+
+
+class LeatherArmor(Armor):
+    def __init__(self):
+        super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
+                         description='Armor made from leather')
+        self.armor = 3
+
+
+class PlateArmor(Armor):
+    def __init__(self):
+        super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
+                         description='Armor made from metal plates')
+        self.armor = 5
+
+
 class Back(PhysicalContainer):
     """Includes cloaks and backpacks"""
     pass
@@ -188,6 +209,13 @@ class Teeth(Item):
     pass
 
 
+class CarnivoreSmallTeeth(Teeth):
+    def __init__(self):
+        super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
+                         description='The teeth of a small carnivore')
+        self.damage = 1
+
+
 class CarnivoreMediumTeeth(Teeth):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
@@ -197,6 +225,13 @@ class CarnivoreMediumTeeth(Teeth):
 
 class Hide(Item):
     pass
+
+
+class LightHide(Hide):
+    def __init__(self):
+        super().__init__(name='light hide', weight=5, icon='(', color=config.brown_fg_color,
+                         description='The light hide of an animal')
+        self.armor = 1
 
 
 class Claws(Item):
@@ -334,10 +369,11 @@ fay_race = HumanoidSpecies(name='Fay',
                                        "they have developed methods to manipulate it. Their ability to "
                                        "trespass into the dreams of others is an insignificant side effect.",
                            sort_key=12)
-fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred)
+fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred,
+                            equipment=[CarnivoreSmallTeeth, LightHide])
 wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
-                             equipment=[CarnivoreMediumTeeth])
+                             equipment=[CarnivoreMediumTeeth, LightHide])
 
 
 class Creature(GameObject):
@@ -368,6 +404,20 @@ class Creature(GameObject):
     @property
     def damage(self) -> int:
         return random.randint(1, max(self.stats['Str'] // 4, 1)) + self.weapon_damage()
+
+    @property
+    def armor(self) -> int:
+        return random.randint(int(self.equipment_armor() * self.stats['Dex'] / config.max_stat_value),
+                              self.equipment_armor())
+
+    def equipment_armor(self) -> int:
+        armor = 0
+        for item in self.current_equipment.values():
+            try:
+                armor += item.armor
+            except AttributeError:
+                pass
+        return armor
 
     def weapon_damage(self) -> int:
         dmg = 0
@@ -455,7 +505,7 @@ class Creature(GameObject):
     def receive_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
         if random.random() > self.stats['Dex'] / config.max_stat_value * load_modifier:
-            self.hp -= damage
+            self.hp -= max(0, damage - self.armor)
 
     def rest(self):
         self.energy += random.randint(1, max(self.stats['End'] // 5, 1))
@@ -530,9 +580,7 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
         self._current_location.put_item(Satchel(), initial_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), initial_coords)
-        self._current_location.put_item(ShortSword(color=console.fg.blue), initial_coords)
-        self._current_location.put_item(ShortSword(), initial_coords)
-        self._current_location.put_item(ShortSword(color=console.fg.lightgreen), initial_coords)
+        self._current_location.put_item(PlateArmor(), initial_coords)
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
