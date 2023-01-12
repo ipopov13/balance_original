@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Type
 import random
 import commands
 import console
@@ -175,8 +175,9 @@ class MainHand(Item):
 
 class ShortSword(MainHand):
     def __init__(self, color=console.fg.default):
-        super().__init__(name='short sword', weight=8, icon='|', color=color,
+        super().__init__(name='short sword', weight=3, icon='|', color=color,
                          description='Made for stabbing')
+        self.damage = 3
 
 
 class Offhand(Item):
@@ -185,6 +186,13 @@ class Offhand(Item):
 
 class Teeth(Item):
     pass
+
+
+class CarnivoreMediumTeeth(Teeth):
+    def __init__(self):
+        super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
+                         description='The teeth of a carnivore')
+        self.damage = 3
 
 
 class Hide(Item):
@@ -208,8 +216,11 @@ base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
 base_animal_equipment_slots = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
 
 
+# The species define what a creature is physically and how it looks in the game
+# This also includes the "equipment" of animal species which is part of the body
 class Species(GameObject):
     _equipment_slots = {}
+    initial_equipment = ()
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -236,8 +247,9 @@ class AnimalSpecies(Species):
     def base_stats(self) -> dict[str, int]:
         return self._base_stats
 
-    def __init__(self, base_stats: dict[str, int] = None, **kwargs):
+    def __init__(self, base_stats: dict[str, int] = None, equipment: list[Type[Item]] = (), **kwargs):
         super().__init__(**kwargs)
+        self.initial_equipment = equipment
         self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1}
         self._equipment_slots = base_animal_equipment_slots.copy()
 
@@ -324,7 +336,8 @@ fay_race = HumanoidSpecies(name='Fay',
                            sort_key=12)
 fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred)
 wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
-                             base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7})
+                             base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
+                             equipment=[CarnivoreMediumTeeth])
 
 
 class Creature(GameObject):
@@ -341,9 +354,11 @@ class Creature(GameObject):
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
+        for item_type in self.race.initial_equipment:
+            self.swap_equipment(item_type())
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self._hp = self.max_hp
-        self.mana = self.max_mana
+        self._mana = self.max_mana
         self._energy = self.max_energy
 
     @property
@@ -351,8 +366,17 @@ class Creature(GameObject):
         return sum([item.weight for item in self.current_equipment.values()])
 
     @property
-    def damage(self):
-        return random.randint(1, int(self.stats['Str'] + self.stats['Dex'] / 2))
+    def damage(self) -> int:
+        return random.randint(1, max(self.stats['Str'] // 4, 1)) + self.weapon_damage()
+
+    def weapon_damage(self) -> int:
+        dmg = 0
+        for item in self.current_equipment.values():
+            try:
+                dmg += item.damage
+            except AttributeError:
+                pass
+        return dmg
 
     @property
     def hp(self):
@@ -421,6 +445,9 @@ class Creature(GameObject):
 
     def get_goals(self) -> list[str]:
         return self._ai
+
+    def get_drops(self):
+        return [item for item in self.current_equipment.values() if item is not empty_space]
 
     def bump_with(self, other_creature: 'Creature') -> None:
         other_creature.receive_damage(self.damage)
@@ -646,8 +673,11 @@ class Game:
             next_coords = self._current_location.get_goal_step(creature, old_coords,
                                                                goals, self._creature_coords)
             if next_coords in self._creature_coords:
-                creature.bump_with(self._creature_coords[next_coords])
-                if self._creature_coords[next_coords].is_dead:
+                other_creature = self._creature_coords[next_coords]
+                creature.bump_with(other_creature)
+                if other_creature.is_dead:
+                    for item in other_creature.get_drops():
+                        self._current_location.put_item(item, next_coords)
                     self._creature_coords.pop(next_coords)
             else:
                 self._creature_coords.pop(old_coords)
@@ -791,8 +821,11 @@ class Game:
         new_location = self.world.get_location(new_coords)
         if new_location.can_ocupy(self.character, new_coords):
             if new_coords in self._creature_coords:
-                self.character.bump_with(self._creature_coords[new_coords])
-                if self._creature_coords[new_coords].is_dead:
+                other_creature = self._creature_coords[new_coords]
+                self.character.bump_with(other_creature)
+                if other_creature.is_dead:
+                    for item in other_creature.get_drops():
+                        self._current_location.put_item(item, new_coords)
                     self._creature_coords.pop(new_coords)
             else:
                 self._creature_coords.pop(old_coords)
