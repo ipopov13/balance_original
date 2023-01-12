@@ -180,9 +180,9 @@ class Back(PhysicalContainer):
     pass
 
 
-class Satchel(Back):
+class Bag(Back):
     def __init__(self):
-        super().__init__(name='satchel', weight=1, width=3, height=1, icon='=',
+        super().__init__(name='bag', weight=1, width=3, height=1, icon='=',
                          color=console.fg.default, description='A very small bag')
 
 
@@ -243,7 +243,9 @@ class Tail(Item):
 
 
 class Meat(Item):
-    pass
+    def __init__(self):
+        super().__init__(name='meat', weight=1, icon=',', color=console.fg.red,
+                         description='The meat of an animal')
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
@@ -284,7 +286,7 @@ class AnimalSpecies(Species):
 
     def __init__(self, base_stats: dict[str, int] = None, equipment: list[Type[Item]] = (), **kwargs):
         super().__init__(**kwargs)
-        self.initial_equipment = equipment
+        self.initial_equipment = equipment + [Meat]
         self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1}
         self._equipment_slots = base_animal_equipment_slots.copy()
 
@@ -578,7 +580,7 @@ class Game:
         self._creature_coords[initial_coords] = self.character
         self._current_location = self.world.get_location(initial_coords)
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
-        self._current_location.put_item(Satchel(), initial_coords)
+        self._current_location.put_item(Bag(), initial_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), initial_coords)
         self._current_location.put_item(PlateArmor(), initial_coords)
 
