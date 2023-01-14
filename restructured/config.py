@@ -25,6 +25,8 @@ race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')
 ground = 'Ground'
 
+random_creatures_respawn_period = 500
+
 max_stat_value = 20
 
 if __name__ == '__main__':

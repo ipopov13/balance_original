@@ -754,7 +754,7 @@ class Game:
         self._current_location = self.world.get_location(initial_coords)
         character_coords = self._current_location.get_empty_spot_for(self.character)
         self._creature_coords[character_coords] = self.character
-        self._creature_coords = self._current_location.load_creatures(self._creature_coords)
+        self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
@@ -1074,10 +1074,11 @@ class Game:
                 self._creature_coords[new_coords] = self.character
                 self._current_location = new_location
             if self._current_location is not old_location:
-                for coords in list(self._creature_coords.keys()):
+                old_location.stored_creatures = []
+                for coords in list(self._creature_coords):
                     if self._creature_coords[coords] is not self.character:
-                        self._creature_coords.pop(coords)
-                self._creature_coords = self._current_location.load_creatures(self._creature_coords)
+                        old_location.stored_creatures.append(self._creature_coords.pop(coords))
+                self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         else:
             # TODO: Implement log message describing why the move is impossible
             pass
@@ -1282,6 +1283,8 @@ class Location(Container):
     def __init__(self, top_left: tuple[int, int] = (0, 0), forces: dict[str, int] = None,
                  main_terrain: Terrain = None, climate: str = None, region_name: str = None):
         self._top_left = top_left
+        self._last_spawn_time = -1 * config.random_creatures_respawn_period
+        self.stored_creatures: list[Creature] = []
         self._forces = forces
         self._climate = climate
         self._terrains: list[Terrain] = []
@@ -1371,19 +1374,26 @@ class Location(Container):
         flavor_name = None if self._flavor is None else self._flavor.name
         return [f'Landmark: {self._local_name}', f'Features: {flavor_name}']
 
-    def load_creatures(self, local_creatures: dict[tuple[int, int], Creature]) -> dict[tuple[int, int], Creature]:
+    def load_creatures(self, local_creatures: dict[tuple[int, int], Creature],
+                       current_turn: int) -> dict[tuple[int, int], Creature]:
         # TODO: Get respawning creatures from the flavor/structure
         # TODO: Get non-respawning creatures from the structure
-        creature_lists = [t.spawned_creatures for t in self._terrains]
-        weights = self._terrain_weights[:]
-        for creature_count in range(int(sum(weights) // 20)):
-            chosen_list = random.choices(creature_lists, weights=weights)[0]
-            if not chosen_list:
-                continue
-            chosen_weights = self._generate_weights(len(chosen_list))
-            chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
+        if current_turn - self._last_spawn_time < config.random_creatures_respawn_period:
+            additional_creatures = self.stored_creatures[:]
+        else:
+            additional_creatures = []
+            self._last_spawn_time = current_turn
+            creature_lists = [t.spawned_creatures for t in self._terrains]
+            weights = self._terrain_weights[:]
+            for creature_count in range(int(sum(weights) // 20)):
+                chosen_list = random.choices(creature_lists, weights=weights)[0]
+                if not chosen_list:
+                    continue
+                chosen_weights = self._generate_weights(len(chosen_list))
+                chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
+                additional_creatures.append(chosen_creature_type())
+        for creature_instance in additional_creatures:
             new_coords = self._random_coords()
-            creature_instance = chosen_creature_type()
             while new_coords in local_creatures or not self.can_ocupy(creature_instance, new_coords):
                 new_coords = self._random_coords()
             local_creatures[new_coords] = creature_instance
