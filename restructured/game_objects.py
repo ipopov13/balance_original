@@ -290,7 +290,7 @@ class AnimalSpecies(Species):
 
     def __init__(self, base_stats: dict[str, int] = None, equipment: list[Type[Item]] = (), **kwargs):
         super().__init__(**kwargs)
-        self.initial_equipment = equipment + [Meat]
+        self.initial_equipment = equipment
         self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1}
         self._equipment_slots = base_animal_equipment_slots.copy()
 
@@ -375,11 +375,23 @@ fay_race = HumanoidSpecies(name='Fay',
                                        "they have developed methods to manipulate it. Their ability to "
                                        "trespass into the dreams of others is an insignificant side effect.",
                            sort_key=12)
+field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color)
+rat_species = AnimalSpecies(name='rat', icon='r', color=console.fg.lightblack,
+                            equipment=[Meat])
+snow_hare_species = AnimalSpecies(name='snow hare', icon='h', color=console.fg.lightwhite,
+                                  equipment=[Meat])
+ash_beetle_species = AnimalSpecies(name='ash beetle', icon='b', color=console.fg.lightblack)
+ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg.blue)
+sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg.yellow,
+                                   equipment=[Meat])
+scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack)
 fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred,
-                            equipment=[CarnivoreSmallTeeth, LightHide])
+                            equipment=[Meat, CarnivoreSmallTeeth, LightHide])
 wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
-                             equipment=[CarnivoreMediumTeeth, LightHide])
+                             equipment=[Meat, CarnivoreMediumTeeth, LightHide])
+# Feature terrain creatures: bear, swamp dragon, jaguar, crocodile, ice bear
+# Flavor terrain rare creatures?
 
 
 class Creature(GameObject):
@@ -528,10 +540,44 @@ class Creature(GameObject):
 
 
 # These hold the AI, so they are more like roles than species
+class FieldMouse(Creature):
+    def __init__(self):
+        super().__init__(race=field_mouse_species, name='field_mouse')
+
+
+class Rat(Creature):
+    def __init__(self):
+        super().__init__(race=rat_species, name='rat')
+
+
+class IceMantis(Creature):
+    def __init__(self):
+        super().__init__(race=ice_mantis_species, name='ice mantis')
+
+
+class SnowHare(Creature):
+    def __init__(self):
+        super().__init__(race=snow_hare_species, name='snow_hare')
+
+
+class AshBeetle(Creature):
+    def __init__(self):
+        super().__init__(race=ash_beetle_species, name='ash beetle')
+
+
+class SandSnake(Creature):
+    def __init__(self):
+        super().__init__(race=sand_snake_species, name='sand snake')
+
+
+class Scorpion(Creature):
+    def __init__(self):
+        super().__init__(race=scorpion_species, name='scorpion')
+
+
 class Fox(Creature):
     def __init__(self):
         super().__init__(race=fox_species, name='fox')
-        self._ai = ['random/']
 
 
 class Wolf(Creature):
@@ -910,11 +956,11 @@ class Terrain(GameObject):
     instances = []
 
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
-                 spawned_creatures: tuple[Creature] = (Fox, Wolf), **kwargs):
+                 spawned_creatures: list[Type[Creature]] = (), **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
-        self.spawned_creatures: tuple[Creature] = spawned_creatures
+        self.spawned_creatures: list[Type[Creature]] = spawned_creatures
         Terrain.instances.append(self)
 
     def is_passable_for(self, creature):
@@ -936,19 +982,19 @@ class FlavorTerrain(Terrain):
 
 
 # Ground fillers
-grass = Terrain(color=console.fg.lightgreen, name='grass')
-ashes = Terrain(color=console.fg.lightblack, name='ashes')
-dirt = Terrain(color=config.brown_fg_color, name='dirt')
-snow = Terrain(color=console.fg.white, name='snow')
-sand = Terrain(color=console.fg.yellow, name='sand')
-ice = Terrain(color=console.fg.lightblue, name='ice')
+grass = Terrain(color=console.fg.lightgreen, name='grass', spawned_creatures=[FieldMouse])
+ashes = Terrain(color=console.fg.lightblack, name='ashes', spawned_creatures=[AshBeetle, Rat])
+dirt = Terrain(color=config.brown_fg_color, name='dirt', spawned_creatures=[FieldMouse])
+snow = Terrain(color=console.fg.white, name='snow', spawned_creatures=[SnowHare])
+sand = Terrain(color=console.fg.yellow, name='sand', spawned_creatures=[SandSnake, Scorpion])
+ice = Terrain(color=console.fg.lightblue, name='ice', spawned_creatures=[IceMantis])
 # Other base terrains
-tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T')
-dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T')
+tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T', spawned_creatures=[Fox, Wolf])
+dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T', spawned_creatures=[Fox, Wolf, Wolf])
 frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T')
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False)
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False)
-bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#')
+bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[Fox])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~')
 quick_sand = Terrain(color=console.fg.yellow, name='quicksand')
 jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False)
@@ -1182,15 +1228,14 @@ class Location(Container):
         return [f'Landmark: {self._local_name}', f'Features: {flavor_name}']
 
     def load_creatures(self, local_creatures: dict[tuple[int, int], Creature]) -> dict[tuple[int, int], Creature]:
-        # TODO: Get random creatures from the filler/base/flavor
         # TODO: Get respawning creatures from the flavor/structure
         # TODO: Get non-respawning creatures from the structure
         creature_lists = [t.spawned_creatures for t in self._terrains]
         weights = self._terrain_weights[:]
-        weights[1] += self._forces[self._main_force()]
-        weights[2] += self._forces[self._flavor_force]
         for creature_count in range(int(sum(weights) // 20)):
             chosen_list = random.choices(creature_lists, weights=weights)[0]
+            if not chosen_list:
+                continue
             chosen_weights = self._generate_weights(len(chosen_list))
             chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
             new_coords = self._random_coords()
