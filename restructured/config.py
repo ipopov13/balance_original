@@ -26,6 +26,7 @@ race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
 ground = 'Ground'
 
 random_creatures_respawn_period = 500
+creature_rarity_scale = [1, 1/2, 1/9]
 
 max_stat_value = 20
 

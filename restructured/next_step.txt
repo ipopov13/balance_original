@@ -1,5 +1,4 @@
 FEATURES
-Creature profile and respawn times
 Rework species to include the AI for animals?
 Also take the name from the species
 Only humanoids will need their own name generation
@@ -58,8 +57,9 @@ Creatures:
             4) hideout (hide on the terrain tile that generated the creature
         A subset of the list is chosen by the creature when the situation changes
         The list can be reordered based on the situation
-    Random: disappear when you leave the Location, rerolled every time. Terrains define the number,
-      force defines the strength/type.
+    Random: disappear when you leave the Location, rerolled every time. Terrains define the type,
+      chance defines the strength/rarity. The rarer the creature is, the harder it is to catch or kill.
+    Terrain creature profile: weak common, stronger rarer, the rarest champion creatures
     Permanent: Local residents, villagers, farm animals, bosses, etc. Removed once killed/chased away.
       Have a probability value to show how often they can be found in the location.
     Spawn profile: A list of specific roles with set home locations, who are filled from a specific list

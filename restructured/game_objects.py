@@ -241,6 +241,13 @@ class LargeClaws(AnimalWeapon):
         self.damage = 5
 
 
+class HugeClaws(AnimalWeapon):
+    def __init__(self):
+        super().__init__(name='huge claws', weight=5, icon=',', color=console.fg.lightyellow,
+                         description='The claws of a monstrous animal')
+        self.damage = 10
+
+
 class LargeTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='large teeth', weight=2, icon=',', color=console.fg.lightyellow,
@@ -271,6 +278,13 @@ class MediumScales(AnimalArmor):
         super().__init__(name='medium scaly hide', weight=10, icon='(', color=console.fg.lightgreen,
                          description='The scaly hide of a lizard')
         self.armor = 3
+
+
+class HeavyScales(AnimalArmor):
+    def __init__(self):
+        super().__init__(name='heavy scaled hide', weight=20, icon='(', color=console.fg.lightgreen,
+                         description='The scaly hide of a monstrous lizard')
+        self.armor = 8
 
 
 class Feathers(AnimalArmor):
@@ -449,7 +463,7 @@ swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=consol
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5},
                                      equipment=[Meat, LargeTeeth, MediumScales])
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
-                                  base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 4},
+                                  base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4},
                                   equipment=[Meat, LargeTeeth, MediumScales])
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
                                equipment=[Meat, SmallTeeth, LightHide])
@@ -458,12 +472,13 @@ ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10},
                               equipment=[Meat, MediumClaws, Feathers])
+hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
+                              base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15},
+                              equipment=[Meat, HugeClaws, HeavyScales])
 # Flavor terrain rare creatures?
 
 
 class Creature(GameObject):
-    # TODO: Creatures have goals and they ask the Location for the path to the closest
-    #  Tile that satisfies the goal
     def __init__(self, race: Species = None, **kwargs):
         if kwargs.get('icon') is None:
             kwargs['icon'] = race.raw_icon
@@ -702,6 +717,12 @@ class Crocodile(Creature):
 class Eagle(Creature):
     def __init__(self):
         super().__init__(race=eagle_species, name='eagle')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class Hydra(Creature):
+    def __init__(self):
+        super().__init__(race=hydra_species, name='hydra')
         self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
 
 
@@ -1130,7 +1151,8 @@ ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', pass
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
                 spawned_creatures=[Bear, Eagle])
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[Fox])
-swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~', spawned_creatures=[SwampDragon, Crocodile])
+swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
+                spawned_creatures=[Crocodile, SwampDragon, Hydra])
 salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake', spawned_creatures=[Crocodile])
 jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False,
                  spawned_creatures=[Monkey, Crocodile, Jaguar])
@@ -1389,7 +1411,9 @@ class Location(Container):
                 chosen_list = random.choices(creature_lists, weights=weights)[0]
                 if not chosen_list:
                     continue
-                chosen_weights = self._generate_weights(len(chosen_list))
+                if len(chosen_list) > len(config.creature_rarity_scale):
+                    raise ValueError(f'Creature rarity scale is not long enough for list of length {len(chosen_list)}!')
+                chosen_weights = config.creature_rarity_scale[:len(chosen_list)]
                 chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
                 additional_creatures.append(chosen_creature_type())
         for creature_instance in additional_creatures:
@@ -1402,10 +1426,6 @@ class Location(Container):
     def _random_coords(self):
         return random.randint(self._top_left[0], self._top_left[0] + self._height - 1), \
             random.randint(self._top_left[1], self._top_left[1] + self._width - 1)
-
-    @staticmethod
-    def _generate_weights(list_length):
-        return [1 / x for x in range(1, list_length + 1)]
 
     def _main_force(self) -> str:
         rev_forces = {v: k for k, v in self._forces.items()}
