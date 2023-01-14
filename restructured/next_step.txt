@@ -10,6 +10,7 @@ How to combine this with Humanoids having different AIs based on the profession?
 
 Inventory
     Merge Inventory and Equipment?
+        Turn the equipment dicts into lists that can be plugged into the Inv-view
         Add a third container (6x1) with slot names that are dimmed and replaced by the descriptions
           when equipped
         Make the Inventory content switch between all three

@@ -731,6 +731,7 @@ class Game:
         self.character: Optional[Creature] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
+        self._last_character_target = None
         self._equipping_slot: Optional[str] = None
         self._equipment_locations: dict[Item, str] = {}
         self._selected_ground_item = empty_space
@@ -994,11 +995,20 @@ class Game:
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
+        if self._last_character_target is not None:
+            target_hp_gauge = self._format_gauge(self._last_character_target.hp,
+                                                 self._last_character_target.max_hp,
+                                                 config.hp_color, show_numbers=False)
+            target_line = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+            hud += target_line
         return hud
 
     @staticmethod
-    def _format_gauge(current_stat, max_stat, color) -> str:
-        raw_gauge = f'{current_stat}/{max_stat}'.center(10, ' ')
+    def _format_gauge(current_stat, max_stat, color, show_numbers: bool = True) -> str:
+        if show_numbers:
+            raw_gauge = f'{current_stat}/{max_stat}'.center(10, ' ')
+        else:
+            raw_gauge = ' ' * 10
         percentage_full = int((current_stat / max_stat) * 10)
         colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end + raw_gauge[percentage_full:]
         return colored_gauge
@@ -1050,13 +1060,15 @@ class Game:
         new_location = self.world.get_location(new_coords)
         if new_location.can_ocupy(self.character, new_coords):
             if new_coords in self._creature_coords:
-                other_creature = self._creature_coords[new_coords]
-                self.character.bump_with(other_creature)
-                if other_creature.is_dead:
-                    for item in other_creature.get_drops():
+                self._last_character_target = self._creature_coords[new_coords]
+                self.character.bump_with(self._last_character_target)
+                if self._last_character_target.is_dead:
+                    for item in self._last_character_target.get_drops():
                         self._current_location.put_item(item, new_coords)
                     self._creature_coords.pop(new_coords)
+                    self._last_character_target = None
             else:
+                self._last_character_target = None
                 self._creature_coords.pop(old_coords)
                 self._creature_coords[new_coords] = self.character
                 self._current_location = new_location
