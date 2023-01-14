@@ -1,4 +1,5 @@
 FEATURES
+Enemy HP display!
 Creature profile and respawn times
 Rework species to include the AI for animals?
 Also take the name from the species

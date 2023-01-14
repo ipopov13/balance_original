@@ -209,32 +209,74 @@ class Offhand(Item):
     pass
 
 
-class Teeth(Item):
+class AnimalWeapon(Item):
     pass
 
 
-class CarnivoreSmallTeeth(Teeth):
+class SmallTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
-                         description='The teeth of a small carnivore')
+                         description='The teeth of a small animal')
         self.damage = 1
 
 
-class CarnivoreMediumTeeth(Teeth):
+class MediumTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
-                         description='The teeth of a carnivore')
+                         description='The teeth of an animal')
         self.damage = 3
 
 
-class Hide(Item):
+class MediumClaws(AnimalWeapon):
+    def __init__(self):
+        super().__init__(name='claws', weight=1, icon=',', color=console.fg.lightyellow,
+                         description='The claws of an animal')
+        self.damage = 3
+
+
+class LargeClaws(AnimalWeapon):
+    def __init__(self):
+        super().__init__(name='large claws', weight=2, icon=',', color=console.fg.lightyellow,
+                         description='The claws of a large animal')
+        self.damage = 5
+
+
+class LargeTeeth(AnimalWeapon):
+    def __init__(self):
+        super().__init__(name='large teeth', weight=2, icon=',', color=console.fg.lightyellow,
+                         description='The teeth of a large animal')
+        self.damage = 5
+
+
+class AnimalArmor(Item):
     pass
 
 
-class LightHide(Hide):
+class LightHide(AnimalArmor):
     def __init__(self):
         super().__init__(name='light hide', weight=5, icon='(', color=config.brown_fg_color,
                          description='The light hide of an animal')
+        self.armor = 1
+
+
+class MediumHide(AnimalArmor):
+    def __init__(self):
+        super().__init__(name='medium hide', weight=10, icon='(', color=config.brown_fg_color,
+                         description='The thick hide of an animal')
+        self.armor = 3
+
+
+class MediumScales(AnimalArmor):
+    def __init__(self):
+        super().__init__(name='medium scaly hide', weight=10, icon='(', color=console.fg.lightgreen,
+                         description='The scaly hide of a lizard')
+        self.armor = 3
+
+
+class Feathers(AnimalArmor):
+    def __init__(self):
+        super().__init__(name='feathers', weight=3, icon=',', color=console.fg.lightblack,
+                         description='The feathers of a bird')
         self.armor = 1
 
 
@@ -254,7 +296,8 @@ class Meat(Consumable):
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
                                  'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
-base_animal_equipment_slots = {'Teeth': Teeth, 'Hide': Hide, 'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
+base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
+                               'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
 
 
 # The species define what a creature is physically and how it looks in the game
@@ -386,11 +429,35 @@ sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg
                                    equipment=[Meat])
 scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack)
 fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred,
-                            equipment=[Meat, CarnivoreSmallTeeth, LightHide])
+                            equipment=[Meat, SmallTeeth, LightHide])
+jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
+                               base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8},
+                               equipment=[Meat, MediumTeeth, LightHide])
 wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
-                             equipment=[Meat, CarnivoreMediumTeeth, LightHide])
-# Feature terrain creatures: bear, swamp dragon, jaguar, crocodile, ice bear
+                             equipment=[Meat, MediumTeeth, LightHide])
+winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
+                                    base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
+                                    equipment=[Meat, MediumTeeth, LightHide])
+ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
+                                 base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3},
+                                 equipment=[Meat, LargeClaws, MediumHide])
+bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
+                             base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3},
+                             equipment=[Meat, LargeClaws, MediumHide])
+swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
+                                     base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5},
+                                     equipment=[Meat, LargeTeeth, MediumScales])
+crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
+                                  base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 4},
+                                  equipment=[Meat, LargeTeeth, MediumScales])
+monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
+                               equipment=[Meat, SmallTeeth, LightHide])
+ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
+                                equipment=[Meat, SmallTeeth, LightHide])
+eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
+                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10},
+                              equipment=[Meat, MediumClaws, Feathers])
 # Flavor terrain rare creatures?
 
 
@@ -580,9 +647,61 @@ class Fox(Creature):
         super().__init__(race=fox_species, name='fox')
 
 
+class Monkey(Creature):
+    def __init__(self):
+        super().__init__(race=monkey_species, name='monkey')
+
+
 class Wolf(Creature):
     def __init__(self):
         super().__init__(race=wolf_species, name='wolf')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class WinterWolf(Creature):
+    def __init__(self):
+        super().__init__(race=winter_wolf_species, name='winter wolf')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class IceFox(Creature):
+    def __init__(self):
+        super().__init__(race=ice_fox_species, name='ice fox')
+
+
+class IceBear(Creature):
+    def __init__(self):
+        super().__init__(race=ice_bear_species, name='ice bear')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class Bear(Creature):
+    def __init__(self):
+        super().__init__(race=bear_species, name='bear')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class SwampDragon(Creature):
+    def __init__(self):
+        super().__init__(race=swamp_dragon_species, name='swamp dragon')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class Jaguar(Creature):
+    def __init__(self):
+        super().__init__(race=jaguar_species, name='jaguar')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class Crocodile(Creature):
+    def __init__(self):
+        super().__init__(race=crocodile_species, name='crocodile')
+        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
+
+
+class Eagle(Creature):
+    def __init__(self):
+        super().__init__(race=eagle_species, name='eagle')
         self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
 
 
@@ -666,24 +785,24 @@ class Game:
         elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
             inventory_commands = {commands.Close(): self._back_to_scene}
             if self.character.bag is not empty_space \
-               and self.character.bag.has_space() \
-               and self.character.can_carry(self._selected_ground_item) \
-               and self._selected_ground_item is not empty_space \
-               and self._active_inventory_container_name == self.get_ground_name():
+                    and self.character.bag.has_space() \
+                    and self.character.can_carry(self._selected_ground_item) \
+                    and self._selected_ground_item is not empty_space \
+                    and self._active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
             if self.character.can_swap_equipment(self._selected_ground_item) \
-               and self._selected_ground_item is not empty_space \
-               and self._active_inventory_container_name == self.get_ground_name():
+                    and self._selected_ground_item is not empty_space \
+                    and self._active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
             if self._selected_bag_item is not empty_space \
-               and self._ground_container.has_space() \
-               and self._active_inventory_container_name == self.get_bag_name():
+                    and self._ground_container.has_space() \
+                    and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
             if self.character.can_equip(self._selected_bag_item) \
-               and self._active_inventory_container_name == self.get_bag_name():
+                    and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
             if self.character.can_consume(self._selected_bag_item) \
-               and self._active_inventory_container_name == self.get_bag_name():
+                    and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             return inventory_commands
         else:
@@ -990,16 +1109,19 @@ sand = Terrain(color=console.fg.yellow, name='sand', spawned_creatures=[SandSnak
 ice = Terrain(color=console.fg.lightblue, name='ice', spawned_creatures=[IceMantis])
 # Other base terrains
 tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T', spawned_creatures=[Fox, Wolf])
-dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T', spawned_creatures=[Fox, Wolf, Wolf])
-frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T')
-ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False)
-rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False)
+dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T', spawned_creatures=[Wolf, SwampDragon])
+frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T', spawned_creatures=[IceFox, WinterWolf])
+ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
+                    spawned_creatures=[WinterWolf, IceBear])
+rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
+                spawned_creatures=[Bear, Eagle])
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[Fox])
-swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~')
-quick_sand = Terrain(color=console.fg.yellow, name='quicksand')
-jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False)
+swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~', spawned_creatures=[SwampDragon, Crocodile])
+salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake', spawned_creatures=[Crocodile])
+jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False,
+                 spawned_creatures=[Monkey, Crocodile, Jaguar])
 all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
-                     rocks, bush, swamp, quick_sand, jungle]
+                     rocks, bush, swamp, salt_lake, jungle]
 # Flavor terrains
 poisonous_flowers = FlavorTerrain(color=console.fg.purple, name='poisonous flowers', icon='*',
                                   required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
@@ -1074,7 +1196,7 @@ base_force_terrains = {
                         CHAOS_FORCE: [ashes, dead_tree, swamp, rocks],
                         ORDER_FORCE: [dirt, tree, bush, rocks]},
     HOT_CLIMATE: {NATURE_FORCE: [sand, rocks, jungle],
-                  CHAOS_FORCE: [sand, rocks, quick_sand],
+                  CHAOS_FORCE: [sand, rocks, salt_lake],
                   ORDER_FORCE: [sand, rocks, bush]}}
 filler_terrains = {
     COLD_CLIMATE: {NATURE_FORCE: snow,
@@ -1199,9 +1321,9 @@ class Location(Container):
                 new_y = coords[0] + change_y
                 new_x = coords[1] + change_x
                 if new_x < self._top_left[1] or new_y < self._top_left[0] \
-                   or new_x >= self._width + self._top_left[1] \
-                   or new_y >= self._height + self._top_left[0] \
-                   or (new_y, new_x) == coords:
+                        or new_x >= self._width + self._top_left[1] \
+                        or new_y >= self._height + self._top_left[0] \
+                        or (new_y, new_x) == coords:
                     continue
                 neighbors.append((new_y, new_x))
         return neighbors
@@ -1363,7 +1485,7 @@ class Region(Container):
                     HOT_CLIMATE: {sand: 'Desert',
                                   bush: 'Dry bushland',
                                   jungle: 'Jungles',
-                                  quick_sand: 'Desert',
+                                  salt_lake: 'Chott',
                                   rocks: 'Crag'}}
 
     def __init__(self, top_left: tuple[int, int], main_force: str, climate: str, suffix: str = ' of tests'):
