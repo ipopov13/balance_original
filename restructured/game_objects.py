@@ -751,12 +751,13 @@ class Game:
                                   icon='@')
         # TODO: This is the initial testing configuration. Add the selected starting location here.
         initial_coords = (0, 0)
-        self._creature_coords[initial_coords] = self.character
         self._current_location = self.world.get_location(initial_coords)
+        character_coords = self._current_location.get_empty_spot_for(self.character)
+        self._creature_coords[character_coords] = self.character
         self._creature_coords = self._current_location.load_creatures(self._creature_coords)
-        self._current_location.put_item(Bag(), initial_coords)
-        self._current_location.put_item(ShortSword(color=console.fg.red), initial_coords)
-        self._current_location.put_item(PlateArmor(), initial_coords)
+        self._current_location.put_item(Bag(), character_coords)
+        self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
+        self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
@@ -1304,12 +1305,20 @@ class Location(Container):
                          icon=visual.raw_icon, color=visual.color, name=name)
         self._contents: list[list[Tile]] = []
 
+    def get_empty_spot_for(self, creature: Creature) -> tuple[int, int]:
+        for row in range(self._height):
+            for column in range(self._width):
+                coords = (row + self._top_left[0], column + self._top_left[1])
+                if self.tile_at(coords).is_passable_for(creature):
+                    return coords
+
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
                       goals: list[str], creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
         for goal in goals:
             goal_type, param = goal.split('/')
             if goal_type == 'chase':
-                step = self._find_prey(current_coords, distance=int(param), creatures=creatures)
+                step = self._find_prey(current_coords, distance=int(param),
+                                       creatures=creatures, creature=creature)
                 if step == current_coords:
                     continue
                 else:
@@ -1317,13 +1326,14 @@ class Location(Container):
             elif goal_type == 'random':
                 return self._choose_random_passable_neighbor(creature, current_coords)
 
-    @staticmethod
-    def _find_prey(coords, distance: int,
-                   creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
+    def _find_prey(self, coords, distance: int,
+                   creatures: dict[tuple[int, int], Creature],
+                   creature: Creature) -> tuple[int, int]:
         for prey_coords, prey in creatures.items():
             if isinstance(prey.race, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
                 path = direct_path(coords, prey_coords)
-                return path[1]
+                if self.tile_at(path[1]).is_passable_for(creature):
+                    return path[1]
         return coords
 
     def _all_neighbors(self, coords: tuple[int, int]) -> list[tuple[int, int]]:
