@@ -320,6 +320,10 @@ class Species(GameObject):
     _equipment_slots = {}
     initial_equipment = ()
 
+    def __init__(self, ai: list[str] = ('random/',), **kwargs):
+        super().__init__(**kwargs)
+        self.ai = ai
+
     @property
     def base_stats(self) -> dict[str, int]:
         raise NotImplementedError(f'Class {self.__class__} must implement base stats!')
@@ -442,51 +446,62 @@ ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg
 sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg.yellow,
                                    equipment=[Meat])
 scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack)
-fox_species = AnimalSpecies(name='Fox', icon='f', color=console.fg.lightred,
+fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
                             equipment=[Meat, SmallTeeth, LightHide])
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8},
-                               equipment=[Meat, MediumTeeth, LightHide])
-wolf_species = AnimalSpecies(name='Wolf', icon='w', color=console.fg.lightblack,
+                               equipment=[Meat, MediumTeeth, LightHide],
+                               ai=['chase/8', 'random/'])
+wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
-                             equipment=[Meat, MediumTeeth, LightHide])
+                             equipment=[Meat, MediumTeeth, LightHide],
+                             ai=['chase/6', 'random/'])
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
-                                    equipment=[Meat, MediumTeeth, LightHide])
+                                    equipment=[Meat, MediumTeeth, LightHide],
+                                    ai=['chase/6', 'random/'])
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3},
-                                 equipment=[Meat, LargeClaws, MediumHide])
+                                 equipment=[Meat, LargeClaws, MediumHide],
+                                 ai=['chase/7', 'random/'])
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3},
-                             equipment=[Meat, LargeClaws, MediumHide])
+                             equipment=[Meat, LargeClaws, MediumHide],
+                             ai=['chase/5', 'random/'])
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5},
-                                     equipment=[Meat, LargeTeeth, MediumScales])
+                                     equipment=[Meat, LargeTeeth, MediumScales],
+                                     ai=['chase/6', 'random/'])
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
                                   base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4},
-                                  equipment=[Meat, LargeTeeth, MediumScales])
+                                  equipment=[Meat, LargeTeeth, MediumScales],
+                                  ai=['chase/4', 'random/'])
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
                                equipment=[Meat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
                                 equipment=[Meat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10},
-                              equipment=[Meat, MediumClaws, Feathers])
+                              equipment=[Meat, MediumClaws, Feathers],
+                              ai=['chase/3', 'random/'])
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
                               base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15},
-                              equipment=[Meat, HugeClaws, HeavyScales])
+                              equipment=[Meat, HugeClaws, HeavyScales],
+                              ai=['chase/15', 'random/'])
 # Flavor terrain rare creatures?
 
 
 class Creature(GameObject):
-    def __init__(self, race: Species = None, **kwargs):
+    def __init__(self, race: Species, **kwargs):
         if kwargs.get('icon') is None:
             kwargs['icon'] = race.raw_icon
         if kwargs.get('color') is None:
             kwargs['color'] = race.color
+        if kwargs.get('name') is None:
+            kwargs['name'] = race.name
         super().__init__(**kwargs)
         self.race = race
-        self._ai = ['random/']
+        self._ai = self.race.ai
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
@@ -619,111 +634,6 @@ class Creature(GameObject):
     @property
     def is_dead(self) -> bool:
         return self.hp <= 0
-
-
-# These hold the AI, so they are more like roles than species
-class FieldMouse(Creature):
-    def __init__(self):
-        super().__init__(race=field_mouse_species, name='field_mouse')
-
-
-class Rat(Creature):
-    def __init__(self):
-        super().__init__(race=rat_species, name='rat')
-
-
-class IceMantis(Creature):
-    def __init__(self):
-        super().__init__(race=ice_mantis_species, name='ice mantis')
-
-
-class SnowHare(Creature):
-    def __init__(self):
-        super().__init__(race=snow_hare_species, name='snow_hare')
-
-
-class AshBeetle(Creature):
-    def __init__(self):
-        super().__init__(race=ash_beetle_species, name='ash beetle')
-
-
-class SandSnake(Creature):
-    def __init__(self):
-        super().__init__(race=sand_snake_species, name='sand snake')
-
-
-class Scorpion(Creature):
-    def __init__(self):
-        super().__init__(race=scorpion_species, name='scorpion')
-
-
-class Fox(Creature):
-    def __init__(self):
-        super().__init__(race=fox_species, name='fox')
-
-
-class Monkey(Creature):
-    def __init__(self):
-        super().__init__(race=monkey_species, name='monkey')
-
-
-class Wolf(Creature):
-    def __init__(self):
-        super().__init__(race=wolf_species, name='wolf')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class WinterWolf(Creature):
-    def __init__(self):
-        super().__init__(race=winter_wolf_species, name='winter wolf')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class IceFox(Creature):
-    def __init__(self):
-        super().__init__(race=ice_fox_species, name='ice fox')
-
-
-class IceBear(Creature):
-    def __init__(self):
-        super().__init__(race=ice_bear_species, name='ice bear')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class Bear(Creature):
-    def __init__(self):
-        super().__init__(race=bear_species, name='bear')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class SwampDragon(Creature):
-    def __init__(self):
-        super().__init__(race=swamp_dragon_species, name='swamp dragon')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class Jaguar(Creature):
-    def __init__(self):
-        super().__init__(race=jaguar_species, name='jaguar')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class Crocodile(Creature):
-    def __init__(self):
-        super().__init__(race=crocodile_species, name='crocodile')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class Eagle(Creature):
-    def __init__(self):
-        super().__init__(race=eagle_species, name='eagle')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
-
-
-class Hydra(Creature):
-    def __init__(self):
-        super().__init__(race=hydra_species, name='hydra')
-        self._ai = [f'chase/{self.stats["Dex"]}', 'random/']
 
 
 class Game:
@@ -1110,11 +1020,11 @@ class Terrain(GameObject):
     instances = []
 
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
-                 spawned_creatures: list[Type[Creature]] = (), **kwargs):
+                 spawned_creatures: list[Species] = (), **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
-        self.spawned_creatures: list[Type[Creature]] = spawned_creatures
+        self.spawned_creatures: list[Species] = spawned_creatures
         Terrain.instances.append(self)
 
     def is_passable_for(self, creature):
@@ -1136,26 +1046,28 @@ class FlavorTerrain(Terrain):
 
 
 # Ground fillers
-grass = Terrain(color=console.fg.lightgreen, name='grass', spawned_creatures=[FieldMouse])
-ashes = Terrain(color=console.fg.lightblack, name='ashes', spawned_creatures=[AshBeetle, Rat])
-dirt = Terrain(color=config.brown_fg_color, name='dirt', spawned_creatures=[FieldMouse])
-snow = Terrain(color=console.fg.white, name='snow', spawned_creatures=[SnowHare])
-sand = Terrain(color=console.fg.yellow, name='sand', spawned_creatures=[SandSnake, Scorpion])
-ice = Terrain(color=console.fg.lightblue, name='ice', spawned_creatures=[IceMantis])
+grass = Terrain(color=console.fg.lightgreen, name='grass', spawned_creatures=[field_mouse_species])
+ashes = Terrain(color=console.fg.lightblack, name='ashes', spawned_creatures=[ash_beetle_species, rat_species])
+dirt = Terrain(color=config.brown_fg_color, name='dirt', spawned_creatures=[field_mouse_species])
+snow = Terrain(color=console.fg.white, name='snow', spawned_creatures=[snow_hare_species])
+sand = Terrain(color=console.fg.yellow, name='sand', spawned_creatures=[sand_snake_species, scorpion_species])
+ice = Terrain(color=console.fg.lightblue, name='ice', spawned_creatures=[ice_mantis_species])
 # Other base terrains
-tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T', spawned_creatures=[Fox, Wolf])
-dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T', spawned_creatures=[Wolf, SwampDragon])
-frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T', spawned_creatures=[IceFox, WinterWolf])
+tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T', spawned_creatures=[fox_species, wolf_species])
+dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T',
+                    spawned_creatures=[wolf_species, swamp_dragon_species])
+frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
+                      spawned_creatures=[ice_fox_species, winter_wolf_species])
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
-                    spawned_creatures=[WinterWolf, IceBear])
+                    spawned_creatures=[winter_wolf_species, ice_bear_species])
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
-                spawned_creatures=[Bear, Eagle])
-bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[Fox])
+                spawned_creatures=[bear_species, eagle_species])
+bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[fox_species])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
-                spawned_creatures=[Crocodile, SwampDragon, Hydra])
-salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake', spawned_creatures=[Crocodile])
+                spawned_creatures=[crocodile_species, swamp_dragon_species, hydra_species])
+salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake', spawned_creatures=[crocodile_species])
 jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False,
-                 spawned_creatures=[Monkey, Crocodile, Jaguar])
+                 spawned_creatures=[monkey_species, crocodile_species, jaguar_species])
 all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
                      rocks, bush, swamp, salt_lake, jungle]
 # Flavor terrains
@@ -1405,17 +1317,17 @@ class Location(Container):
         else:
             additional_creatures = []
             self._last_spawn_time = current_turn
-            creature_lists = [t.spawned_creatures for t in self._terrains]
+            species_lists = [t.spawned_creatures for t in self._terrains]
             weights = self._terrain_weights[:]
             for creature_count in range(int(sum(weights) // 20)):
-                chosen_list = random.choices(creature_lists, weights=weights)[0]
-                if not chosen_list:
+                species_list = random.choices(species_lists, weights=weights)[0]
+                if not species_list:
                     continue
-                if len(chosen_list) > len(config.creature_rarity_scale):
-                    raise ValueError(f'Creature rarity scale is not long enough for list of length {len(chosen_list)}!')
-                chosen_weights = config.creature_rarity_scale[:len(chosen_list)]
-                chosen_creature_type = random.choices(chosen_list, chosen_weights)[0]
-                additional_creatures.append(chosen_creature_type())
+                if len(species_list) > len(config.creature_rarity_scale):
+                    raise ValueError(f'Creature rarity scale is not long enough for list of length {len(species_list)}!')
+                chosen_weights = config.creature_rarity_scale[:len(species_list)]
+                chosen_creature_species = random.choices(species_list, chosen_weights)[0]
+                additional_creatures.append(Creature(chosen_creature_species))
         for creature_instance in additional_creatures:
             new_coords = self._random_coords()
             while new_coords in local_creatures or not self.can_ocupy(creature_instance, new_coords):

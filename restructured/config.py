@@ -25,7 +25,7 @@ race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')
 ground = 'Ground'
 
-random_creatures_respawn_period = 500
+random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
 
 max_stat_value = 20

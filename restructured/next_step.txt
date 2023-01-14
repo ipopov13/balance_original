@@ -1,9 +1,7 @@
 FEATURES
-Rework species to include the AI for animals?
-Also take the name from the species
 Only humanoids will need their own name generation
 Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
-Build an AI library to choose from in species
+Build an AI library to choose from in species?
 How to combine this with Humanoids having different AIs based on the profession?
 
 Inventory
