@@ -66,30 +66,25 @@ class EquipmentScreen(WindowContent):
 
 
 class DualContainerScreen(WindowContent):
-    LEFT = 'left one'
-    RIGHT = 'right one'
-
     def __init__(self, game_object):
         super().__init__(game_object)
-        self._names = {self.LEFT: '(left_container)', self.RIGHT: '(right_container)'}
+        self._names: list[str] = []
         self._set_names()
-        self._data = {}
-        self._container_sizes: dict[str, tuple[int, int]] = {}
+        self._data = []
+        self._container_sizes: list[tuple[int, int]] = []
         self._selected_pos = self._get_initial_selected_position()
         self._get_container_data()
-        self._extra_pads = {}
-        self._active_container = self.LEFT
-        self._max_view_width = config.location_width // 2
+        self._extra_pads = [0] * len(self._names)
+        self._active_container_index: int = 0
+        self._max_view_width = config.location_width // len(self._names)
 
     @property
     def _own_commands(self):
-        own_commands = {commands.Move(): self._move_item_focus}
-        if self._data[self.RIGHT]:
-            own_commands[commands.SwitchContainers()] = self._switch_containers
-        return own_commands
+        return {commands.Move(): self._move_item_focus,
+                commands.SwitchContainers(): self._switch_containers}
 
-    def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
-        return {self.LEFT: (0, 0), self.RIGHT: (0, 0)}
+    def _get_initial_selected_position(self) -> list[tuple[int, int]]:
+        return [(0, 0)] * len(self._names)
 
     def _set_names(self) -> None:
         raise NotImplementedError(f'Class {self.__class__} must implement _set_names()!')
@@ -101,114 +96,104 @@ class DualContainerScreen(WindowContent):
         raise NotImplementedError(f'Class {self.__class__} must implement _get_details()!')
 
     def _move_item_focus(self, direction) -> bool:
-        new_selection = calculate_new_position(self._selected_pos[self._active_container], direction,
-                                               *self._container_sizes[self._active_container])
-        self._selected_pos[self._active_container] = new_selection
+        new_selection = calculate_new_position(self._selected_pos[self._active_container_index], direction,
+                                               *self._container_sizes[self._active_container_index])
+        self._selected_pos[self._active_container_index] = new_selection
         self._get_container_data()
         return True
 
     def _switch_containers(self, _) -> bool:
-        if self._active_container is self.LEFT:
-            self._active_container = self.RIGHT
-        else:
-            self._active_container = self.LEFT
+        self._active_container_index += 1
+        if self._active_container_index == len(self._names):
+            self._active_container_index = 0
         return True
 
-    def _prettify_container(self, container_tag: str = None):
-        container_data = self._data[container_tag]
-        container_size = self._container_sizes[container_tag]
-        border_color = console.fg.default if container_tag is self._active_container else console.fx.dim
-        top_border_raw = self._names[container_tag].center(max(container_size[1] + 2, len(container_tag) + 2), '-')
+    def _prettify_container(self, container_index: int = None):
+        container_data = self._data[container_index]
+        container_size = self._container_sizes[container_index]
+        border_color = console.fg.default if container_index is self._active_container_index else console.fx.dim
+        name = self._names[container_index]
+        top_border_raw = name.center(max(container_size[1] + 2, len(name) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
         padded_data, inner_left_pad, _ = horizontal_pad(container_data.split('\n'), len(top_border_raw))
         content_data = ([border_color + top_border_raw + console.fx.end]
                         + padded_data
                         + [border_color + bottom_border_raw + console.fx.end])
         content_data, left_pad, _ = horizontal_pad(content_data, self._max_view_width)
-        self._extra_pads[container_tag] = left_pad + inner_left_pad
+        self._extra_pads[container_index] = left_pad + inner_left_pad
         return '\n'.join(content_data)
 
-    def _equalize_rows(self, left_view, right_view):
-        extra_rows_on_the_right = len(right_view.split('\n')) - len(left_view.split('\n'))
-        if extra_rows_on_the_right > 0:
-            left_view += ('\n' + ' ' * self._max_view_width) * extra_rows_on_the_right
-        else:
-            right_view += '\n' * (-1 * extra_rows_on_the_right)
-        return left_view, right_view
+    def _equalize_rows(self, contents):
+        max_lines = max([len(content.split('\n')) for content in contents])
+        for c_i in range(len(contents)):
+            current_height = len(contents[c_i].split('\n'))
+            contents[c_i] += ('\n' + ' ' * self._max_view_width) * max(0, max_lines - current_height)
+        return contents
 
     def data(self) -> str:
-        pretty_left = self._prettify_container(self.LEFT) + '\n\n'
-        pretty_right = self._prettify_container(self.RIGHT) + '\n\n'
-        left_details, right_details = self._get_details()
-        left_details, _, _ = horizontal_pad(left_details, self._max_view_width)
-        right_details, _, _ = horizontal_pad(right_details, self._max_view_width)
-        pretty_left += '\n'.join(left_details)
-        pretty_right += '\n'.join(right_details)
-        # Add empty lines to match the two views
-        equal_left, equal_right = self._equalize_rows(pretty_left, pretty_right)
-        # Combine the rows of the two
-        combined_content = [''.join(pair) for pair
-                            in zip(equal_left.split('\n'), equal_right.split('\n'))]
+        pretty_content = [self._prettify_container(ci) + '\n\n' for ci in range(len(self._names))]
+        details = [horizontal_pad(det, self._max_view_width)[0] for det in self._get_details()]
+        pretty_content = [c + '\n'.join(d) for c, d in zip(pretty_content, details)]
+        equalized_content = self._equalize_rows(pretty_content)
+        combined_content = [''.join(rows) for rows
+                            in zip(*[c.split('\n') for c in equalized_content])]
         return '\n'.join(combined_content)
 
     def cursor_pos(self) -> tuple[int, int]:
-        left_pad = self._extra_pads[self._active_container]
-        if self._active_container is self.RIGHT:
-            left_pad += self._max_view_width
-        return (self._selected_pos[self._active_container][0] + 1,
-                self._selected_pos[self._active_container][1] + left_pad)
+        left_pad = self._extra_pads[self._active_container_index]
+        left_pad += self._max_view_width * self._active_container_index
+        return (self._selected_pos[self._active_container_index][0] + 1,
+                self._selected_pos[self._active_container_index][1] + left_pad)
 
 
 class MapScreen(DualContainerScreen):
     def _set_names(self) -> None:
-        self._names[self.LEFT] = 'World'
-        self._names[self.RIGHT] = 'Region'
+        self._names = ['World', 'Region']
 
-    def _get_initial_selected_position(self) -> dict[str, tuple[int, int]]:
-        return {self.LEFT: self.game_object.get_character_position_in_world(),
-                self.RIGHT: self.game_object.get_character_position_in_region()}
+    def _get_initial_selected_position(self) -> list[tuple[int, int]]:
+        return [self.game_object.get_character_position_in_world(),
+                self.game_object.get_character_position_in_region()]
 
     def _get_container_data(self) -> None:
-        self._data[self.LEFT] = self.game_object.get_world_data(blink_at=self._selected_pos[self.LEFT])
-        self._data[self.RIGHT] = self.game_object.get_region_data(self._selected_pos[self.LEFT],
-                                                                  blink_at=self._selected_pos[self.RIGHT])
-        self._container_sizes[self.LEFT] = (config.world_size, config.world_size)
-        self._container_sizes[self.RIGHT] = (config.region_size, config.region_size)
+        self._data = [self.game_object.get_world_data(blink_at=self._selected_pos[0]),
+                      self.game_object.get_region_data(self._selected_pos[0], blink_at=self._selected_pos[1])]
+        self._container_sizes = [(config.world_size, config.world_size),
+                                 (config.region_size, config.region_size)]
 
     def _get_details(self) -> tuple[list[str], list[str]]:
-        region_details = self.game_object.get_region_map_details(self._selected_pos[self.LEFT])
-        location_details = self.game_object.get_location_map_details(self._selected_pos[self.LEFT],
-                                                                     self._selected_pos[self.RIGHT])
+        region_details = self.game_object.get_region_map_details(self._selected_pos[0])
+        location_details = self.game_object.get_location_map_details(self._selected_pos[0],
+                                                                     self._selected_pos[1])
         return region_details, location_details
 
 
 class InventoryScreen(DualContainerScreen):
     def __init__(self, game_object):
         super().__init__(game_object)
-        self.game_object.set_active_container(self._names[self.LEFT])
+        self.game_object.set_active_container(self._names[0])
+
+    def _increment_container_index(self):
+        self._active_container_index += 1
+        if self._active_container_index == len(self._names):
+            self._active_container_index = 0
 
     def _switch_containers(self, _) -> bool:
-        if self._active_container is self.LEFT:
-            self._active_container = self.RIGHT
-            self.game_object.set_active_container(self._names[self.RIGHT])
-        else:
-            self._active_container = self.LEFT
-            self.game_object.set_active_container(self._names[self.LEFT])
+        self._increment_container_index()
+        while self._container_sizes[self._active_container_index] == (0, 0):
+            self._increment_container_index()
+        self.game_object.set_active_container(self._names[self._active_container_index])
         return True
 
     def _set_names(self) -> None:
-        self._names[self.LEFT] = config.ground
-        self._names[self.RIGHT] = self.game_object.get_bag_name()
+        self._names = [config.ground, self.game_object.get_bag_name()]
 
     def _get_container_data(self) -> None:
-        self._data[self.LEFT] = self.game_object.get_ground_items()
-        self._data[self.RIGHT] = self.game_object.get_bag_items()
-        self._container_sizes[self.LEFT] = (config.tile_size, config.tile_size)
-        self._container_sizes[self.RIGHT] = self.game_object.get_bag_size()
+        self._data = [self.game_object.get_ground_items(), self.game_object.get_bag_items()]
+        self._container_sizes = [(config.tile_size, config.tile_size), self.game_object.get_bag_size()]
 
     def _get_details(self) -> tuple[list[str], list[str]]:
-        ground_details = self.game_object.get_ground_item_details(self._selected_pos[self.LEFT])
-        bag_details = self.game_object.get_bag_item_details(self._selected_pos[self.RIGHT])
+        ground_details = self.game_object.get_ground_item_details(self._selected_pos[0])
+        bag_details = self.game_object.get_bag_item_details(self._selected_pos[1])
         return ground_details, bag_details
 
     def _decorate_callback(self, callback):
