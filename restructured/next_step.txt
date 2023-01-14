@@ -12,7 +12,6 @@ Inventory
         Make the Inventory content switch between all three
         Will make unequipping more visual and transparent (where the item goes)
     Bag (Inventory screen)
-        Add Load info on Inventory screen
         Open inner container on ground
         Open inner container in bag
     Unequip command (from Equipment to Inventory/Tile)

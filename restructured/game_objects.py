@@ -913,7 +913,9 @@ class Game:
             self._selected_bag_item = self.character.bag.contents[item_coords[0]][item_coords[1]]
         except AttributeError:
             self._selected_bag_item = empty_space
-        return self._selected_bag_item.details()
+        load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
+        load_line = f'Load [{load_gauge}]'
+        return self._selected_bag_item.details() + [load_line]
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
