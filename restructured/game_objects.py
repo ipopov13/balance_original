@@ -877,8 +877,13 @@ class Game:
         if self._equipping_slot is None:
             self.substate = Game.scene_substate
         else:
-            if self.character.current_equipment[self._equipping_slot] is not empty_space:
+            item = self.character.current_equipment[self._equipping_slot]
+            if item is not empty_space:
                 self.character.current_equipment[self._equipping_slot] = empty_space
+                if self.character.bag is not empty_space and self.character.bag.has_space():
+                    self.character.bag.add_item(item)
+                else:
+                    self._current_location.put_item(item, self._get_coords_of_creature(self.character))
                 self._equipping_slot = None
             else:
                 self.substate = Game.equip_for_substate

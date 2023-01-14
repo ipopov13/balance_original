@@ -14,10 +14,6 @@ Inventory
     Bag (Inventory screen)
         Open inner container on ground
         Open inner container in bag
-    Unequip command (from Equipment to Inventory/Tile)
-        bag with space (to bag)
-        bag with no space (to tile)
-        no bag (to tile)
     Basic items
     Pick up command from Scene (no hint, no window switching,
         picks up first item from the list that the character can carry)
