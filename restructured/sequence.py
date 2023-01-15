@@ -1,6 +1,6 @@
 from windows import Window, InputWindow, SelectionWindow
 from content_types import WindowContent, TextInputField, GameScene, MapScreen, \
-    EquipmentScreen, EquipmentList, SentientSpeciesList, InventoryScreen
+    EquipmentList, SentientSpeciesList, InventoryScreen
 from game_objects import Game
 import config
 
@@ -21,12 +21,9 @@ class GameSequence:
                           content=GameScene(ui.game))
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:
             return Window(ui=ui, content=MapScreen(ui.game), border=True, title='Map')
-        elif ui.game.state is Game.playing_state and ui.game.substate is Game.equipment_substate:
-            return SelectionWindow(ui=ui, content=EquipmentScreen(ui.game), border=True, title='Equipment',
-                                   target=ui.game.equip_for)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.equip_for_substate:
             return SelectionWindow(ui=ui, content=EquipmentList(ui.game), border=True,
-                                   title='What do you want to equip?', target=ui.game.equip_item_from_ground)
+                                   title='What do you want to equip?', target=ui.game.equip_item)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.inventory_substate:
             return Window(ui=ui, content=InventoryScreen(ui.game), border=True, title=f'Inventory')
         else:

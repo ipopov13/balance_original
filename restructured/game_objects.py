@@ -717,7 +717,6 @@ class Game:
             return {commands.Move(): self._player_move,
                     commands.Rest(): self._character_rests,
                     commands.Map(): self._open_map,
-                    commands.Equipment(): self._open_equipment,
                     commands.Inventory(): self._open_inventory}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
             return {commands.Close(): self._back_to_scene}
@@ -909,29 +908,13 @@ class Game:
             self._equipment_locations[item] = 'tile'
         return filtered_items
 
-    def equip_item_from_ground(self, item):
+    def equip_item(self, item):
         if item is not None:
             self.character.current_equipment[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
             self.character.bag.remove_item(item)
         self.substate = Game.inventory_substate
         self._equipping_slot = None
-
-    def equip_for(self, slot: str):
-        self._equipping_slot = slot
-        if self._equipping_slot is None:
-            self.substate = Game.scene_substate
-        else:
-            item = self.character.current_equipment[self._equipping_slot]
-            if item is not empty_space:
-                self.character.current_equipment[self._equipping_slot] = empty_space
-                if self.character.bag is not empty_space and self.character.bag.has_space():
-                    self.character.bag.add_item(item)
-                else:
-                    self._current_location.put_item(item, self._get_coords_of_creature(self.character))
-                self._equipping_slot = None
-            else:
-                self.substate = Game.equip_for_substate
 
     def set_active_container(self, container_name: str) -> None:
         self._active_inventory_container_name = container_name

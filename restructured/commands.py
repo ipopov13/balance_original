@@ -18,13 +18,6 @@ class Command:
         return {}
 
 
-class Equipment(Command):
-    character = 'E'
-    hint = '(E)quipment'
-    description = 'Open the equipment screen'
-    changes_window = True
-
-
 class Inventory(Command):
     character = 'I'
     hint = '(I)nventory'
@@ -103,7 +96,7 @@ class TextInput(Command):
 
 class Move(Command):
     character = '12346789'
-    hint = '(0-9) Move'
+    hint = '(0-9)Move'
     description = 'Move in a num-pad direction'
 
     def __eq__(self, other):

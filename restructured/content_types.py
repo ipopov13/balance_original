@@ -44,27 +44,6 @@ class GameScene(WindowContent):
         return self.game_object.get_character_position_in_location()
 
 
-class EquipmentScreen(WindowContent):
-    def __init__(self, game_object):
-        super().__init__(game_object)
-        equipment = self.game_object.get_equipment_list()
-        self._listing = dict(enumerate(equipment.items()))
-        self._content = []
-        for number, (slot, item) in self._listing.items():
-            item_name = 'empty' if item is None else item.name
-            self._content.append(f'{number}) {slot}: {item_name}')
-
-    def data(self) -> str:
-        return '\n'.join(self._content)
-
-    @property
-    def max_choice(self) -> int:
-        return len(self._content)
-
-    def return_object(self, chosen_slot: str) -> str:
-        return self._listing[int(chosen_slot)][0]
-
-
 class MultiContainerScreen(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
