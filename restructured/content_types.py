@@ -275,7 +275,6 @@ class PagedList(WindowContent):
 
     @staticmethod
     def _paginate(contents) -> [(int, int)]:
-        # TODO: Write a test for the 10 lines rule!
         pages = []
         current_size = 0
         current_start_index = 0

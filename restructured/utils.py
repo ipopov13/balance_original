@@ -1,4 +1,5 @@
 import re
+import console
 
 strip_sub = re.compile(r"""
     \x1b     # literal ESC
@@ -16,6 +17,10 @@ def longest_raw_line_len(content) -> int:
     raw_content_data = [strip_ansi_escape_sequences(line) for line in content]
     longest_line_len = max([len(line) for line in raw_content_data])
     return longest_line_len
+
+
+def dim(a_string) -> str:
+    return console.fx.dim + a_string + console.fx.end
 
 
 def horizontal_pad(content_data: list[str], max_width: int, pad_character: str = ' '):

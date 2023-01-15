@@ -3,7 +3,7 @@ import random
 import commands
 import console
 import config
-from utils import calculate_new_position, coord_distance, direct_path
+from utils import calculate_new_position, coord_distance, direct_path, dim
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -26,7 +26,7 @@ climate_colors = {COLD_CLIMATE: console.fg.lightblue,
 
 class GameObject:
     def __init__(self, name=None, icon='.', color=console.fg.black,
-                 description='(empty)', sort_key=0):
+                 description=config.empty_string, sort_key=0):
         self._name = name
         self.raw_icon = icon
         self.color = color
@@ -55,7 +55,7 @@ class GameObject:
 
     @staticmethod
     def data() -> str:
-        return '(empty)'
+        return config.empty_string
 
 
 class Container(GameObject):
@@ -110,7 +110,7 @@ class Item(GameObject):
         return self._own_weight
 
 
-empty_space = Item(icon='.', color=console.fg.lightblack, name='(empty)')
+empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
 
 
 class Consumable(Item):
@@ -308,8 +308,8 @@ class Meat(Consumable):
                          description='The meat of an animal')
 
 
-base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Back': Back,
-                                 'Boots': Boots, 'Main hand': MainHand, 'Offhand': Offhand}
+base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
+                                 'Offhand': Offhand, 'Back': Back, 'Boots': Boots}
 base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
                                'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
 
@@ -858,8 +858,11 @@ class Game:
         return len(self.character.current_equipment), 1
 
     def get_equipment_data(self) -> str:
-        lines = [f'{item.icon} {item.name.capitalize() or label}'
-                 for label, item in self.character.current_equipment.items()]
+        lines = []
+        for slot_name, item in self.character.current_equipment.items():
+            empty_label = dim(f'[{slot_name.lower()}]')
+            label = item.name.capitalize() if item.name != config.empty_string else empty_label
+            lines.append(f'{item.icon} {label}')
         return '\n'.join(lines)
 
     def get_available_equipment(self) -> list[GameObject]:
@@ -1339,7 +1342,8 @@ class Location(Container):
                 if not species_list:
                     continue
                 if len(species_list) > len(config.creature_rarity_scale):
-                    raise ValueError(f'Creature rarity scale is not long enough for list of length {len(species_list)}!')
+                    raise ValueError(f'Creature rarity scale is not long enough for'
+                                     f' list of length {len(species_list)}!')
                 chosen_weights = config.creature_rarity_scale[:len(species_list)]
                 chosen_creature_species = random.choices(species_list, chosen_weights)[0]
                 additional_creatures.append(Creature(chosen_creature_species))
