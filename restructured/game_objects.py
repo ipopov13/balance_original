@@ -851,8 +851,16 @@ class Game:
                 return coords
         raise ValueError(f'Creature {creature.name} cannot be found in coords dictionary!')
 
-    def get_equipment_data(self) -> dict[str, Item]:
+    def get_equipment_list(self) -> dict[str, Item]:
         return self.character.current_equipment
+
+    def get_equipment_size(self) -> tuple[int, int]:
+        return len(self.character.current_equipment), 1
+
+    def get_equipment_data(self) -> str:
+        lines = [f'{item.icon} {item.name.capitalize() or label}'
+                 for label, item in self.character.current_equipment.items()]
+        return '\n'.join(lines)
 
     def get_available_equipment(self) -> list[GameObject]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))

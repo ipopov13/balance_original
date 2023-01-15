@@ -13,6 +13,7 @@ Inventory
         Add a third container (6x1) with slot names that are dimmed and replaced by the descriptions
           when equipped
         Make the Inventory content switch between all three
+        Use "(e/E)quip" hint and commands for multi-slot equiping for races
         Will make unequipping more visual and transparent (where the item goes)
     Bag (Inventory screen)
         Open inner container on ground
@@ -34,6 +35,10 @@ Character
     Stats improvement
     Skills
     Skills improvement
+Craft
+    Use the MultiContainerScreen with the recipe list replacing the equipment one
+    Have a tool slot that configures the recipe title, offers a "(r)ecipes" command, and adds
+     more requirements if necessary (e.g., a cooking pot adds a 'fire' requirement)
 
 Creatures:
     AI

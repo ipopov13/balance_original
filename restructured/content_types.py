@@ -1,7 +1,7 @@
 import commands
 import config
 import console
-from utils import horizontal_pad, calculate_new_position
+from utils import horizontal_pad, calculate_new_position, longest_raw_line_len
 
 
 class WindowContent:
@@ -47,7 +47,7 @@ class GameScene(WindowContent):
 class EquipmentScreen(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
-        equipment = self.game_object.get_equipment_data()
+        equipment = self.game_object.get_equipment_list()
         self._listing = dict(enumerate(equipment.items()))
         self._content = []
         for number, (slot, item) in self._listing.items():
@@ -65,7 +65,7 @@ class EquipmentScreen(WindowContent):
         return self._listing[int(chosen_slot)][0]
 
 
-class DualContainerScreen(WindowContent):
+class MultiContainerScreen(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
         self._names: list[str] = []
@@ -109,29 +109,33 @@ class DualContainerScreen(WindowContent):
         return True
 
     def _prettify_container(self, container_index: int = None):
-        container_data = self._data[container_index]
-        container_size = self._container_sizes[container_index]
+        container_data = self._data[container_index].split('\n')
         border_color = console.fg.default if container_index is self._active_container_index else console.fx.dim
         name = self._names[container_index]
-        top_border_raw = name.center(max(container_size[1] + 2, len(name) + 2), '-')
+        longest_line = longest_raw_line_len(container_data)
+        top_border_raw = name.center(max(longest_line + 2, len(name) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
-        padded_data, inner_left_pad, _ = horizontal_pad(container_data.split('\n'), len(top_border_raw))
+        padded_data, inner_left_pad, _ = horizontal_pad(container_data, len(top_border_raw))
         content_data = ([border_color + top_border_raw + console.fx.end]
                         + padded_data
                         + [border_color + bottom_border_raw + console.fx.end])
         content_data, left_pad, _ = horizontal_pad(content_data, self._max_view_width)
         self._extra_pads[container_index] = left_pad + inner_left_pad
-        return '\n'.join(content_data)
+        final_content = '\n'.join(content_data) + self._empty_row() + '\n'
+        return final_content
+
+    def _empty_row(self) -> str:
+        return '\n' + ' ' * self._max_view_width
 
     def _equalize_rows(self, contents):
         max_lines = max([len(content.split('\n')) for content in contents])
         for c_i in range(len(contents)):
             current_height = len(contents[c_i].split('\n'))
-            contents[c_i] += ('\n' + ' ' * self._max_view_width) * max(0, max_lines - current_height)
+            contents[c_i] += self._empty_row() * max(0, max_lines - current_height)
         return contents
 
     def data(self) -> str:
-        pretty_content = [self._prettify_container(ci) + '\n\n' for ci in range(len(self._names))]
+        pretty_content = [self._prettify_container(ci) for ci in range(len(self._names))]
         details = [horizontal_pad(det, self._max_view_width)[0] for det in self._get_details()]
         pretty_content = [c + '\n'.join(d) for c, d in zip(pretty_content, details)]
         equalized_content = self._equalize_rows(pretty_content)
@@ -146,7 +150,7 @@ class DualContainerScreen(WindowContent):
                 self._selected_pos[self._active_container_index][1] + left_pad)
 
 
-class MapScreen(DualContainerScreen):
+class MapScreen(MultiContainerScreen):
     def _set_names(self) -> None:
         self._names = ['World', 'Region']
 
@@ -167,7 +171,7 @@ class MapScreen(DualContainerScreen):
         return region_details, location_details
 
 
-class InventoryScreen(DualContainerScreen):
+class InventoryScreen(MultiContainerScreen):
     def __init__(self, game_object):
         super().__init__(game_object)
         self.game_object.set_active_container(self._names[0])
@@ -185,16 +189,18 @@ class InventoryScreen(DualContainerScreen):
         return True
 
     def _set_names(self) -> None:
-        self._names = [config.ground, self.game_object.get_bag_name()]
+        self._names = [config.ground, self.game_object.get_bag_name(), config.equipment_title]
 
     def _get_container_data(self) -> None:
-        self._data = [self.game_object.get_ground_items(), self.game_object.get_bag_items()]
-        self._container_sizes = [(config.tile_size, config.tile_size), self.game_object.get_bag_size()]
+        self._data = [self.game_object.get_ground_items(), self.game_object.get_bag_items(),
+                      self.game_object.get_equipment_data()]
+        self._container_sizes = [(config.tile_size, config.tile_size), self.game_object.get_bag_size(),
+                                 self.game_object.get_equipment_size()]
 
-    def _get_details(self) -> tuple[list[str], list[str]]:
+    def _get_details(self) -> tuple[list[str], list[str], list[str]]:
         ground_details = self.game_object.get_ground_item_details(self._selected_pos[0])
         bag_details = self.game_object.get_bag_item_details(self._selected_pos[1])
-        return ground_details, bag_details
+        return ground_details, bag_details, ['']
 
     def _decorate_callback(self, callback):
 

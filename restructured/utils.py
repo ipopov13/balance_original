@@ -12,6 +12,12 @@ def strip_ansi_escape_sequences(colored_string):
     return strip_sub("", colored_string)
 
 
+def longest_raw_line_len(content) -> int:
+    raw_content_data = [strip_ansi_escape_sequences(line) for line in content]
+    longest_line_len = max([len(line) for line in raw_content_data])
+    return longest_line_len
+
+
 def horizontal_pad(content_data: list[str], max_width: int, pad_character: str = ' '):
     """
     Center a multiline string using the longest content line
