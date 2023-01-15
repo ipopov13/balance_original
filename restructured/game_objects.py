@@ -320,9 +320,15 @@ class Species(GameObject):
     _equipment_slots = {}
     initial_equipment = ()
 
-    def __init__(self, ai: list[str] = ('random/',), **kwargs):
+    def __init__(self, custom_ai: dict[str, list[str]] = None,
+                 initial_disposition: str = config.indifferent_disposition,
+                 **kwargs):
         super().__init__(**kwargs)
-        self.ai = ai
+        basic_ai = {config.indifferent_disposition: ['random/']}
+        if custom_ai is not None:
+            basic_ai.update(custom_ai)
+        self.initial_disposition = initial_disposition
+        self.ai = basic_ai
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -451,31 +457,38 @@ fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8},
                                equipment=[Meat, MediumTeeth, LightHide],
-                               ai=['chase/8', 'random/'])
+                               initial_disposition=config.aggressive_disposition,
+                               custom_ai={config.aggressive_disposition: ['chase/8', 'random/']})
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
                              equipment=[Meat, MediumTeeth, LightHide],
-                             ai=['chase/6', 'random/'])
+                             initial_disposition=config.aggressive_disposition,
+                             custom_ai={config.aggressive_disposition: ['chase/6', 'random/']})
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7},
                                     equipment=[Meat, MediumTeeth, LightHide],
-                                    ai=['chase/6', 'random/'])
+                                    initial_disposition=config.aggressive_disposition,
+                                    custom_ai={config.aggressive_disposition: ['chase/6', 'random/']})
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3},
                                  equipment=[Meat, LargeClaws, MediumHide],
-                                 ai=['chase/7', 'random/'])
+                                 initial_disposition=config.aggressive_disposition,
+                                 custom_ai={config.aggressive_disposition: ['chase/7', 'random/']})
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3},
                              equipment=[Meat, LargeClaws, MediumHide],
-                             ai=['chase/5', 'random/'])
+                             initial_disposition=config.aggressive_disposition,
+                             custom_ai={config.aggressive_disposition: ['chase/5', 'random/']})
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5},
                                      equipment=[Meat, LargeTeeth, MediumScales],
-                                     ai=['chase/6', 'random/'])
+                                     initial_disposition=config.aggressive_disposition,
+                                     custom_ai={config.aggressive_disposition: ['chase/6', 'random/']})
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
                                   base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4},
                                   equipment=[Meat, LargeTeeth, MediumScales],
-                                  ai=['chase/4', 'random/'])
+                                  initial_disposition=config.aggressive_disposition,
+                                  custom_ai={config.aggressive_disposition: ['chase/4', 'random/']})
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
                                equipment=[Meat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
@@ -483,11 +496,15 @@ ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10},
                               equipment=[Meat, MediumClaws, Feathers],
-                              ai=['chase/3', 'random/'])
+                              initial_disposition=config.aggressive_disposition,
+                              custom_ai={config.aggressive_disposition: ['chase/3', 'random/']})
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
                               base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15},
                               equipment=[Meat, HugeClaws, HeavyScales],
-                              ai=['chase/15', 'random/'])
+                              initial_disposition=config.aggressive_disposition,
+                              custom_ai={config.aggressive_disposition: ['chase/15', 'random/']})
+
+
 # Flavor terrain rare creatures?
 
 
@@ -501,6 +518,7 @@ class Creature(GameObject):
             kwargs['name'] = race.name
         super().__init__(**kwargs)
         self.race = race
+        self._disposition = self.race.initial_disposition
         self._ai = self.race.ai
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
@@ -613,7 +631,7 @@ class Creature(GameObject):
                 return old_item
 
     def get_goals(self) -> list[str]:
-        return self._ai
+        return self._ai[self._disposition]
 
     def get_drops(self):
         return [item for item in self.current_equipment.values() if item is not empty_space]

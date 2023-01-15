@@ -26,6 +26,9 @@ race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
 ground = 'Ground'
 equipment_title = 'Equipment'
 empty_string = '(empty)'
+indifferent_disposition = 'indifferent'
+aggressive_disposition = 'indifferent'
+fearful_disposition = 'indifferent'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
