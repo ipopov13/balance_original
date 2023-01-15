@@ -526,6 +526,9 @@ class Creature(GameObject):
         self._hp = self.max_hp
         self._mana = self.max_mana
         self._energy = self.max_energy
+        self._hunger: int = 0
+        self._thirst: int = 0
+        self._sustenance: int = 0
 
     @property
     def perception_radius(self) -> int:
@@ -585,7 +588,38 @@ class Creature(GameObject):
 
     @energy.setter
     def energy(self, value):
-        self._energy = min(self.max_energy, value)
+        difference = self._energy - value
+        if difference > 0:
+            self._need_sustenance(difference)
+        self._energy = min(self.max_energy - self.current_famine, max(0, value))
+
+    def _need_sustenance(self, change):
+        self._sustenance += change
+        if self._sustenance >= 10:
+            famine = self._sustenance // 10
+            self._hunger += famine
+            self._thirst += famine
+            self._sustenance = self._sustenance % 10
+
+    @property
+    def hunger(self):
+        return self._hunger
+
+    @hunger.setter
+    def hunger(self, value):
+        self._hunger = min(50, value)
+
+    @property
+    def thirst(self):
+        return self._thirst
+
+    @thirst.setter
+    def thirst(self, value):
+        self._thirst = min(50, value)
+
+    @property
+    def sustenance_modifier(self):
+        return (self.hunger + self.thirst) // 10 * 10
 
     @property
     def _energy_modifier(self) -> float:
@@ -610,6 +644,10 @@ class Creature(GameObject):
     @property
     def max_energy(self):
         return self.stats['End'] * 10
+
+    @property
+    def current_famine(self) -> int:
+        return self.max_energy * self.sustenance_modifier // 100
 
     @property
     def max_load(self):
@@ -997,7 +1035,9 @@ class Game:
         #  target location (chosen on map, hinted with Travelling: West-NW)
         hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
         mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
-        energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color)
+        energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color,
+                                          ailment_score=self.character.current_famine,
+                                          ailment_color=config.famine_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
         if self._last_character_target is not None:
@@ -1009,13 +1049,19 @@ class Game:
         return hud
 
     @staticmethod
-    def _format_gauge(current_stat, max_stat, color, show_numbers: bool = True) -> str:
+    def _format_gauge(current_stat, max_stat, color, show_numbers: bool = True,
+                      ailment_score: int = 0, ailment_color: str = console.fg.default) -> str:
+        current_max = max_stat - ailment_score
         if show_numbers:
-            raw_gauge = f'{current_stat}/{max_stat}'.center(10, ' ')
+            raw_gauge = f'{current_stat}/{current_max}'.center(10, ' ')
         else:
             raw_gauge = ' ' * 10
         percentage_full = int((current_stat / max_stat) * 10)
-        colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end + raw_gauge[percentage_full:]
+        percentage_ailment = int((ailment_score / max_stat) * 10)
+        percentage_empty = 10 - percentage_ailment - percentage_full
+        colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end \
+                        + raw_gauge[percentage_full:percentage_full + percentage_empty] \
+                        + ailment_color + raw_gauge[percentage_full + percentage_empty:] + console.fx.end
         return colored_gauge
 
     def get_area_view(self) -> str:

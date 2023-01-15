@@ -15,6 +15,7 @@ chaos_color = console.fg.red
 hp_color = console.bg.red
 mana_color = console.bg.blue
 energy_color = console.bg.lightgreen
+famine_color = console.bg.lightred
 load_color = console.bg.white + console.fg.lightblack
 brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
