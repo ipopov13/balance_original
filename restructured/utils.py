@@ -66,6 +66,16 @@ def coord_distance(coords1: tuple[int, int], coords2: tuple[int, int]) -> int:
     return max(abs(coords1[0] - coords2[0]), abs(coords1[1] - coords2[1]))
 
 
+def cmp(a: int, b: int) -> int:
+    """Return -1 if a < b, 0 if a == b, and 1 if a > b"""
+    if a < b:
+        return -1
+    elif a > b:
+        return 1
+    else:
+        return 0
+
+
 def direct_path(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]:
     path = [a[:]]
     dif = [abs(a[0] - b[0]), abs(a[1] - b[1])]

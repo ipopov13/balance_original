@@ -27,10 +27,11 @@ ground = 'Ground'
 equipment_title = 'Equipment'
 empty_string = '(empty)'
 indifferent_disposition = 'indifferent'
-aggressive_disposition = 'indifferent'
-fearful_disposition = 'indifferent'
+aggressive_disposition = 'aggressive'
+fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
+run_from_humanoid_behavior = 'run_from_humanoid'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

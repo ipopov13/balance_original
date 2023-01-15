@@ -324,7 +324,11 @@ class Species(GameObject):
                  initial_disposition: str = config.indifferent_disposition,
                  **kwargs):
         super().__init__(**kwargs)
-        basic_ai = {config.indifferent_disposition: [config.random_behavior]}
+        basic_ai = {config.indifferent_disposition: [config.random_behavior],
+                    config.fearful_disposition: [config.run_from_humanoid_behavior,
+                                                 config.random_behavior],
+                    config.aggressive_disposition: [config.chase_humanoid_behavior,
+                                                    config.random_behavior]}
         if custom_ai is not None:
             basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
@@ -356,6 +360,8 @@ class AnimalSpecies(Species):
         return self._base_stats
 
     def __init__(self, base_stats: dict[str, int] = None, equipment: list[Type[Item]] = (), **kwargs):
+        if 'initial_disposition' not in kwargs:
+            kwargs['initial_disposition'] = config.fearful_disposition
         super().__init__(**kwargs)
         self.initial_equipment = equipment
         self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1, 'Per': 5}
@@ -457,45 +463,31 @@ fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8, 'Per': 8},
                                equipment=[Meat, MediumTeeth, LightHide],
-                               initial_disposition=config.aggressive_disposition,
-                               custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                          config.random_behavior]})
+                               initial_disposition=config.aggressive_disposition)
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                              equipment=[Meat, MediumTeeth, LightHide],
-                             initial_disposition=config.aggressive_disposition,
-                             custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                        config.random_behavior]})
+                             initial_disposition=config.aggressive_disposition)
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                                     equipment=[Meat, MediumTeeth, LightHide],
-                                    initial_disposition=config.aggressive_disposition,
-                                    custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                               config.random_behavior]})
+                                    initial_disposition=config.aggressive_disposition)
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
                                  equipment=[Meat, LargeClaws, MediumHide],
-                                 initial_disposition=config.aggressive_disposition,
-                                 custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                            config.random_behavior]})
+                                 initial_disposition=config.aggressive_disposition)
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
                              equipment=[Meat, LargeClaws, MediumHide],
-                             initial_disposition=config.aggressive_disposition,
-                             custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                        config.random_behavior]})
+                             initial_disposition=config.aggressive_disposition)
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5, 'Per': 6},
                                      equipment=[Meat, LargeTeeth, MediumScales],
-                                     initial_disposition=config.aggressive_disposition,
-                                     custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                                config.random_behavior]})
+                                     initial_disposition=config.aggressive_disposition)
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
-                                  base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 3},
+                                  base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 4},
                                   equipment=[Meat, LargeTeeth, MediumScales],
-                                  initial_disposition=config.aggressive_disposition,
-                                  custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                             config.random_behavior]})
+                                  initial_disposition=config.aggressive_disposition)
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
                                equipment=[Meat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
@@ -503,15 +495,11 @@ ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10, 'Per': 15},
                               equipment=[Meat, MediumClaws, Feathers],
-                              initial_disposition=config.aggressive_disposition,
-                              custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                         config.random_behavior]})
+                              initial_disposition=config.aggressive_disposition)
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
-                              base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15, 'Per': 15},
+                              base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15, 'Per': 16},
                               equipment=[Meat, HugeClaws, HeavyScales],
-                              initial_disposition=config.aggressive_disposition,
-                              custom_ai={config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                                         config.random_behavior]})
+                              initial_disposition=config.aggressive_disposition)
 
 
 # Flavor terrain rare creatures?
@@ -1318,22 +1306,50 @@ class Location(Container):
                     return coords
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
-                      goals: list[str], creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
+                      goals: list[str], other_creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
         for goal in goals:
             if goal is config.chase_humanoid_behavior:
-                step = self._find_prey(current_coords, creatures=creatures, hunter=creature)
+                step = self._find_prey(current_coords, other_creatures=other_creatures, hunter=creature)
+                if step == current_coords:
+                    continue
+                else:
+                    return step
+            if goal is config.run_from_humanoid_behavior:
+                step = self._run_from_humanoids(current_coords, other_creatures=other_creatures, runner=creature)
                 if step == current_coords:
                     continue
                 else:
                     return step
             elif goal is config.random_behavior:
                 return self._choose_random_passable_neighbor(creature, current_coords)
+            else:
+                raise ValueError(f'Unhandled behaviour: "{goal}" of creature "{creature.name}"!')
+
+    def _run_from_humanoids(self, coords: tuple[int, int],
+                            other_creatures: dict[tuple[int, int], Creature],
+                            runner: Creature) -> tuple[int, int]:
+        distance = runner.perception_radius
+        for hunter_coords, hunter in other_creatures.items():
+            if isinstance(hunter.race, HumanoidSpecies) and coord_distance(coords, hunter_coords) <= distance:
+                good_y_direction = [1, -1][hunter_coords[0] > coords[0]]
+                good_x_direction = [1, -1][hunter_coords[1] > coords[1]]
+                safe_steps = [(coords[0] + good_y_direction, coords[1] + good_x_direction),
+                              (coords[0], coords[1] + good_x_direction),
+                              (coords[0] + good_y_direction, coords[1])
+                              ]
+                for step in safe_steps:
+                    try:
+                        if self.tile_at(step).is_passable_for(runner):
+                            return step
+                    except IndexError:
+                        pass
+        return coords
 
     def _find_prey(self, coords,
-                   creatures: dict[tuple[int, int], Creature],
+                   other_creatures: dict[tuple[int, int], Creature],
                    hunter: Creature) -> tuple[int, int]:
         distance = hunter.perception_radius
-        for prey_coords, prey in creatures.items():
+        for prey_coords, prey in other_creatures.items():
             if isinstance(prey.race, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
                 path = direct_path(coords, prey_coords)
                 if self.tile_at(path[1]).is_passable_for(hunter):
@@ -1463,10 +1479,9 @@ class Location(Container):
 
     def tile_at(self, coords: tuple[int, int]) -> Tile:
         new_coords = self._local_coords(coords)
-        try:
-            return self.contents[new_coords[0]][new_coords[1]]
-        except IndexError:
+        if -1 in new_coords or new_coords[0] == self._height or new_coords[1] == self._width:
             raise IndexError(f'Bad coordinates {coords} / {new_coords} for Location tile!')
+        return self.contents[new_coords[0]][new_coords[1]]
 
     def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
         return coords[0] - self._top_left[0], coords[1] - self._top_left[1]
