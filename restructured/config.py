@@ -29,6 +29,8 @@ empty_string = '(empty)'
 indifferent_disposition = 'indifferent'
 aggressive_disposition = 'indifferent'
 fearful_disposition = 'indifferent'
+chase_humanoid_behavior = 'chase_humanoid'
+random_behavior = 'random'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

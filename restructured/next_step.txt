@@ -1,4 +1,5 @@
 FEATURES
+Make rabbits run!
 Make eagles fly over rocks!
 Check max region name length - might break the map view in some combinations!
 
