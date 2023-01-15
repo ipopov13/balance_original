@@ -1,7 +1,5 @@
 FEATURES
-Make rabbits run!
 Make eagles fly over rocks!
-Check max region name length - might break the map view in some combinations!
 
 Only humanoids will need their own name generation
 Humanoids are visible by their race name until you talk to them (the Creature keeps that state)

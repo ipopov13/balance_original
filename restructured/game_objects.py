@@ -528,11 +528,11 @@ class Creature(GameObject):
         self._energy = self.max_energy
 
     @property
-    def perception_radius(self):
+    def perception_radius(self) -> int:
         return self.stats['Per']
 
     @property
-    def load(self):
+    def load(self) -> int:
         return sum([item.weight for item in self.current_equipment.values()])
 
     @property
@@ -560,10 +560,19 @@ class Creature(GameObject):
                 dmg += item.damage
             except AttributeError:
                 pass
+        dmg = int(dmg * self._energy_modifier)
         return dmg
 
     @property
-    def hp(self):
+    def _combat_exhaustion(self) -> int:
+        exhaustion = 0
+        for item in self.current_equipment.values():
+            if hasattr(item, 'damage'):
+                exhaustion += item.weight
+        return exhaustion
+
+    @property
+    def hp(self) -> int:
         return self._hp
 
     @hp.setter
@@ -571,7 +580,7 @@ class Creature(GameObject):
         self._hp = min(self.max_hp, value)
 
     @property
-    def energy(self):
+    def energy(self) -> int:
         return self._energy
 
     @energy.setter
@@ -579,7 +588,11 @@ class Creature(GameObject):
         self._energy = min(self.max_energy, value)
 
     @property
-    def mana(self):
+    def _energy_modifier(self) -> float:
+        return 0.5 + 0.5 * self.energy / self.max_energy
+
+    @property
+    def mana(self) -> int:
         return self._mana
 
     @mana.setter
@@ -587,7 +600,7 @@ class Creature(GameObject):
         self._mana = min(self.max_mana, value)
 
     @property
-    def max_hp(self):
+    def max_hp(self) -> int:
         return self.stats['Str'] + 2 * self.stats['End']
 
     @property
@@ -638,11 +651,15 @@ class Creature(GameObject):
         return [item for item in self.current_equipment.values() if item is not empty_space]
 
     def bump_with(self, other_creature: 'Creature') -> None:
-        other_creature.receive_damage(self.damage)
+        if self._disposition is config.aggressive_disposition or self.raw_icon is '@':
+            self.energy -= self._combat_exhaustion
+            other_creature.receive_damage(self.damage)
 
     def receive_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
-        if random.random() > self.stats['Dex'] / config.max_stat_value * load_modifier:
+        dex_modifier = self.stats['Dex'] / config.max_stat_value
+        dodge_chance = dex_modifier * load_modifier * self._energy_modifier
+        if random.random() > dodge_chance:
             self.hp -= max(0, damage - self.armor)
 
     def rest(self):
@@ -1516,11 +1533,11 @@ class Region(Container):
     height_in_tiles = config.region_size * config.location_height
     width_in_tiles = config.region_size * config.location_width
     region_names = {COLD_CLIMATE: {snow: 'Frost lands',
-                                   frozen_tree: 'Frozen forests',
+                                   frozen_tree: 'Frozen glade',
                                    tree: 'Winter woods',
                                    ice: 'Ice fields',
-                                   ice_block: 'Ice mountains',
-                                   rocks: 'Snowy mountains'},
+                                   ice_block: 'Glacier',
+                                   rocks: 'Snowy peaks'},
                     TEMPERATE_CLIMATE: {grass: 'Plains',
                                         tree: 'Forest',
                                         bush: 'Bushland',
@@ -1617,10 +1634,11 @@ class Region(Container):
 # TODO: Randomize forces and pass to regions on init
 class World(Container):
     region_suffixes = {CHAOS_FORCE: """of Blood
+of Blisters
 of Bone
 of Darkness
 of Decay
-of Desolation 
+of Desolation
 of Despair
 of the Fang
 of Fear
@@ -1639,9 +1657,8 @@ of Shackles
 of the Skull
 of Suffering 
 of the Dead
-of the Festering
 of the Tyrant
-of the Vampire 
+of Vampires 
 of the Worm
 of the Zombie""".split('\n'),
                        ORDER_FORCE: """of Bread
