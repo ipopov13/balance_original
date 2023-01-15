@@ -153,7 +153,12 @@ class MapScreen(MultiContainerScreen):
 class InventoryScreen(MultiContainerScreen):
     def __init__(self, game_object):
         super().__init__(game_object)
-        self.game_object.set_active_container(self._names[0])
+        object_state = self.game_object.active_inventory_container_name
+        if object_state in self._names:
+            self._active_container_index = self._names.index(object_state)
+        if object_state is config.equipment_title:
+            self._selected_pos[2] = (self.game_object.selected_equipped_item_index,
+                                     self._selected_pos[2][1])
 
     def _increment_container_index(self):
         self._active_container_index += 1

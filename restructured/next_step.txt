@@ -1,5 +1,4 @@
 FEATURES
-Make Inventory start with the same container selected after an equip
 Check max region name length - might break the map view in some combinations!
 
 Only humanoids will need their own name generation

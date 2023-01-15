@@ -650,7 +650,6 @@ class Game:
     # TODO: Implement subs: inventory, equipment, open_container, etc.
     scene_substate = 'game_scene'
     map_substate = 'world_map'
-    equipment_substate = 'equipment_screen'
     equip_for_substate = 'equip_for_screen'
     inventory_substate = 'inventory_substate'
     high_score_state = 'high_score'
@@ -667,9 +666,9 @@ class Game:
         self._equipment_locations: dict[Item, str] = {}
         self._selected_ground_item: Item = empty_space
         self._selected_bag_item: Item = empty_space
-        self._selected_equipped_item_index: int = 0
-        self._active_inventory_container_name = '(none)'
+        self.selected_equipped_item_index: int = 0
         self._ground_container = None
+        self.active_inventory_container_name = self.get_ground_name()
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
@@ -677,7 +676,7 @@ class Game:
 
     @property
     def _selected_equipped_item(self):
-        return list(self.character.current_equipment.values())[self._selected_equipped_item_index]
+        return list(self.character.current_equipment.values())[self.selected_equipped_item_index]
 
     def start_game(self, character_race) -> None:
         if character_race is None:
@@ -727,38 +726,38 @@ class Game:
                     and self.character.bag.has_space() \
                     and self.character.can_carry(self._selected_ground_item) \
                     and self._selected_ground_item is not empty_space \
-                    and self._active_inventory_container_name == self.get_ground_name():
+                    and self.active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
             if self.character.can_swap_equipment(self._selected_ground_item) \
                     and self._selected_ground_item is not empty_space \
-                    and self._active_inventory_container_name == self.get_ground_name():
+                    and self.active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
             # "From bag" commands
             if self._selected_bag_item is not empty_space \
                     and self._ground_container.has_space() \
-                    and self._active_inventory_container_name == self.get_bag_name():
+                    and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
             if self.character.can_equip(self._selected_bag_item) \
-                    and self._active_inventory_container_name == self.get_bag_name():
+                    and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
             if self.character.can_consume(self._selected_bag_item) \
-                    and self._active_inventory_container_name == self.get_bag_name():
+                    and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             # "From equipment" commands
             if self._selected_equipped_item is not empty_space \
                     and ((self.character.bag is not empty_space and self.character.bag.has_space())
                          or self._ground_container.has_space()) \
-                    and self._active_inventory_container_name == config.equipment_title:
+                    and self.active_inventory_container_name == config.equipment_title:
                 inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
             if self._selected_equipped_item is empty_space \
-                    and self._active_inventory_container_name == config.equipment_title:
+                    and self.active_inventory_container_name == config.equipment_title:
                 inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
             return inventory_commands
         else:
             return {}
 
     def _equip_for_slot_from_inventory_screen(self, _) -> bool:
-        self._equipping_slot = list(self.character.current_equipment.keys())[self._selected_equipped_item_index]
+        self._equipping_slot = list(self.character.current_equipment.keys())[self.selected_equipped_item_index]
         self.substate = Game.equip_for_substate
         return True
 
@@ -807,10 +806,6 @@ class Game:
     def _open_inventory(self, _) -> bool:
         self.substate = Game.inventory_substate
         self._ground_container = self._current_location.tile_at(self._get_coords_of_creature(self.character))
-        return True
-
-    def _open_equipment(self, _) -> bool:
-        self.substate = Game.equipment_substate
         return True
 
     def _back_to_scene(self, _) -> bool:
@@ -917,13 +912,16 @@ class Game:
         self._equipping_slot = None
 
     def set_active_container(self, container_name: str) -> None:
-        self._active_inventory_container_name = container_name
+        self.active_inventory_container_name = container_name
 
     def get_bag_name(self) -> str:
         return '(no bag)' if self.character.bag is empty_space else f'Your {self.character.bag.name}'
 
     def get_ground_name(self) -> str:
-        return config.ground if not self._ground_container.name else self._ground_container.name
+        if self._ground_container:
+            return self._ground_container.name or config.ground
+        else:
+            return config.ground
 
     def get_ground_items(self) -> str:
         return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
@@ -951,7 +949,7 @@ class Game:
         return self._selected_bag_item.details() + [load_line]
 
     def get_equipped_item_details(self, item_coords: tuple[int, int]) -> list[str]:
-        self._selected_equipped_item_index = item_coords[0]
+        self.selected_equipped_item_index = item_coords[0]
         return self._selected_equipped_item.details()
 
     def get_current_location_name(self) -> str:
