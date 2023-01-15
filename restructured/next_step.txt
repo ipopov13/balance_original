@@ -1,7 +1,7 @@
 FEATURES
-Fix equipped names in Inv
 Add unequip command in Inv
 Add equip command with selection in Inv equipment container
+Remove Equipment screen
 Check max region name length - might break the map view in some combinations!
 
 Only humanoids will need their own name generation

@@ -44,6 +44,12 @@ class InventoryEquip(Command):
     description = 'Equip the selected item'
 
 
+class InventoryUnequip(Command):
+    character = 'r'
+    hint = '(r)emove'
+    description = 'Remove the selected item'
+
+
 class InventoryDrop(Command):
     character = 'd'
     hint = '(d)rop'

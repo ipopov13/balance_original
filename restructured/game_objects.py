@@ -667,6 +667,7 @@ class Game:
         self._equipment_locations: dict[Item, str] = {}
         self._selected_ground_item = empty_space
         self._selected_bag_item = empty_space
+        self._selected_equipped_item = empty_space
         self._active_inventory_container_name = '(none)'
         self._ground_container = None
         self._creature_coords: dict[tuple[int, int], Creature] = {}
@@ -717,6 +718,7 @@ class Game:
             return {commands.Close(): self._back_to_scene}
         elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
             inventory_commands = {commands.Close(): self._back_to_scene}
+            # "From ground" commands
             if self.character.bag is not empty_space \
                     and self.character.bag.has_space() \
                     and self.character.can_carry(self._selected_ground_item) \
@@ -727,6 +729,7 @@ class Game:
                     and self._selected_ground_item is not empty_space \
                     and self._active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
+            # "From bag" commands
             if self._selected_bag_item is not empty_space \
                     and self._ground_container.has_space() \
                     and self._active_inventory_container_name == self.get_bag_name():
@@ -737,9 +740,25 @@ class Game:
             if self.character.can_consume(self._selected_bag_item) \
                     and self._active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
+            # "From equipment" commands
+            if self._selected_equipped_item is not empty_space \
+                    and ((self.character.bag is not empty_space and self.character.bag.has_space())
+                         or self._ground_container.has_space()) \
+                    and self._active_inventory_container_name == config.equipment_title:
+                inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
             return inventory_commands
         else:
             return {}
+
+    def _unequip_from_inventory_screen(self, _) -> bool:
+        for slot, item in self.character.current_equipment.items():
+            if item is self._selected_equipped_item:
+                self.character.current_equipment[slot] = empty_space
+        if self.character.bag is not empty_space and self.character.bag.has_space():
+            self.character.bag.add_item(self._selected_equipped_item)
+        else:
+            self._ground_container.add_item(self._selected_equipped_item)
+        return True
 
     def _consume_from_bag_in_inventory_screen(self, _):
         pass
@@ -932,6 +951,10 @@ class Game:
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         load_line = f'Load [{load_gauge}]'
         return self._selected_bag_item.details() + [load_line]
+
+    def get_equipped_item_details(self, item_coords: tuple[int, int]) -> list[str]:
+        self._selected_equipped_item = list(self.character.current_equipment.values())[item_coords[0]]
+        return self._selected_equipped_item.details()
 
     def get_current_location_name(self) -> str:
         return self._current_location.name

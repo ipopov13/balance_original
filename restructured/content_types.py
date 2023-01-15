@@ -200,10 +200,13 @@ class InventoryScreen(MultiContainerScreen):
     def _get_details(self) -> tuple[list[str], list[str], list[str]]:
         ground_details = self.game_object.get_ground_item_details(self._selected_pos[0])
         bag_details = self.game_object.get_bag_item_details(self._selected_pos[1])
-        return ground_details, bag_details, ['']
+        equip_details = self.game_object.get_equipped_item_details(self._selected_pos[2])
+        return ground_details, bag_details, equip_details
 
     def _decorate_callback(self, callback):
-
+        """
+        We decorate game_object methods so that we don't have to reload the window after we call them
+        """
         def wrapper(*args, **kwargs):
             result = callback(*args, **kwargs)
             self._set_names()
