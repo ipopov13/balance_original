@@ -665,15 +665,19 @@ class Game:
         self._last_character_target = None
         self._equipping_slot: Optional[str] = None
         self._equipment_locations: dict[Item, str] = {}
-        self._selected_ground_item = empty_space
-        self._selected_bag_item = empty_space
-        self._selected_equipped_item = empty_space
+        self._selected_ground_item: Item = empty_space
+        self._selected_bag_item: Item = empty_space
+        self._selected_equipped_item_index: int = 0
         self._active_inventory_container_name = '(none)'
         self._ground_container = None
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
+
+    @property
+    def _selected_equipped_item(self):
+        return list(self.character.current_equipment.values())[self._selected_equipped_item_index]
 
     def start_game(self, character_race) -> None:
         if character_race is None:
@@ -689,6 +693,7 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
+        self._current_location.put_item(ShortSword(color=console.fg.blue), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -746,18 +751,26 @@ class Game:
                          or self._ground_container.has_space()) \
                     and self._active_inventory_container_name == config.equipment_title:
                 inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
+            if self._selected_equipped_item is empty_space \
+                    and self._active_inventory_container_name == config.equipment_title:
+                inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
             return inventory_commands
         else:
             return {}
 
+    def _equip_for_slot_from_inventory_screen(self, _) -> bool:
+        self._equipping_slot = list(self.character.current_equipment.keys())[self._selected_equipped_item_index]
+        self.substate = Game.equip_for_substate
+        return True
+
     def _unequip_from_inventory_screen(self, _) -> bool:
-        for slot, item in self.character.current_equipment.items():
-            if item is self._selected_equipped_item:
-                self.character.current_equipment[slot] = empty_space
         if self.character.bag is not empty_space and self.character.bag.has_space():
             self.character.bag.add_item(self._selected_equipped_item)
         else:
             self._ground_container.add_item(self._selected_equipped_item)
+        for slot, item in self.character.current_equipment.items():
+            if item is self._selected_equipped_item:
+                self.character.current_equipment[slot] = empty_space
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _):
@@ -886,11 +899,12 @@ class Game:
 
     def get_available_equipment(self) -> list[GameObject]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
+        bag_items = self.character.bag.item_list
         if self._equipping_slot is None:
             raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
-        filtered_items = [item for item in tile_items if isinstance(item, item_type)]
+        filtered_items = [item for item in tile_items + bag_items if isinstance(item, item_type)]
         for item in filtered_items:
             self._equipment_locations[item] = 'tile'
         return filtered_items
@@ -899,7 +913,8 @@ class Game:
         if item is not None:
             self.character.current_equipment[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
-        self.substate = Game.equipment_substate
+            self.character.bag.remove_item(item)
+        self.substate = Game.inventory_substate
         self._equipping_slot = None
 
     def equip_for(self, slot: str):
@@ -953,7 +968,7 @@ class Game:
         return self._selected_bag_item.details() + [load_line]
 
     def get_equipped_item_details(self, item_coords: tuple[int, int]) -> list[str]:
-        self._selected_equipped_item = list(self.character.current_equipment.values())[item_coords[0]]
+        self._selected_equipped_item_index = item_coords[0]
         return self._selected_equipped_item.details()
 
     def get_current_location_name(self) -> str:

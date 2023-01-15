@@ -1,7 +1,6 @@
 FEATURES
-Add unequip command in Inv
-Add equip command with selection in Inv equipment container
 Remove Equipment screen
+Make Inventory start with the same container selected after an equip
 Check max region name length - might break the map view in some combinations!
 
 Only humanoids will need their own name generation

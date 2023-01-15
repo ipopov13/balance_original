@@ -44,6 +44,13 @@ class InventoryEquip(Command):
     description = 'Equip the selected item'
 
 
+class InventoryEquipSlot(Command):
+    character = 'e'
+    hint = '(e)quip'
+    description = 'Equip the selected slot'
+    changes_window = True
+
+
 class InventoryUnequip(Command):
     character = 'r'
     hint = '(r)emove'
