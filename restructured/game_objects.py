@@ -114,7 +114,9 @@ empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_stri
 
 
 class Consumable(Item):
-    pass
+    def __init__(self, effects: dict[str, int] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.effects = effects or {}
 
 
 class PhysicalContainer(Container, Item):
@@ -305,7 +307,9 @@ class Tail(Item):
 class Meat(Consumable):
     def __init__(self):
         super().__init__(name='meat', weight=1, icon=',', color=console.fg.red,
-                         description='The meat of an animal')
+                         description='The meat of an animal',
+                         effects={config.hunger_raw_meat_effect: 5,
+                                  config.thirst_water_effect: 5})
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
@@ -333,6 +337,7 @@ class Species(GameObject):
             basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
+        self.base_effect_modifiers = {}
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -519,6 +524,7 @@ class Creature(GameObject):
         self._ai = self.race.ai
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
+        self._effect_modifiers = self.race.base_effect_modifiers
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         for item_type in self.race.initial_equipment:
             self.swap_equipment(item_type())
@@ -649,6 +655,21 @@ class Creature(GameObject):
     def current_famine(self) -> int:
         return self.max_energy * self.sustenance_modifier // 100
 
+    def consume(self, item: Consumable) -> None:
+        for name, effect in item.effects.items():
+            self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
+
+    def _apply_effect(self, name: str, effect: int) -> None:
+        """
+        Effects are treated in groups based on the name prefix. Personalized
+        effect values are created through the _effect_modifiers dictionary that
+        depends on the race and the actions of the character.
+        """
+        if name.startswith(config.hunger_effect_prefix):
+            self.hunger -= effect
+        if name.startswith(config.thirst_effect_prefix):
+            self.thirst -= effect
+
     @property
     def max_load(self):
         return self.stats['Str'] * 5
@@ -656,10 +677,6 @@ class Creature(GameObject):
     @property
     def bag(self):
         return self.current_equipment['Back']
-
-    @staticmethod
-    def can_consume(item: Item):
-        return isinstance(item, Consumable)
 
     def can_equip(self, item: Item) -> bool:
         return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
@@ -814,7 +831,7 @@ class Game:
             if self.character.can_equip(self._selected_bag_item) \
                     and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
-            if self.character.can_consume(self._selected_bag_item) \
+            if isinstance(self._selected_bag_item, Consumable) \
                     and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             # "From equipment" commands
@@ -846,7 +863,12 @@ class Game:
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _):
-        pass
+        if isinstance(self._selected_bag_item, Consumable):
+            self.character.consume(self._selected_bag_item)
+        else:
+            raise TypeError("Consumable expected!")
+        self.character.bag.remove_item(self._selected_bag_item)
+        return True
 
     def _character_rests(self, _) -> bool:
         self.character.rest()

@@ -33,6 +33,10 @@ fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
+hunger_effect_prefix = "hunger_"
+hunger_raw_meat_effect = hunger_effect_prefix + 'raw_meat'
+thirst_effect_prefix = 'thirst_'
+thirst_water_effect = thirst_effect_prefix + 'water'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
