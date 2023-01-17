@@ -9,8 +9,12 @@ strip_sub = re.compile(r"""
     """, re.VERBOSE).sub
 
 
-def strip_ansi_escape_sequences(colored_string):
+def strip_ansi_escape_sequences(colored_string: str) -> str:
     return strip_sub("", colored_string)
+
+
+def raw_length(colored_string: str) -> int:
+    return len(strip_ansi_escape_sequences(colored_string))
 
 
 def longest_raw_line_len(content) -> int:

@@ -3,7 +3,7 @@ import random
 import commands
 import console
 import config
-from utils import calculate_new_position, coord_distance, direct_path, dim
+from utils import calculate_new_position, coord_distance, direct_path, dim, raw_length
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -536,6 +536,14 @@ class Creature(GameObject):
         self._thirst: int = 0
         self._sustenance: int = 0
 
+    def get_statuses(self) -> list[str]:
+        statuses = []
+        if self.hunger > 5:
+            statuses.append(console.fg.red + 'Hungry' + console.fx.end)
+        if self.thirst > 5:
+            statuses.append(console.fg.red + 'Thirsty' + console.fx.end)
+        return statuses
+
     @property
     def perception_radius(self) -> int:
         return self.stats['Per']
@@ -624,7 +632,7 @@ class Creature(GameObject):
         self._thirst = min(50, value)
 
     @property
-    def sustenance_modifier(self):
+    def sustenance_modifier(self) -> int:
         return (self.hunger + self.thirst) // 10 * 10
 
     @property
@@ -1062,12 +1070,15 @@ class Game:
                                           ailment_color=config.famine_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
+        target = ''
         if self._last_character_target is not None:
             target_hp_gauge = self._format_gauge(self._last_character_target.hp,
                                                  self._last_character_target.max_hp,
                                                  config.hp_color, show_numbers=False)
-            target_line = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
-            hud += target_line
+            target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+        statuses = '|'.join(self.character.get_statuses())
+        inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
+        hud += target + inner_padding + statuses
         return hud
 
     @staticmethod
