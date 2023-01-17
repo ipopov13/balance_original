@@ -15,7 +15,11 @@ Inventory
         picks up first item from the list that the character can carry)
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
-  * Consume item
+Consuming items
+  * Add sick state
+    Add character.live() method that ticks effects like sickness/poison/regen/regular non-rest energy regain
+    Add sick resistance to Ork race
+    Add other +/- resistances to races (dwarves resist drunkenness, fairies dont get meat sustenance)
 Combat
     Creature disposition
     Normal mode
