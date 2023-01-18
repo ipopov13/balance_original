@@ -16,11 +16,13 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-  * Add other +/- resistances to races
+  * Add hunger/thirst building over time with live()
+    Add other +/- resistances to races
     Add rocks and make only trolls eat them
     Add water and make water elementals feed with it
     Add alcohol and make characters drunk
 Combat
+    Attacked creatures should go into aggressive mode
     Creature disposition
     Normal mode
     Combat mechanics
@@ -83,3 +85,5 @@ Modes:
 Map screen:
     Exploration details
     Set destination command, add destination directions to HUD
+Flavored descriptions
+    Add adjectives to some items based on the race of the character (for a fay, meat is "disgusting")

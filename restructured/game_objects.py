@@ -98,9 +98,10 @@ class Container(GameObject):
 
 
 class Item(GameObject):
-    def __init__(self, weight: int = 0, **kwargs):
+    def __init__(self, weight: int = 0, effects: dict[str, int] = None, **kwargs):
         super().__init__(**kwargs)
         self._own_weight = weight
+        self.effects = effects or {}
 
     def details(self, weight_color=console.fg.default) -> list[str]:
         return [self.name, weight_color + f'Weight: {self._own_weight}' + console.fx.end]
@@ -111,12 +112,6 @@ class Item(GameObject):
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
-
-
-class Consumable(Item):
-    def __init__(self, effects: dict[str, int] = None, **kwargs):
-        super().__init__(**kwargs)
-        self.effects = effects or {}
 
 
 class PhysicalContainer(Container, Item):
@@ -304,13 +299,20 @@ class Tail(Item):
     pass
 
 
-class Meat(Consumable):
+class Meat(Item):
     def __init__(self):
         super().__init__(name='raw meat', weight=1, icon=',', color=console.fg.red,
                          description='The raw meat of an animal',
                          effects={config.hunger_meat_effect: 5,
                                   config.thirst_water_effect: 5,
                                   config.sick_effect: 10})
+
+
+class Water(Item):
+    def __init__(self):
+        super().__init__(name='water', weight=1, icon=',', color=console.fg.blue,
+                         description='The one thing everyone needs',
+                         effects={config.thirst_water_effect: 5})
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
@@ -322,12 +324,16 @@ base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': Anim
 # The species define what a creature is physically and how it looks in the game
 # This also includes the "equipment" of animal species which is part of the body
 class Species(GameObject):
+    """Defines what a creature is and how it acts"""
+
     _equipment_slots = {}
     initial_equipment = ()
 
     def __init__(self, custom_ai: dict[str, list[str]] = None,
                  initial_disposition: str = config.indifferent_disposition,
                  base_effect_modifiers: dict[str, int] = None,
+                 active_effects: dict[str, int] = None,
+                 consumable_types: list[Type[Item]] = None,
                  **kwargs):
         super().__init__(**kwargs)
         basic_ai = {config.indifferent_disposition: [config.random_behavior],
@@ -340,6 +346,11 @@ class Species(GameObject):
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
         self.base_effect_modifiers = base_effect_modifiers or {}
+        self.active_effects = {config.non_rest_energy_regen_effect: 1}
+        if active_effects is not None:
+            self.active_effects.update(active_effects)
+        if consumable_types is None:
+            self.consumable_types = [Meat, Water]
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -445,7 +456,7 @@ shifter_race = HumanoidSpecies(name='Shifter',
                                description="A shifter can easily pass as a human if they cut their talon-like nails "
                                            "and keep their totemic tattoos hidden. They rarely do.",
                                sort_key=10,
-                               base_effect_modifiers={config.non_rest_hp_regen_effect: 1})
+                               active_effects={config.non_rest_hp_regen_effect: 1})
 water_elemental_race = HumanoidSpecies(name='Water Elemental',
                                        icon='W',
                                        color=config.nature_color,
@@ -519,6 +530,8 @@ hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgree
 
 
 class Creature(GameObject):
+    """Defines how a creature interacts with the environment"""
+
     def __init__(self, race: Species, **kwargs):
         if kwargs.get('icon') is None:
             kwargs['icon'] = race.raw_icon
@@ -533,7 +546,7 @@ class Creature(GameObject):
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self._effect_modifiers = self.race.base_effect_modifiers
-        self._active_effects: dict[str, int] = {config.non_rest_energy_regen_effect: 1}
+        self._active_effects: dict[str, int] = self.race.active_effects
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         for item_type in self.race.initial_equipment:
             self.swap_equipment(item_type())
@@ -670,17 +683,23 @@ class Creature(GameObject):
         Effects with values of 0 or lower are removed
         """
         for effect, value in self._active_effects.items():
-            if effect is config.sick_effect:
+            if effect == config.sick_effect:
                 if random.random() > value / (value + self.stats['End']):
                     self._active_effects[config.sick_effect] -= 1
-            elif effect is config.non_rest_energy_regen_effect:
+            elif effect == config.non_rest_energy_regen_effect:
                 if random.randint(0, config.max_stat_value) <= self.stats['End']:
                     self.energy += 1
+            elif effect == config.non_rest_hp_regen_effect:
+                if random.randint(0, config.max_stat_value) <= self.stats['End'] / 2:
+                    self.hp += 1
         for effect, value in list(self._active_effects.items()):
             if value <= 0:
                 self._active_effects.pop(effect)
 
-    def consume(self, item: Consumable) -> None:
+    def can_consume(self, item: Item) -> bool:
+        return any([isinstance(item, consumable_type) for consumable_type in self.race.consumable_types])
+
+    def consume(self, item: Item) -> None:
         for name, effect in item.effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
@@ -692,7 +711,7 @@ class Creature(GameObject):
         """
         if effect_size <= 0:
             return
-        if name is config.sick_effect:
+        if name == config.sick_effect:
             self._active_effects[config.sick_effect] = \
                 self._active_effects.get(config.sick_effect, 0) + effect_size
         if name.startswith(config.hunger_effect_prefix):
@@ -863,6 +882,9 @@ class Game:
                     and self._selected_ground_item is not empty_space \
                     and self.active_inventory_container_name == self.get_ground_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
+            if self.character.can_consume(self._selected_ground_item) \
+                    and self.active_inventory_container_name == self.get_ground_name():
+                inventory_commands[commands.InventoryConsume()] = self._consume_from_ground_in_inventory_screen
             # "From bag" commands
             if self._selected_bag_item is not empty_space \
                     and self._ground_container.has_space() \
@@ -871,7 +893,7 @@ class Game:
             if self.character.can_equip(self._selected_bag_item) \
                     and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
-            if isinstance(self._selected_bag_item, Consumable) \
+            if self.character.can_consume(self._selected_bag_item) \
                     and self.active_inventory_container_name == self.get_bag_name():
                 inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             # "From equipment" commands
@@ -902,12 +924,14 @@ class Game:
                 self.character.current_equipment[slot] = empty_space
         return True
 
-    def _consume_from_bag_in_inventory_screen(self, _):
-        if isinstance(self._selected_bag_item, Consumable):
-            self.character.consume(self._selected_bag_item)
-        else:
-            raise TypeError("Consumable expected!")
+    def _consume_from_bag_in_inventory_screen(self, _) -> bool:
+        self.character.consume(self._selected_bag_item)
         self.character.bag.remove_item(self._selected_bag_item)
+        return True
+
+    def _consume_from_ground_in_inventory_screen(self, _) -> bool:
+        self.character.consume(self._selected_ground_item)
+        self._ground_container.remove_item(self._selected_ground_item)
         return True
 
     def _character_rests(self, _) -> bool:

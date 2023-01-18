@@ -36,10 +36,13 @@ run_from_humanoid_behavior = 'run_from_humanoid'
 
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'
+hunger_water_effect = hunger_effect_prefix + 'water'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 sick_effect = 'stomach_sick'
+drunk_effect = 'drunk_effect'
 non_rest_energy_regen_effect = 'non_rest_energy_regen'
+non_rest_hp_regen_effect = 'non_rest_hp_regen_effect'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
