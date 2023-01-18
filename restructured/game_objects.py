@@ -314,6 +314,13 @@ class Water(Item):
                          effects={config.thirst_water_effect: 5})
 
 
+class Rock(Item):
+    def __init__(self):
+        super().__init__(name='rock', weight=2, icon='*', color=console.fg.default,
+                         description='Building material and throwing weapon',
+                         effects={config.hunger_rock_effect: 5})
+
+
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
                                  'Offhand': Offhand, 'Back': Back, 'Boots': Boots}
 base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
@@ -350,6 +357,8 @@ class Species(GameObject):
             self.active_effects.update(active_effects)
         if consumable_types is None:
             self.consumable_types = [RawMeat, Water]
+        else:
+            self.consumable_types = consumable_types
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -424,7 +433,7 @@ troll_race = HumanoidSpecies(name='Troll',
                                          "someone to throw a rock at is a bonus that only a troll "
                                          "can appreciate in full.",
                              sort_key=5,
-                             base_effect_modifiers={config.hunger_meat_effect: -9999})
+                             consumable_types=[Rock])
 goblin_race = HumanoidSpecies(name='Goblin',
                               icon='G',
                               color=config.chaos_color,
@@ -846,7 +855,7 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(ShortSword(color=console.fg.blue), character_coords)
+        self._current_location.put_item(Rock(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state

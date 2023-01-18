@@ -18,9 +18,7 @@ Inventory
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
     Add other +/- resistances to races
-  * Make orks consume the raw_meat_effect
-    Add rocks and make only trolls eat them
-    Add water and make water elementals feed with it
+  * Add water and make water elementals feed with it
     Make water skins that leave an empty item behind
     Add alcohol and make characters drunk
 Crafting

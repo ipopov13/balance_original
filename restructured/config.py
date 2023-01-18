@@ -38,6 +38,7 @@ hunger_effect_prefix = "hunger_"
 raw_meat_effect = 'raw_meat_effect'
 hunger_meat_effect = hunger_effect_prefix + 'meat'
 hunger_water_effect = hunger_effect_prefix + 'water'
+hunger_rock_effect = hunger_effect_prefix + 'rock'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 sick_effect = 'stomach_sick'
