@@ -16,8 +16,10 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-  * Add sick resistance to Ork race
-    Add other +/- resistances to races (dwarves resist drunkenness, fairies dont get meat sustenance)
+  * Add other +/- resistances to races
+    Add rocks and make only trolls eat them
+    Add water and make water elementals feed with it
+    Add alcohol and make characters drunk
 Combat
     Creature disposition
     Normal mode

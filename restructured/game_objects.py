@@ -327,6 +327,7 @@ class Species(GameObject):
 
     def __init__(self, custom_ai: dict[str, list[str]] = None,
                  initial_disposition: str = config.indifferent_disposition,
+                 base_effect_modifiers: dict[str, int] = None,
                  **kwargs):
         super().__init__(**kwargs)
         basic_ai = {config.indifferent_disposition: [config.random_behavior],
@@ -338,7 +339,7 @@ class Species(GameObject):
             basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
-        self.base_effect_modifiers = {}
+        self.base_effect_modifiers = base_effect_modifiers or {}
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -385,7 +386,8 @@ dwarf_race = HumanoidSpecies(name='Dwarf',
                              color=config.order_color,
                              description='Masters of the forge, they are drawn down into the depths of the world by '
                                          'an ancient instinct that rivals the bravery of human explorers.',
-                             sort_key=1)
+                             sort_key=1,
+                             base_effect_modifiers={config.drunk_effect: -20})
 gnome_race = HumanoidSpecies(name='Gnome',
                              icon='G',
                              color=config.order_color,
@@ -403,14 +405,16 @@ orc_race = HumanoidSpecies(name='Orc',
                            color=config.chaos_color,
                            description='The most aggressive of races, orcs crave combat above all else.'
                                        ' They always keep a spare weapon around, just in case.',
-                           sort_key=4)
+                           sort_key=4,
+                           base_effect_modifiers={config.sick_effect: -20})
 troll_race = HumanoidSpecies(name='Troll',
                              icon='T',
                              color=config.chaos_color,
                              description="Finding a tasty rock to eat makes a troll's day. Having "
                                          "someone to throw a rock at is a bonus that only a troll "
                                          "can appreciate in full.",
-                             sort_key=5)
+                             sort_key=5,
+                             base_effect_modifiers={config.hunger_meat_effect: -9999})
 goblin_race = HumanoidSpecies(name='Goblin',
                               icon='G',
                               color=config.chaos_color,
@@ -440,20 +444,23 @@ shifter_race = HumanoidSpecies(name='Shifter',
                                color=config.nature_color,
                                description="A shifter can easily pass as a human if they cut their talon-like nails "
                                            "and keep their totemic tattoos hidden. They rarely do.",
-                               sort_key=10)
+                               sort_key=10,
+                               base_effect_modifiers={config.non_rest_hp_regen_effect: 1})
 water_elemental_race = HumanoidSpecies(name='Water Elemental',
                                        icon='W',
                                        color=config.nature_color,
                                        description="To make other living beings see the beauty of water, elementals "
                                                    "turn it into art, home, and sustenance.",
-                                       sort_key=11)
+                                       sort_key=11,
+                                       base_effect_modifiers={config.hunger_water_effect: 20})
 fay_race = HumanoidSpecies(name='Fay',
                            icon='F',
                            color=config.nature_color,
                            description="The fay are born from the natural magic of the world, and "
                                        "they have developed methods to manipulate it. Their ability to "
                                        "trespass into the dreams of others is an insignificant side effect.",
-                           sort_key=12)
+                           sort_key=12,
+                           base_effect_modifiers={config.hunger_meat_effect: -20})
 field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color)
 rat_species = AnimalSpecies(name='rat', icon='r', color=console.fg.lightblack,
                             equipment=[Meat])
@@ -683,6 +690,8 @@ class Creature(GameObject):
         effect values are created through the _effect_modifiers dictionary that
         depends on the race and the actions of the character.
         """
+        if effect_size <= 0:
+            return
         if name is config.sick_effect:
             self._active_effects[config.sick_effect] = \
                 self._active_effects.get(config.sick_effect, 0) + effect_size
@@ -985,6 +994,7 @@ class Game:
             creature = self._creature_coords.get(old_coords)
             if creature is self.character or creature is None:
                 continue
+            creature.live()
             goals = creature.get_goals()
             next_coords = self._current_location.get_goal_step(creature, old_coords,
                                                                goals, self._creature_coords)
