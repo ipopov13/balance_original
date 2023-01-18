@@ -306,10 +306,11 @@ class Tail(Item):
 
 class Meat(Consumable):
     def __init__(self):
-        super().__init__(name='meat', weight=1, icon=',', color=console.fg.red,
-                         description='The meat of an animal',
-                         effects={config.hunger_raw_meat_effect: 5,
-                                  config.thirst_water_effect: 5})
+        super().__init__(name='raw meat', weight=1, icon=',', color=console.fg.red,
+                         description='The raw meat of an animal',
+                         effects={config.hunger_meat_effect: 5,
+                                  config.thirst_water_effect: 5,
+                                  config.sick_effect: 5})
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
@@ -525,6 +526,7 @@ class Creature(GameObject):
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self._effect_modifiers = self.race.base_effect_modifiers
+        self._active_effects: dict[str, int] = {}
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         for item_type in self.race.initial_equipment:
             self.swap_equipment(item_type())
@@ -535,14 +537,6 @@ class Creature(GameObject):
         self._hunger: int = 0
         self._thirst: int = 0
         self._sustenance: int = 0
-
-    def get_statuses(self) -> list[str]:
-        statuses = []
-        if self.hunger > 5:
-            statuses.append(console.fg.red + 'Hungry' + console.fx.end)
-        if self.thirst > 5:
-            statuses.append(console.fg.red + 'Thirsty' + console.fx.end)
-        return statuses
 
     @property
     def perception_radius(self) -> int:
@@ -621,7 +615,7 @@ class Creature(GameObject):
 
     @hunger.setter
     def hunger(self, value):
-        self._hunger = min(50, value)
+        self._hunger = min(50, max(0, value))
 
     @property
     def thirst(self):
@@ -629,7 +623,7 @@ class Creature(GameObject):
 
     @thirst.setter
     def thirst(self, value):
-        self._thirst = min(50, value)
+        self._thirst = min(50, max(0, value))
 
     @property
     def sustenance_modifier(self) -> int:
@@ -667,16 +661,29 @@ class Creature(GameObject):
         for name, effect in item.effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
-    def _apply_effect(self, name: str, effect: int) -> None:
+    def _apply_effect(self, name: str, effect_size: int) -> None:
         """
         Effects are treated in groups based on the name prefix. Personalized
         effect values are created through the _effect_modifiers dictionary that
         depends on the race and the actions of the character.
         """
+        if name is config.sick_effect:
+            self._active_effects[config.sick_effect] = \
+                self._active_effects.get(config.sick_effect, 0) + effect_size
         if name.startswith(config.hunger_effect_prefix):
-            self.hunger -= effect
+            self.hunger -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
         if name.startswith(config.thirst_effect_prefix):
-            self.thirst -= effect
+            self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
+
+    def get_statuses(self) -> list[str]:
+        statuses = []
+        if self.hunger > 5:
+            statuses.append(console.fg.red + 'Hungry' + console.fx.end)
+        if self.thirst > 5:
+            statuses.append(console.fg.red + 'Thirsty' + console.fx.end)
+        if config.sick_effect in self._active_effects:
+            statuses.append(console.fg.green + 'Sick' + console.fx.end)
+        return statuses
 
     @property
     def max_load(self):
