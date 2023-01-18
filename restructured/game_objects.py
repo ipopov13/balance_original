@@ -299,13 +299,12 @@ class Tail(Item):
     pass
 
 
-class Meat(Item):
+class RawMeat(Item):
     def __init__(self):
         super().__init__(name='raw meat', weight=1, icon=',', color=console.fg.red,
-                         description='The raw meat of an animal',
-                         effects={config.hunger_meat_effect: 5,
-                                  config.thirst_water_effect: 5,
-                                  config.sick_effect: 10})
+                         description="Not fit for eating, unless you're an ork!",
+                         effects={config.sick_effect: 10,
+                                  config.raw_meat_effect: 5})
 
 
 class Water(Item):
@@ -318,7 +317,7 @@ class Water(Item):
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
                                  'Offhand': Offhand, 'Back': Back, 'Boots': Boots}
 base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
-                               'Claws': Claws, 'Tail': Tail, 'Meat': Meat}
+                               'Claws': Claws, 'Tail': Tail, 'Meat': RawMeat}
 
 
 # The species define what a creature is physically and how it looks in the game
@@ -350,7 +349,7 @@ class Species(GameObject):
         if active_effects is not None:
             self.active_effects.update(active_effects)
         if consumable_types is None:
-            self.consumable_types = [Meat, Water]
+            self.consumable_types = [RawMeat, Water]
 
     @property
     def base_stats(self) -> dict[str, int]:
@@ -474,55 +473,55 @@ fay_race = HumanoidSpecies(name='Fay',
                            base_effect_modifiers={config.hunger_meat_effect: -20})
 field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color)
 rat_species = AnimalSpecies(name='rat', icon='r', color=console.fg.lightblack,
-                            equipment=[Meat])
+                            equipment=[RawMeat])
 snow_hare_species = AnimalSpecies(name='snow hare', icon='h', color=console.fg.lightwhite,
-                                  equipment=[Meat])
+                                  equipment=[RawMeat])
 ash_beetle_species = AnimalSpecies(name='ash beetle', icon='b', color=console.fg.lightblack)
 ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg.blue)
 sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg.yellow,
-                                   equipment=[Meat])
+                                   equipment=[RawMeat])
 scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack)
 fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
-                            equipment=[Meat, SmallTeeth, LightHide])
+                            equipment=[RawMeat, SmallTeeth, LightHide])
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8, 'Per': 8},
-                               equipment=[Meat, MediumTeeth, LightHide],
+                               equipment=[RawMeat, MediumTeeth, LightHide],
                                initial_disposition=config.aggressive_disposition)
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
-                             equipment=[Meat, MediumTeeth, LightHide],
+                             equipment=[RawMeat, MediumTeeth, LightHide],
                              initial_disposition=config.aggressive_disposition)
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
-                                    equipment=[Meat, MediumTeeth, LightHide],
+                                    equipment=[RawMeat, MediumTeeth, LightHide],
                                     initial_disposition=config.aggressive_disposition)
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
-                                 equipment=[Meat, LargeClaws, MediumHide],
+                                 equipment=[RawMeat, LargeClaws, MediumHide],
                                  initial_disposition=config.aggressive_disposition)
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
-                             equipment=[Meat, LargeClaws, MediumHide],
+                             equipment=[RawMeat, LargeClaws, MediumHide],
                              initial_disposition=config.aggressive_disposition)
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5, 'Per': 6},
-                                     equipment=[Meat, LargeTeeth, MediumScales],
+                                     equipment=[RawMeat, LargeTeeth, MediumScales],
                                      initial_disposition=config.aggressive_disposition)
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
                                   base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 4},
-                                  equipment=[Meat, LargeTeeth, MediumScales],
+                                  equipment=[RawMeat, LargeTeeth, MediumScales],
                                   initial_disposition=config.aggressive_disposition)
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
-                               equipment=[Meat, SmallTeeth, LightHide])
+                               equipment=[RawMeat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
-                                equipment=[Meat, SmallTeeth, LightHide])
+                                equipment=[RawMeat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10, 'Per': 15},
-                              equipment=[Meat, MediumClaws, Feathers],
+                              equipment=[RawMeat, MediumClaws, Feathers],
                               initial_disposition=config.aggressive_disposition)
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
                               base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15, 'Per': 16},
-                              equipment=[Meat, HugeClaws, HeavyScales],
+                              equipment=[RawMeat, HugeClaws, HeavyScales],
                               initial_disposition=config.aggressive_disposition)
 
 
@@ -557,6 +556,7 @@ class Creature(GameObject):
         self._hunger: int = 0
         self._thirst: int = 0
         self._sustenance_needs: int = 0
+        self._age: int = 0
 
     @property
     def perception_radius(self) -> int:
@@ -622,6 +622,7 @@ class Creature(GameObject):
         self._energy = min(self.max_energy - self.current_max_energy, max(0, value))
 
     def _get_hungry(self, change):
+        """Add hunger and thirst on every 10 points of energy spent or every 100 turns"""
         self._sustenance_needs += change
         if self._sustenance_needs >= 10:
             famine = self._sustenance_needs // 10
@@ -682,6 +683,9 @@ class Creature(GameObject):
         Tick effects like sickness/poison/regen/regular non-rest energy regain
         Effects with values of 0 or lower are removed
         """
+        self._age += 1
+        if not self._age % 10:
+            self._get_hungry(1)
         for effect, value in self._active_effects.items():
             if effect == config.sick_effect:
                 if random.random() > value / (value + self.stats['End']):

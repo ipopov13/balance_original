@@ -35,6 +35,7 @@ random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
 
 hunger_effect_prefix = "hunger_"
+raw_meat_effect = 'raw_meat_effect'
 hunger_meat_effect = hunger_effect_prefix + 'meat'
 hunger_water_effect = hunger_effect_prefix + 'water'
 thirst_effect_prefix = 'thirst_'
@@ -43,6 +44,9 @@ sick_effect = 'stomach_sick'
 drunk_effect = 'drunk_effect'
 non_rest_energy_regen_effect = 'non_rest_energy_regen'
 non_rest_hp_regen_effect = 'non_rest_hp_regen_effect'
+tool_effect_fire = "tool_effect_fire"
+
+effect_transitions = {tool_effect_fire: {raw_meat_effect: hunger_meat_effect}}
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

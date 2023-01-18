@@ -7,6 +7,7 @@ Build an AI library to choose from in species?
 How to combine this with Humanoids having different AIs based on the profession?
 
 Inventory
+    Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
     Open inner container on ground
     Open inner container in bag
@@ -16,11 +17,17 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-  * Add hunger/thirst building over time with live()
     Add other +/- resistances to races
+  * Make orks consume the raw_meat_effect
     Add rocks and make only trolls eat them
     Add water and make water elementals feed with it
+    Make water skins that leave an empty item behind
     Add alcohol and make characters drunk
+Crafting
+    Add tools (pot, tinder and steel)
+    Add tools replacing the Equip with the recipe screen
+    Add craft command and adding items to the recipe
+    Add item effect transformations based on the config dictionary
 Combat
     Attacked creatures should go into aggressive mode
     Creature disposition
