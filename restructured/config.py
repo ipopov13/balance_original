@@ -39,6 +39,7 @@ hunger_meat_effect = hunger_effect_prefix + 'meat'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 sick_effect = 'stomach_sick'
+non_rest_energy_regen_effect = 'non_rest_energy_regen'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

@@ -310,7 +310,7 @@ class Meat(Consumable):
                          description='The raw meat of an animal',
                          effects={config.hunger_meat_effect: 5,
                                   config.thirst_water_effect: 5,
-                                  config.sick_effect: 5})
+                                  config.sick_effect: 10})
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
@@ -526,7 +526,7 @@ class Creature(GameObject):
         self.stats = self.race.base_stats.copy()
         self.equipment_slots = self.race.equipment_slots
         self._effect_modifiers = self.race.base_effect_modifiers
-        self._active_effects: dict[str, int] = {}
+        self._active_effects: dict[str, int] = {config.non_rest_energy_regen_effect: 1}
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         for item_type in self.race.initial_equipment:
             self.swap_equipment(item_type())
@@ -536,7 +536,7 @@ class Creature(GameObject):
         self._energy = self.max_energy
         self._hunger: int = 0
         self._thirst: int = 0
-        self._sustenance: int = 0
+        self._sustenance_needs: int = 0
 
     @property
     def perception_radius(self) -> int:
@@ -598,16 +598,16 @@ class Creature(GameObject):
     def energy(self, value):
         difference = self._energy - value
         if difference > 0:
-            self._need_sustenance(difference)
-        self._energy = min(self.max_energy - self.current_famine, max(0, value))
+            self._get_hungry(difference)
+        self._energy = min(self.max_energy - self.current_max_energy, max(0, value))
 
-    def _need_sustenance(self, change):
-        self._sustenance += change
-        if self._sustenance >= 10:
-            famine = self._sustenance // 10
+    def _get_hungry(self, change):
+        self._sustenance_needs += change
+        if self._sustenance_needs >= 10:
+            famine = self._sustenance_needs // 10
             self._hunger += famine
             self._thirst += famine
-            self._sustenance = self._sustenance % 10
+            self._sustenance_needs = self._sustenance_needs % 10
 
     @property
     def hunger(self):
@@ -654,8 +654,24 @@ class Creature(GameObject):
         return self.stats['End'] * 10
 
     @property
-    def current_famine(self) -> int:
+    def current_max_energy(self) -> int:
         return self.max_energy * self.sustenance_modifier // 100
+
+    def live(self) -> None:
+        """
+        Tick effects like sickness/poison/regen/regular non-rest energy regain
+        Effects with values of 0 or lower are removed
+        """
+        for effect, value in self._active_effects.items():
+            if effect is config.sick_effect:
+                if random.random() > value / (value + self.stats['End']):
+                    self._active_effects[config.sick_effect] -= 1
+            elif effect is config.non_rest_energy_regen_effect:
+                if random.randint(0, config.max_stat_value) <= self.stats['End']:
+                    self.energy += 1
+        for effect, value in list(self._active_effects.items()):
+            if value <= 0:
+                self._active_effects.pop(effect)
 
     def consume(self, item: Consumable) -> None:
         for name, effect in item.effects.items():
@@ -887,7 +903,7 @@ class Game:
 
     def _character_rests(self, _) -> bool:
         self.character.rest()
-        self._move_world()
+        self._living_world()
         return True
 
     def _drop_from_inventory_screen(self, _) -> bool:
@@ -929,7 +945,7 @@ class Game:
 
     def _player_move(self, direction):
         self._move_character(direction)
-        self._move_world()
+        self._living_world()
         return True
 
     def _new_game(self, _):
@@ -958,10 +974,11 @@ class Game:
                     ver 0.7
                   Ivan Popov'''
 
-    def _move_world(self):
+    def _living_world(self):
         # TODO: Change effect visuals (blinking fires, etc)
         self._turn += 1
         self._move_npcs()
+        self.character.live()
 
     def _move_npcs(self):
         for old_coords in list(self._creature_coords.keys()):
@@ -1073,7 +1090,7 @@ class Game:
         hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
         mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color,
-                                          ailment_score=self.character.current_famine,
+                                          ailment_score=self.character.current_max_energy,
                                           ailment_color=config.famine_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
