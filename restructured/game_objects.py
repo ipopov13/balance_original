@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional, Type, Union
 import random
 import commands
 import console
@@ -104,7 +104,7 @@ class Item(GameObject):
         self.effects = effects or {}
 
     def details(self, weight_color=console.fg.default) -> list[str]:
-        return [self.name, weight_color + f'Weight: {self._own_weight}' + console.fx.end]
+        return [self.name, weight_color + f'Weight: {self.weight}' + console.fx.end]
 
     @property
     def weight(self):
@@ -196,6 +196,10 @@ class LiquidContainer(Item):
             raise ValueError(f"Container {self.name} is holding more than the max_volume!")
         return empty_volume
 
+    def can_hold(self, substance: Item) -> bool:
+        return isinstance(substance, Liquid) and \
+            (self.liquid is None or isinstance(self.liquid, substance.__class__))
+
     def fill(self, liquid: Liquid, volume: int) -> None:
         """Fills the container and returns the remainder amount to update the other container"""
         if self.liquid is not None and liquid is not self.liquid:
@@ -204,7 +208,7 @@ class LiquidContainer(Item):
             raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
         if self.liquid is None:
             self.liquid = liquid
-        if volume > self.contained_volume:
+        if volume > self.empty_volume:
             raise ValueError(f"Container {self.name} cannot exceed max volume!")
         self.contained_volume += volume
 
@@ -215,8 +219,22 @@ class LiquidContainer(Item):
         self.contained_volume -= volume_to_decant
 
 
-water_skin = LiquidContainer(name="an empty waterskin/skin of {}", max_volume=2, weight=1, icon=',',
-                             color=config.brown_fg_color)
+class SubstanceSource(Item):
+    def __init__(self, name: str = "(substance source)",
+                 description: str = '(empty source description)',
+                 liquid: Liquid = None):
+        super().__init__(name=name, icon='o', description=description, color=liquid.color)
+        self.liquid = liquid
+        self.contained_volume = 9999
+
+    def decant(self, volume_to_decant) -> None:
+        return
+
+
+class WaterSkin(LiquidContainer):
+    def __init__(self):
+        super().__init__(name="an empty waterskin/skin of {}", max_volume=2, weight=1, icon=',',
+                         color=config.brown_fg_color)
 
 
 class Helmet(Item):
@@ -919,7 +937,7 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(Rock(), character_coords)
+        self._current_location.put_item(WaterSkin(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1133,13 +1151,14 @@ class Game:
             lines.append(f'{item.icon} {label}')
         return '\n'.join(lines)
 
-    def get_available_substances(self) -> list[LiquidContainer]:
+    def get_available_substances(self) -> list[Union[LiquidContainer, SubstanceSource]]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
         tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
         bag_items = self.character.bag.item_list
         compatible_substance_sources = []
         for item in tile_items + tile_terrain_substance + bag_items:
-            if isinstance(item, LiquidContainer) and self._container_to_fill.can_hold(item.liquid):
+            if (isinstance(item, LiquidContainer) or isinstance(item, SubstanceSource))\
+                    and self._container_to_fill.can_hold(item.liquid):
                 compatible_substance_sources.append(item)
         return compatible_substance_sources
 
@@ -1326,11 +1345,13 @@ class Game:
 # TODO: Add Terrains
 class Terrain(GameObject):
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
-                 spawned_creatures: list[Species] = (), **kwargs):
+                 spawned_creatures: list[Species] = (),
+                 substances: list[SubstanceSource] = None, **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
         self.spawned_creatures: list[Species] = spawned_creatures
+        self.substances = substances or []
 
     def is_passable_for(self, creature):
         return self.passable
@@ -1412,7 +1433,10 @@ farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='f
 # Structure building blocks
 poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~')
 water = Terrain(color=console.fg.blue, name='water', icon='~')
-well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well')
+well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well',
+                       substances=[SubstanceSource(name='water well',
+                                                   description='You can draw water from it.',
+                                                   liquid=water_liquid)])
 
 
 class Well(FlavorTerrain):
@@ -1506,6 +1530,10 @@ class Tile(PhysicalContainer):
 
     def has_space(self):
         return self.terrain.passable and len(self.item_list) < self._height * self._width
+
+    @property
+    def terrain_substances(self) -> list[SubstanceSource]:
+        return self.terrain.substances
 
 
 # TODO: Structures&NPCs generation
@@ -1747,8 +1775,8 @@ class Location(Container):
     def items_at(self, coords: tuple[int, int]) -> list[Item]:
         return self.tile_at(coords).item_list
 
-    def substance_at(self, coords: tuple[int, int]) -> list[LiquidContainer]:
-        return []
+    def substance_at(self, coords: tuple[int, int]) -> list[SubstanceSource]:
+        return self.tile_at(coords).terrain_substances
 
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
         tile = self.tile_at(coords)
