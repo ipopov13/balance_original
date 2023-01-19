@@ -189,11 +189,12 @@ class LiquidContainer(Item):
         else:
             return self._liquid.__class__
 
-    def can_hold(self, item: Item) -> bool:
-        if self._liquid is None:
-            return isinstance(item, Liquid)
-        else:
-            return item is self._liquid and self._held_volume < self._max_volume
+    @property
+    def empty_volume(self) -> int:
+        empty_volume = self._max_volume - self._held_volume
+        if empty_volume < 0:
+            raise ValueError(f"Container {self.name} is holding more than the max_volume!")
+        return empty_volume
 
     def fill(self, liquid: Liquid, volume: int = None) -> int:
         """Fills the container and returns the remainder amount to update the other container"""
@@ -202,7 +203,11 @@ class LiquidContainer(Item):
         if volume is not None and volume < 1:
             raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
         self._liquid = liquid
-        self._held_volume = min(self._max_volume, volume or self._max_volume)
+        if volume is None:
+            volume = self.empty_volume
+        remaining_liquid = volume - self.empty_volume
+        self._held_volume += min(self.empty_volume, volume)
+        return remaining_liquid
 
 
 water_skin = LiquidContainer(name="an empty waterskin/skin of {}", max_volume=2, weight=1, icon=',',
@@ -940,39 +945,34 @@ class Game:
         elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
             inventory_commands = {commands.Close(): self._back_to_scene}
             # "From ground" commands
-            if self.character.bag is not empty_space \
-                    and self.character.bag.has_space() \
-                    and self.character.can_carry(self._selected_ground_item) \
-                    and self._selected_ground_item is not empty_space \
-                    and self.active_inventory_container_name == self.get_ground_name():
-                inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
-            if self.character.can_swap_equipment(self._selected_ground_item) \
-                    and self._selected_ground_item is not empty_space \
-                    and self.active_inventory_container_name == self.get_ground_name():
-                inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
-            if self.character.can_consume(self._selected_ground_item) \
-                    and self.active_inventory_container_name == self.get_ground_name():
-                inventory_commands[commands.InventoryConsume()] = self._consume_from_ground_in_inventory_screen
+            if self.active_inventory_container_name == self.get_ground_name():
+                if self.character.bag is not empty_space \
+                        and self.character.bag.has_space() \
+                        and self.character.can_carry(self._selected_ground_item) \
+                        and self._selected_ground_item is not empty_space:
+                    inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
+                if self.character.can_swap_equipment(self._selected_ground_item) \
+                        and self._selected_ground_item is not empty_space:
+                    inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
+                if self.character.can_consume(self._selected_ground_item):
+                    inventory_commands[commands.InventoryConsume()] = self._consume_from_ground_in_inventory_screen
             # "From bag" commands
-            if self._selected_bag_item is not empty_space \
-                    and self._ground_container.has_space() \
-                    and self.active_inventory_container_name == self.get_bag_name():
-                inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
-            if self.character.can_equip(self._selected_bag_item) \
-                    and self.active_inventory_container_name == self.get_bag_name():
-                inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
-            if self.character.can_consume(self._selected_bag_item) \
-                    and self.active_inventory_container_name == self.get_bag_name():
-                inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
+            if self.active_inventory_container_name == self.get_bag_name():
+                if self._selected_bag_item is not empty_space \
+                        and self._ground_container.has_space():
+                    inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
+                if self.character.can_equip(self._selected_bag_item):
+                    inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
+                if self.character.can_consume(self._selected_bag_item):
+                    inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
             # "From equipment" commands
-            if self._selected_equipped_item is not empty_space \
-                    and ((self.character.bag is not empty_space and self.character.bag.has_space())
-                         or self._ground_container.has_space()) \
-                    and self.active_inventory_container_name == config.equipment_title:
-                inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
-            if self._selected_equipped_item is empty_space \
-                    and self.active_inventory_container_name == config.equipment_title:
-                inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
+            if self.active_inventory_container_name == config.equipment_title:
+                if self._selected_equipped_item is not empty_space \
+                        and ((self.character.bag is not empty_space and self.character.bag.has_space())
+                             or self._ground_container.has_space()):
+                    inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
+                if self._selected_equipped_item is empty_space:
+                    inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
             return inventory_commands
         else:
             return {}
