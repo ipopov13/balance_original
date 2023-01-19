@@ -311,6 +311,11 @@ class EquipmentList(PagedList):
         return sorted(self.game_object.get_available_equipment(), key=lambda x: x.sort_key)
 
 
+class SubstancesList(PagedList):
+    def _get_items(self) -> list:
+        return sorted(self.game_object.get_available_substances(), key=lambda x: x.sort_key)
+
+
 class DescriptionList(WindowContent):
     """Generate a list of object descriptions from an iterable"""
 

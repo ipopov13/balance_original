@@ -25,6 +25,12 @@ class Inventory(Command):
     changes_window = True
 
 
+class InventoryFill(Command):
+    character = 'f'
+    hint = '(f)ill'
+    description = 'Fill the selected container with a suitable substance'
+
+
 class InventoryPickUp(Command):
     character = 'p'
     hint = '(p)ick up'

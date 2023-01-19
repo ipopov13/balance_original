@@ -163,51 +163,56 @@ class LiquidContainer(Item):
     def __init__(self, max_volume: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._max_volume: int = max_volume
-        self._liquid: Optional[Liquid] = None
-        self._held_volume: int = 0
+        self.liquid: Optional[Liquid] = None
+        self.contained_volume: int = 0
         if '/' not in kwargs.get('name', '') or '{' not in kwargs.get('name', ''):
             raise ValueError("LiquidContainer name must support splitting and formatting!")
 
     @property
     def name(self) -> str:
-        if self._liquid is None:
+        if self.liquid is None:
             return self._name.split('/')[0]
         else:
-            return self._name.split('/')[1].format(self._liquid.name)
+            return self._name.split('/')[1].format(self.liquid.name)
 
     @property
     def weight(self):
-        if self._liquid is None:
+        if self.liquid is None:
             return self._own_weight
         else:
-            return self._own_weight + self._liquid.weight * self._held_volume
+            return self._own_weight + self.liquid.weight * self.contained_volume
 
     @property
     def __class__(self) -> Type:
-        if self._liquid is None:
+        if self.liquid is None:
             return LiquidContainer
         else:
-            return self._liquid.__class__
+            return self.liquid.__class__
 
     @property
     def empty_volume(self) -> int:
-        empty_volume = self._max_volume - self._held_volume
+        empty_volume = self._max_volume - self.contained_volume
         if empty_volume < 0:
             raise ValueError(f"Container {self.name} is holding more than the max_volume!")
         return empty_volume
 
-    def fill(self, liquid: Liquid, volume: int = None) -> int:
+    def fill(self, liquid: Liquid, volume: int) -> None:
         """Fills the container and returns the remainder amount to update the other container"""
-        if self._liquid is not None and liquid is not self._liquid:
+        if self.liquid is not None and liquid is not self.liquid:
             raise ValueError("Container cannot hold more than one Liquid!")
-        if volume is not None and volume < 1:
+        if volume < 1:
             raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
-        self._liquid = liquid
-        if volume is None:
-            volume = self.empty_volume
-        remaining_liquid = volume - self.empty_volume
-        self._held_volume += min(self.empty_volume, volume)
-        return remaining_liquid
+        if self.liquid is None:
+            self.liquid = liquid
+        if volume > self.contained_volume:
+            raise ValueError(f"Container {self.name} cannot exceed max volume!")
+        self.contained_volume += volume
+
+    def decant(self, volume_to_decant) -> None:
+        if volume_to_decant > self.contained_volume:
+            raise ValueError(f"Container {self.name} asked to decant {volume_to_decant},"
+                             f" but {self.contained_volume} available!")
+        self.contained_volume -= volume_to_decant
 
 
 water_skin = LiquidContainer(name="an empty waterskin/skin of {}", max_volume=2, weight=1, icon=',',
@@ -862,7 +867,6 @@ class Creature(GameObject):
 class Game:
     """
     Keep the game state: All elements that can change their own state (Creatures, effects, crops, etc.)
-    States:
     """
     welcome_state = 'welcome'
     new_game_state = 'starting_new_game'
@@ -870,11 +874,11 @@ class Game:
     character_name_substate = 'getting_character_name'
     race_selection_substate = 'character_race_selection'
     playing_state = 'playing'
-    # TODO: Implement subs: inventory, equipment, open_container, etc.
     scene_substate = 'game_scene'
     map_substate = 'world_map'
     equip_for_substate = 'equip_for_screen'
     inventory_substate = 'inventory_substate'
+    fill_container_substate = 'fill_container_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -886,11 +890,11 @@ class Game:
         self.character_name: Optional[str] = None
         self._last_character_target = None
         self._equipping_slot: Optional[str] = None
-        self._equipment_locations: dict[Item, str] = {}
         self._selected_ground_item: Item = empty_space
         self._selected_bag_item: Item = empty_space
         self.selected_equipped_item_index: int = 0
-        self._ground_container = None
+        self._ground_container: Optional[PhysicalContainer] = None
+        self._container_to_fill: Optional[LiquidContainer] = None
         self.active_inventory_container_name = self.get_ground_name()
         self._creature_coords: dict[tuple[int, int], Creature] = {}
         self.world: Optional[World] = None
@@ -965,6 +969,9 @@ class Game:
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
                 if self.character.can_consume(self._selected_bag_item):
                     inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
+                if isinstance(self._selected_bag_item, LiquidContainer) \
+                        and self._selected_bag_item.empty_volume > 0:
+                    inventory_commands[commands.InventoryFill()] = self._fill_from_bag_in_inventory_screen
             # "From equipment" commands
             if self.active_inventory_container_name == config.equipment_title:
                 if self._selected_equipped_item is not empty_space \
@@ -976,6 +983,11 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _fill_from_bag_in_inventory_screen(self, _) -> bool:
+        self._container_to_fill = self._selected_bag_item
+        self.substate = Game.fill_container_substate
+        return True
 
     def _equip_for_slot_from_inventory_screen(self, _) -> bool:
         self._equipping_slot = list(self.character.current_equipment.keys())[self.selected_equipped_item_index]
@@ -1121,6 +1133,26 @@ class Game:
             lines.append(f'{item.icon} {label}')
         return '\n'.join(lines)
 
+    def get_available_substances(self) -> list[LiquidContainer]:
+        tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
+        tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
+        bag_items = self.character.bag.item_list
+        compatible_substance_sources = []
+        for item in tile_items + tile_terrain_substance + bag_items:
+            if isinstance(item, LiquidContainer) and self._container_to_fill.can_hold(item.liquid):
+                compatible_substance_sources.append(item)
+        return compatible_substance_sources
+
+    def fill_container(self, source: Optional[LiquidContainer]) -> None:
+        if source is not None:
+            volume_to_fill = self._container_to_fill.empty_volume
+            available_volume = source.contained_volume
+            exchanged_volume = min(volume_to_fill, available_volume)
+            self._container_to_fill.fill(source.liquid, exchanged_volume)
+            source.decant(exchanged_volume)
+        self.substate = Game.inventory_substate
+        self._container_to_fill = None
+
     def get_available_equipment(self) -> list[GameObject]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
         bag_items = self.character.bag.item_list
@@ -1129,11 +1161,9 @@ class Game:
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
         filtered_items = [item for item in tile_items + bag_items if isinstance(item, item_type)]
-        for item in filtered_items:
-            self._equipment_locations[item] = 'tile'
         return filtered_items
 
-    def equip_item(self, item):
+    def equip_item(self, item: Optional[Item]) -> None:
         if item is not None:
             self.character.current_equipment[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
@@ -1716,6 +1746,9 @@ class Location(Container):
 
     def items_at(self, coords: tuple[int, int]) -> list[Item]:
         return self.tile_at(coords).item_list
+
+    def substance_at(self, coords: tuple[int, int]) -> list[LiquidContainer]:
+        return []
 
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
         tile = self.tile_at(coords)
