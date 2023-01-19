@@ -147,6 +147,68 @@ class PhysicalContainer(Container, Item):
         return len(self.item_list) < self._height * self._width
 
 
+class Liquid(Item):
+    """A container class for singleton object instances to be used as liquids in the game"""
+    pass
+
+
+water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
+                      description='The one thing everyone needs',
+                      effects={config.thirst_water_effect: 5})
+
+
+class LiquidContainer(Item):
+    """An object facilitating interactions with Liquid instances"""
+
+    def __init__(self, max_volume: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self._max_volume: int = max_volume
+        self._liquid: Optional[Liquid] = None
+        self._held_volume: int = 0
+        if '/' not in kwargs.get('name', '') or '{' not in kwargs.get('name', ''):
+            raise ValueError("LiquidContainer name must support splitting and formatting!")
+
+    @property
+    def name(self) -> str:
+        if self._liquid is None:
+            return self._name.split('/')[0]
+        else:
+            return self._name.split('/')[1].format(self._liquid.name)
+
+    @property
+    def weight(self):
+        if self._liquid is None:
+            return self._own_weight
+        else:
+            return self._own_weight + self._liquid.weight * self._held_volume
+
+    @property
+    def __class__(self) -> Type:
+        if self._liquid is None:
+            return LiquidContainer
+        else:
+            return self._liquid.__class__
+
+    def can_hold(self, item: Item) -> bool:
+        if self._liquid is None:
+            return isinstance(item, Liquid)
+        else:
+            return item is self._liquid and self._held_volume < self._max_volume
+
+    def fill(self, liquid: Liquid, volume: int = None) -> int:
+        """Fills the container and returns the remainder amount to update the other container"""
+        if self._liquid is not None and liquid is not self._liquid:
+            raise ValueError("Container cannot hold more than one Liquid!")
+        if volume is not None and volume < 1:
+            raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
+        self._liquid = liquid
+        self._held_volume = min(self._max_volume, volume or self._max_volume)
+
+
+water_skin = LiquidContainer(name="an empty waterskin/skin of {}", max_volume=2, weight=1, icon=',',
+                             color=config.brown_fg_color)
+
+
 class Helmet(Item):
     pass
 
@@ -307,13 +369,6 @@ class RawMeat(Item):
                                   config.raw_meat_effect: 5})
 
 
-class Water(Item):
-    def __init__(self):
-        super().__init__(name='water', weight=1, icon=',', color=console.fg.blue,
-                         description='The one thing everyone needs',
-                         effects={config.thirst_water_effect: 5})
-
-
 class Rock(Item):
     def __init__(self):
         super().__init__(name='rock', weight=2, icon='*', color=console.fg.default,
@@ -356,7 +411,7 @@ class Species(GameObject):
         if active_effects is not None:
             self.active_effects.update(active_effects)
         if consumable_types is None:
-            self.consumable_types = [RawMeat, Water]
+            self.consumable_types = [RawMeat, Liquid]
         else:
             self.consumable_types = consumable_types
 
@@ -778,7 +833,7 @@ class Creature(GameObject):
         return [item for item in self.current_equipment.values() if item is not empty_space]
 
     def bump_with(self, other_creature: 'Creature') -> None:
-        if self._disposition is config.aggressive_disposition or self.raw_icon is '@':
+        if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
             self.energy -= self._combat_exhaustion
             other_creature.receive_damage(self.damage)
 
@@ -1240,15 +1295,12 @@ class Game:
 
 # TODO: Add Terrains
 class Terrain(GameObject):
-    instances = []
-
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
                  spawned_creatures: list[Species] = (), **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
         self.spawned_creatures: list[Species] = spawned_creatures
-        Terrain.instances.append(self)
 
     def is_passable_for(self, creature):
         return self.passable
@@ -1927,6 +1979,9 @@ of the Wolf""".split('\n')}
 
 
 if __name__ == '__main__':
-    bag = PhysicalContainer(1, 1)
-    # print(bag._width)
-    # print(bag._own_weight)
+    bag = LiquidContainer(max_volume=3, name='empty bag/bag of {}')
+    assert isinstance(bag, LiquidContainer)
+    assert bag.name == 'empty bag'
+    bag.fill(water_liquid, 30)
+    assert bag.name == 'bag of water'
+    assert isinstance(bag, Liquid)

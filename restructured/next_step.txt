@@ -17,10 +17,17 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-    Add other +/- resistances to races
-  * Add water and make water elementals feed with it
+    Add Fill, Empty and Drink commands for LiquidContainer
+        Add available resource to terrain/tiles
+        Add available resource to inventory ground detail
+        Fill needs to check all available LiquidContainers + available ground resources
+            Condition is only: container has space
+            List of liquid sources is filtered on the current liquid
+            List shows the source, liquid, and amount available
+    Add water and make water elementals feed with it
     Make water skins that leave an empty item behind
     Add alcohol and make characters drunk
+    Add other +/- resistances to races
 Crafting
     Add tools (pot, tinder and steel)
     Add tools replacing the Equip with the recipe screen
