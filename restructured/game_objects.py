@@ -149,7 +149,9 @@ class PhysicalContainer(Container, Item):
 
 class Liquid(Item):
     """A container class for singleton object instances to be used as liquids in the game"""
-    pass
+    @property
+    def name(self) -> str:
+        return self.color + self._name + console.fx.end
 
 
 water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
@@ -1227,7 +1229,10 @@ class Game:
         self._selected_ground_item = self._ground_container.contents[item_coords[0]][item_coords[1]]
         if not self.character.can_carry(self._selected_ground_item):
             weight_color = console.fg.lightred
-        return self._selected_ground_item.details(weight_color=weight_color)
+        item_details = self._selected_ground_item.details(weight_color=weight_color)
+        tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
+        substance_details = [f"There is {sub.liquid.name} here!" for sub in tile_terrain_substance]
+        return item_details + substance_details
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         try:
