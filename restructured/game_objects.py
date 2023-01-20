@@ -101,7 +101,7 @@ class Item(GameObject):
     def __init__(self, weight: int = 0, effects: dict[str, int] = None, **kwargs):
         super().__init__(**kwargs)
         self._own_weight = weight
-        self.effects = effects or {}
+        self._effects = effects or {}
 
     def details(self, weight_color=console.fg.default) -> list[str]:
         return [self.name, weight_color + f'Weight: {self.weight}' + console.fx.end]
@@ -109,6 +109,10 @@ class Item(GameObject):
     @property
     def weight(self):
         return self._own_weight
+
+    @property
+    def effects(self) -> dict[str, int]:
+        return self._effects
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
@@ -184,6 +188,10 @@ class LiquidContainer(Item):
         else:
             return f"It holds {self.contained_volume} units of {self.liquid.name}," \
                    f" can hold {self.empty_volume} more."
+
+    @property
+    def effects(self) -> dict[str, int]:
+        return self.liquid.effects
 
     @property
     def weight(self):
@@ -949,8 +957,9 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(WaterSkin(), character_coords)
-        self._current_location.put_item(WaterSkin(), character_coords)
+        full_skin = WaterSkin()
+        full_skin.fill(water_liquid, 2)
+        self._current_location.put_item(full_skin, character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1037,12 +1046,18 @@ class Game:
 
     def _consume_from_bag_in_inventory_screen(self, _) -> bool:
         self.character.consume(self._selected_bag_item)
-        self.character.bag.remove_item(self._selected_bag_item)
+        if isinstance(self._selected_bag_item, LiquidContainer):
+            self._selected_bag_item.decant(1)
+        else:
+            self.character.bag.remove_item(self._selected_bag_item)
         return True
 
     def _consume_from_ground_in_inventory_screen(self, _) -> bool:
         self.character.consume(self._selected_ground_item)
-        self._ground_container.remove_item(self._selected_ground_item)
+        if isinstance(self._selected_ground_item, LiquidContainer):
+            self._selected_ground_item.decant(1)
+        else:
+            self._ground_container.remove_item(self._selected_ground_item)
         return True
 
     def _character_rests(self, _) -> bool:
