@@ -793,6 +793,17 @@ class Creature(GameObject):
     def current_max_energy(self) -> int:
         return self.max_energy * self.sustenance_modifier // 100
 
+    def confirm_movement_direction(self, direction: str) -> str:
+        """Apply effects that might change the direction of movement"""
+        rose_of_directions = '12369874'
+        if config.drunk_effect in self._active_effects:
+            direction_index = rose_of_directions.index(direction)
+            new_index = direction_index + random.randint(-1, 1)
+            if new_index == len(rose_of_directions):
+                new_index = 0
+            return rose_of_directions[new_index]
+        return direction
+
     def live(self) -> None:
         """
         Tick effects like sickness/poison/regen/regular non-rest energy regain
@@ -1384,6 +1395,7 @@ class Game:
     def _move_character(self, direction: str) -> None:
         # TODO: Once the character moves to a new location,
         #     the Game sends the old Location to the World for saving and requests a new one.
+        direction = self.character.confirm_movement_direction(direction)
         old_coords = self._get_coords_of_creature(self.character)
         new_coords = calculate_new_position(old_coords, direction, *self.world.size)
         old_location = self._current_location
