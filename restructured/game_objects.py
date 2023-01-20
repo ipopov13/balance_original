@@ -568,8 +568,8 @@ dryad_race = HumanoidSpecies(name='Dryad',
 shifter_race = HumanoidSpecies(name='Shifter',
                                icon='S',
                                color=config.nature_color,
-                               description="A shifter can easily pass as a human if they cut their talon-like nails "
-                                           "and keep their totemic tattoos hidden. They rarely do.",
+                               description="A shifter can easily pass as a human if they cut their talon-like "
+                                           "fingernails and keep their totemic tattoos hidden. They rarely do.",
                                sort_key=10,
                                active_effects={config.non_rest_hp_regen_effect: 1})
 water_elemental_race = HumanoidSpecies(name='Water Elemental',

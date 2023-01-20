@@ -9,37 +9,45 @@ How to combine this with Humanoids having different AIs based on the profession?
 Inventory
     Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
-    Open inner container on ground
-    Open inner container in bag
+    ? Open inner container on ground
+    ? Open inner container in bag
     Basic items
     Pick up command from Scene (no hint, no window switching,
         picks up first item from the list that the character can carry)
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-  * Add other +/- resistances to races
+    Add other +/- resistances to races
 Crafting
+    Add "properties" to crafting ingredients: what the ingredient contains
+    Different crafts act on different properties
+    The amount of change is based on the skill
+    Cooking: water, alcohol, flavor, salt, sugar, protein, greenery, oil, poison (non-organic), contagion (organic)
+    Smithing: iron, gold, silver, sulfur, coal
+    Carving: wood, bone, stone
+    Tailoring: leather, fibers, scales
+    Cooking turns flavor into a hunger_generic effect, with efficiency based on skill
+    Fire burns away alcohol and contagion from ingredients
+    Some properties translate to effects in the item method: e.g. alcohol to drunk, contagion to sick
     Add tools (pot, tinder and steel)
-    Add tools replacing the Equip with the recipe screen
-    Add craft command and adding items to the recipe
-    Add item effect transformations based on the config dictionary
+    Add crafting screen that start with a single tool slot on the right
+    Have a tool slot that configures the recipe title, also offers the "(r)ecipes" command, and adds
+     more requirements if necessary (e.g., a cooking pot adds a 'fire' requirement and a water/oil requirement)
+    The slots in a recipe have property requirements (items are filtered on the property)
+    Add craft command to tools that automatically changes to the craft screen and adds the tool to the recipe
+    Add (r)ecipes command to tools that automatically fills the chosen known recipe with available
+     ingredients and waits to execute
+    Use the MultiContainerScreen with the recipe list replacing the equipment one
 Combat
     Attacked creatures should go into aggressive mode
     Creature disposition
     Normal mode
-    Combat mechanics
     Item rarity (chance to drop to the ground inherent for the item)
-
 Character
     Character screen
     Stats improvement
     Skills
     Skills improvement
-Craft
-    Use the MultiContainerScreen with the recipe list replacing the equipment one
-    Have a tool slot that configures the recipe title, offers a "(r)ecipes" command, and adds
-     more requirements if necessary (e.g., a cooking pot adds a 'fire' requirement)
-
 Creatures:
     AI
         The creature knows the GOALS it wants (e.g., @, grass, rocks, a rabbit)
