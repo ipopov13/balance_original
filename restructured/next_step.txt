@@ -17,11 +17,7 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-    Add Fill
-        List of liquid sources is filtered on the current liquid
-    Add Empty command
     Add water and make water elementals feed with it
-    Make water skins that leave an empty item behind
     Add alcohol and make characters drunk
     Add other +/- resistances to races
 Crafting

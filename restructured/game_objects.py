@@ -161,6 +161,9 @@ class Liquid(Item):
 water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
                       description='The one thing everyone needs',
                       effects={config.thirst_water_effect: 5})
+wine_liquid = Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
+                     description='Fermented fruit juice',
+                     effects={config.thirst_water_effect: 5, config.drunk_effect: 5})
 
 
 class LiquidContainer(Item):
@@ -216,7 +219,7 @@ class LiquidContainer(Item):
 
     def can_hold(self, substance: Item) -> bool:
         return isinstance(substance, Liquid) and \
-            (self.liquid is None or isinstance(self.liquid, substance.__class__))
+            (self.liquid is None or self.liquid is substance)
 
     def fill(self, liquid: Liquid, volume: int) -> None:
         """Fills the container and returns the remainder amount to update the other container"""
@@ -959,8 +962,10 @@ class Game:
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         full_skin = WaterSkin()
         full_skin.fill(water_liquid, 2)
+        full_skin2 = WaterSkin()
+        full_skin2.fill(wine_liquid, 2)
         self._current_location.put_item(full_skin, character_coords)
-        self._current_location.put_item(WaterSkin(), character_coords)
+        self._current_location.put_item(full_skin2, character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1004,6 +1009,9 @@ class Game:
                 if isinstance(self._selected_ground_item, LiquidContainer) \
                         and self._selected_ground_item.empty_volume > 0:
                     inventory_commands[commands.InventoryFill()] = self._fill_from_ground_in_inventory_screen
+                if isinstance(self._selected_ground_item, LiquidContainer) \
+                        and self._selected_ground_item.contained_volume > 0:
+                    inventory_commands[commands.InventoryEmpty()] = self._empty_from_ground_in_inventory_screen
             # "From bag" commands
             if self.active_inventory_container_name == self.get_bag_name():
                 if self._selected_bag_item is not empty_space \
@@ -1016,6 +1024,9 @@ class Game:
                 if isinstance(self._selected_bag_item, LiquidContainer) \
                         and self._selected_bag_item.empty_volume > 0:
                     inventory_commands[commands.InventoryFill()] = self._fill_from_bag_in_inventory_screen
+                if isinstance(self._selected_bag_item, LiquidContainer) \
+                        and self._selected_bag_item.contained_volume > 0:
+                    inventory_commands[commands.InventoryEmpty()] = self._empty_from_bag_in_inventory_screen
             # "From equipment" commands
             if self.active_inventory_container_name == config.equipment_title:
                 if self._selected_equipped_item is not empty_space \
@@ -1027,6 +1038,22 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _empty_from_bag_in_inventory_screen(self, _) -> bool:
+        if isinstance(self._selected_bag_item, LiquidContainer):
+            volume_to_empty = self._selected_bag_item.contained_volume
+            self._selected_bag_item.decant(volume_to_empty)
+        else:
+            raise ValueError(f"Item {self._selected_bag_item.name} is not a LiquidContainer!")
+        return True
+
+    def _empty_from_ground_in_inventory_screen(self, _) -> bool:
+        if isinstance(self._selected_ground_item, LiquidContainer):
+            volume_to_empty = self._selected_ground_item.contained_volume
+            self._selected_ground_item.decant(volume_to_empty)
+        else:
+            raise ValueError(f"Item {self._selected_ground_item.name} is not a LiquidContainer!")
+        return True
 
     def _fill_from_bag_in_inventory_screen(self, _) -> bool:
         self._container_to_fill = self._selected_bag_item
@@ -1195,7 +1222,8 @@ class Game:
         compatible_substance_sources = []
         for item in tile_items + tile_terrain_substance + bag_items:
             if (isinstance(item, LiquidContainer) or isinstance(item, SubstanceSource))\
-                    and self._container_to_fill.can_hold(item.liquid):
+                    and self._container_to_fill.can_hold(item.liquid) \
+                    and item is not self._container_to_fill:
                 compatible_substance_sources.append(item)
         return compatible_substance_sources
 

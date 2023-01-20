@@ -25,6 +25,12 @@ class Inventory(Command):
     changes_window = True
 
 
+class InventoryEmpty(Command):
+    character = 'x'
+    hint = '(x)Empty'
+    description = 'Empty the selected container'
+
+
 class InventoryFill(Command):
     character = 'f'
     hint = '(f)ill'
