@@ -1218,7 +1218,7 @@ class Game:
     def get_available_substances(self) -> list[Union[LiquidContainer, SubstanceSource]]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
         tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
-        bag_items = self.character.bag.item_list
+        bag_items = [] if self.character.bag is empty_space else self.character.bag.item_list
         compatible_substance_sources = []
         for item in tile_items + tile_terrain_substance + bag_items:
             if (isinstance(item, LiquidContainer) or isinstance(item, SubstanceSource))\
@@ -1239,7 +1239,7 @@ class Game:
 
     def get_available_equipment(self) -> list[GameObject]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
-        bag_items = self.character.bag.item_list
+        bag_items = [] if self.character.bag is empty_space else self.character.bag.item_list
         if self._equipping_slot is None:
             raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
         else:

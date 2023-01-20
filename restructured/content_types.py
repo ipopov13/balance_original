@@ -219,6 +219,7 @@ class PagedList(WindowContent):
         description_lines = [len(desc.split('\n')) for desc in self._item_descriptions]
         self._pages = self._paginate(description_lines)
         self._current_page = 0
+        self._empty_list_message = 'There is no suitable item to use here.'
 
     def _get_items(self) -> list:
         raise NotImplementedError(f'Class {self.__class__} must implement _get_items()!')
@@ -241,7 +242,7 @@ class PagedList(WindowContent):
 
     def _current_page_content(self) -> list[str]:
         if not self.sorted_item_list:
-            return ['There is no suitable item to use here.']
+            return [self._empty_list_message]
         curr_start, curr_end = self._pages[self._current_page]
         return self._item_descriptions[curr_start:curr_end]
 
@@ -312,6 +313,10 @@ class EquipmentList(PagedList):
 
 
 class SubstancesList(PagedList):
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self._empty_list_message = 'No matching liquids found.'
+
     def _get_items(self) -> list:
         return sorted(self.game_object.get_available_substances(), key=lambda x: x.sort_key)
 
