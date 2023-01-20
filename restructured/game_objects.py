@@ -160,7 +160,8 @@ class Liquid(Item):
 
 water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
                       description='The one thing everyone needs',
-                      effects={config.thirst_water_effect: 5})
+                      effects={config.thirst_water_effect: 5,
+                               config.hunger_water_effect: 0})
 wine_liquid = Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
                      description='Fermented fruit juice',
                      effects={config.thirst_water_effect: 5, config.drunk_effect: 10})
@@ -853,9 +854,9 @@ class Creature(GameObject):
 
     def get_statuses(self) -> list[str]:
         statuses = []
-        if self.hunger > 5:
+        if self.hunger >= 5:
             statuses.append(console.fg.red + 'Hungry' + console.fx.end)
-        if self.thirst > 5:
+        if self.thirst >= 5:
             statuses.append(console.fg.red + 'Thirsty' + console.fx.end)
         for effect in self._active_effects:
             if effect in config.visible_effects:

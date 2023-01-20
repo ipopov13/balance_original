@@ -17,9 +17,7 @@ Inventory
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
-    Add water and make water elementals feed with it
-    Add alcohol and make characters drunk
-    Add other +/- resistances to races
+  * Add other +/- resistances to races
 Crafting
     Add tools (pot, tinder and steel)
     Add tools replacing the Equip with the recipe screen
