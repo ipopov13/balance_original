@@ -163,7 +163,7 @@ water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
                       effects={config.thirst_water_effect: 5})
 wine_liquid = Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
                      description='Fermented fruit juice',
-                     effects={config.thirst_water_effect: 5, config.drunk_effect: 5})
+                     effects={config.thirst_water_effect: 5, config.drunk_effect: 10})
 
 
 class LiquidContainer(Item):
@@ -417,7 +417,7 @@ class RawMeat(Item):
         super().__init__(name='raw meat', weight=1, icon=',', color=console.fg.red,
                          description="Not fit for eating, unless you're an ork!",
                          effects={config.sick_effect: 10,
-                                  config.raw_meat_effect: 5})
+                                  config.hunger_meat_effect: 5})
 
 
 class Rock(Item):
@@ -802,15 +802,17 @@ class Creature(GameObject):
         if not self._age % 10:
             self._get_hungry(1)
         for effect, value in self._active_effects.items():
-            if effect == config.sick_effect:
+            if effect in [config.sick_effect, config.drunk_effect]:
                 if random.random() > value / (value + self.stats['End']):
-                    self._active_effects[config.sick_effect] -= 1
+                    self._active_effects[effect] -= 1
             elif effect == config.non_rest_energy_regen_effect:
                 if random.randint(0, config.max_stat_value) <= self.stats['End']:
                     self.energy += 1
             elif effect == config.non_rest_hp_regen_effect:
                 if random.randint(0, config.max_stat_value) <= self.stats['End'] / 2:
                     self.hp += 1
+            else:
+                raise ValueError(f"Unhandled effect '{effect}'!")
         for effect, value in list(self._active_effects.items()):
             if value <= 0:
                 self._active_effects.pop(effect)
@@ -830,13 +832,13 @@ class Creature(GameObject):
         """
         if effect_size <= 0:
             return
-        if name == config.sick_effect:
-            self._active_effects[config.sick_effect] = \
-                self._active_effects.get(config.sick_effect, 0) + effect_size
         if name.startswith(config.hunger_effect_prefix):
             self.hunger -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
-        if name.startswith(config.thirst_effect_prefix):
+        elif name.startswith(config.thirst_effect_prefix):
             self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
+        else:
+            self._active_effects[name] = \
+                self._active_effects.get(name, 0) + effect_size
 
     def get_statuses(self) -> list[str]:
         statuses = []
@@ -844,8 +846,9 @@ class Creature(GameObject):
             statuses.append(console.fg.red + 'Hungry' + console.fx.end)
         if self.thirst > 5:
             statuses.append(console.fg.red + 'Thirsty' + console.fx.end)
-        if config.sick_effect in self._active_effects:
-            statuses.append(console.fg.green + 'Sick' + console.fx.end)
+        for effect in self._active_effects:
+            if effect in config.visible_effects:
+                statuses.append(console.fg.green + effect + console.fx.end)
         return statuses
 
     @property
