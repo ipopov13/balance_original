@@ -960,6 +960,7 @@ class Game:
         full_skin = WaterSkin()
         full_skin.fill(water_liquid, 2)
         self._current_location.put_item(full_skin, character_coords)
+        self._current_location.put_item(WaterSkin(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1000,6 +1001,9 @@ class Game:
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
                 if self.character.can_consume(self._selected_ground_item):
                     inventory_commands[commands.InventoryConsume()] = self._consume_from_ground_in_inventory_screen
+                if isinstance(self._selected_ground_item, LiquidContainer) \
+                        and self._selected_ground_item.empty_volume > 0:
+                    inventory_commands[commands.InventoryFill()] = self._fill_from_ground_in_inventory_screen
             # "From bag" commands
             if self.active_inventory_container_name == self.get_bag_name():
                 if self._selected_bag_item is not empty_space \
@@ -1026,6 +1030,11 @@ class Game:
 
     def _fill_from_bag_in_inventory_screen(self, _) -> bool:
         self._container_to_fill = self._selected_bag_item
+        self.substate = Game.fill_container_substate
+        return True
+
+    def _fill_from_ground_in_inventory_screen(self, _) -> bool:
+        self._container_to_fill = self._selected_ground_item
         self.substate = Game.fill_container_substate
         return True
 
