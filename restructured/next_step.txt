@@ -18,7 +18,6 @@ Inventory
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
 Consuming items
     Add Fill, Empty and Drink commands for LiquidContainer
-        Add available resource to terrain/tiles
         Add available resource to inventory ground detail
         Fill needs to check all available LiquidContainers + available ground resources
             Condition is only: container has space

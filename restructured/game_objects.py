@@ -176,6 +176,14 @@ class LiquidContainer(Item):
             return self._name.split('/')[1].format(self.liquid.name)
 
     @property
+    def description(self) -> str:
+        if self.liquid is None:
+            return f"It can hold {self.empty_volume} units of liquid."
+        else:
+            return f"It holds {self.contained_volume} units of {self.liquid.name}," \
+                   f" can hold {self.empty_volume} more."
+
+    @property
     def weight(self):
         if self.liquid is None:
             return self._own_weight
@@ -217,6 +225,8 @@ class LiquidContainer(Item):
             raise ValueError(f"Container {self.name} asked to decant {volume_to_decant},"
                              f" but {self.contained_volume} available!")
         self.contained_volume -= volume_to_decant
+        if self.contained_volume == 0:
+            self.liquid = None
 
 
 class SubstanceSource(Item):
@@ -937,6 +947,7 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
+        self._current_location.put_item(WaterSkin(), character_coords)
         self._current_location.put_item(WaterSkin(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
