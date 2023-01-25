@@ -507,14 +507,14 @@ human_race = HumanoidSpecies(name='Human',
                              description='Explorers and treasure seekers, the human race combines the primal need '
                                          'of discovery with the perseverance that gave birth to all great empires.',
                              sort_key=0,
-                             base_effect_modifiers={'travel_energy_loss': 0})
+                             base_effect_modifiers={config.travel_energy_loss_modifier: 0})
 dwarf_race = HumanoidSpecies(name='Dwarf',
                              icon='D',
                              color=config.order_color,
                              description='Masters of the forge, they are drawn down into the depths of the world by '
                                          'an ancient instinct that rivals the bravery of human explorers.',
                              sort_key=1,
-                             base_effect_modifiers={config.drunk_effect: -20})
+                             base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier_effect: 1.2})
 gnome_race = HumanoidSpecies(name='Gnome',
                              icon='G',
                              color=config.order_color,
@@ -699,7 +699,7 @@ class Creature(GameObject):
                 armor += item.armor
             except AttributeError:
                 pass
-        return armor
+        return int(armor * self._effect_modifiers.get(config.armor_modifier_effect, 1))
 
     def weapon_damage(self) -> int:
         dmg = 0
@@ -807,7 +807,7 @@ class Creature(GameObject):
         return direction
 
     def travel(self) -> None:
-        fraction = self._effect_modifiers.get('travel_energy_loss', self.load / self.max_load)
+        fraction = self._effect_modifiers.get(config.travel_energy_loss_modifier, self.load / self.max_load)
         energy_to_lose = int(self.max_energy * fraction)
         self.energy -= energy_to_lose
 
@@ -989,7 +989,6 @@ class Game:
         self._current_location.put_item(full_skin, character_coords)
         self._current_location.put_item(full_skin2, character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
-        input(f'{self.character.race.name},{self.character._effect_modifiers}')
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
@@ -1344,7 +1343,7 @@ class Game:
             target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
         statuses = '|'.join(self.character.get_statuses())
         inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-        hud += target + inner_padding + statuses
+        hud += str(self.character.equipment_armor()) # target + inner_padding + statuses
         return hud
 
     @staticmethod
