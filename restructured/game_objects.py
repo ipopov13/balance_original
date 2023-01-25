@@ -506,7 +506,8 @@ human_race = HumanoidSpecies(name='Human',
                              color=config.order_color,
                              description='Explorers and treasure seekers, the human race combines the primal need '
                                          'of discovery with the perseverance that gave birth to all great empires.',
-                             sort_key=0)
+                             sort_key=0,
+                             base_effect_modifiers={'travel_energy_loss': 0})
 dwarf_race = HumanoidSpecies(name='Dwarf',
                              icon='D',
                              color=config.order_color,
@@ -805,6 +806,11 @@ class Creature(GameObject):
             return rose_of_directions[new_index]
         return direction
 
+    def travel(self) -> None:
+        fraction = self._effect_modifiers.get('travel_energy_loss', self.load / self.max_load)
+        energy_to_lose = int(self.max_energy * fraction)
+        self.energy -= energy_to_lose
+
     def live(self) -> None:
         """
         Tick effects like sickness/poison/regen/regular non-rest energy regain
@@ -973,6 +979,7 @@ class Game:
         character_coords = self._current_location.get_empty_spot_for(self.character)
         self._creature_coords[character_coords] = self.character
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
+
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         full_skin = WaterSkin()
@@ -982,6 +989,7 @@ class Game:
         self._current_location.put_item(full_skin, character_coords)
         self._current_location.put_item(full_skin2, character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
+        input(f'{self.character.race.name},{self.character._effect_modifiers}')
 
         self.state = Game.playing_state
         self.substate = Game.scene_substate
@@ -1420,6 +1428,8 @@ class Game:
                 for coords in list(self._creature_coords):
                     if self._creature_coords[coords] is not self.character:
                         old_location.stored_creatures.append(self._creature_coords.pop(coords))
+                    else:
+                        self.character.travel()
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         else:
             # TODO: Implement log message describing why the move is impossible

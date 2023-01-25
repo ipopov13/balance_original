@@ -1,6 +1,8 @@
-FEATURES
-Make eagles fly over rocks!
+FEATURES (following the spreadsheet roadmap)
+Adding the racial passives and documenting them in knowledge
+    Done: humans
 
+Make eagles fly over rocks!
 Only humanoids will need their own name generation
 Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
 Build an AI library to choose from in species?
@@ -16,8 +18,6 @@ Inventory
         picks up first item from the list that the character can carry)
     ---
     Basic equipment included in the race and auto-equipped at creature creation (both sentient and animal)
-Consuming items
-    Add other +/- resistances to races
 Crafting
     Add "properties" to crafting ingredients: what the ingredient contains
     Different crafts act on different properties
