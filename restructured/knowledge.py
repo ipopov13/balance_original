@@ -19,5 +19,7 @@ knowledge = {
               " of being inside a block of granite. Instead, they blush and turn the conversation"
               " to the current weather..."],
     "orc": ["...as disgusting as it may sound. An orc is capable of consuming raw meat just like a"
-            " wild animal, and only the foulest of meals will give them discomfort. I shudder..."]
+            " wild animal, and only the foulest of meals will give them discomfort. I shudder..."],
+    "troll": ["They can take a beating like no other civilized creature, if you consider the rock-"
+              "munching trolls civilized."]
 }

@@ -542,7 +542,8 @@ troll_race = HumanoidSpecies(name='Troll',
                                          "someone to throw a rock at is a bonus that only a troll "
                                          "can appreciate in full.",
                              sort_key=5,
-                             consumable_types=[Rock])
+                             consumable_types=[Rock],
+                             base_effect_modifiers={config.max_hp_modifier: 1.2})
 goblin_race = HumanoidSpecies(name='Goblin',
                               icon='G',
                               color=config.chaos_color,
@@ -709,7 +710,7 @@ class Creature(GameObject):
                 dmg += item.damage
             except AttributeError:
                 pass
-        dmg = int(dmg * self._energy_modifier)
+        dmg = int(dmg * self._exhaustion_modifier)
         return dmg
 
     @property
@@ -769,7 +770,7 @@ class Creature(GameObject):
         return (self.hunger + self.thirst) // 10 * 10
 
     @property
-    def _energy_modifier(self) -> float:
+    def _exhaustion_modifier(self) -> float:
         return 0.5 + 0.5 * self.energy / self.max_energy
 
     @property
@@ -782,11 +783,13 @@ class Creature(GameObject):
 
     @property
     def max_hp(self) -> int:
-        return self.stats['Str'] + 2 * self.stats['End']
+        base_hp = self.stats['Str'] + 2 * self.stats['End']
+        return int(base_hp * self._effect_modifiers.get(config.max_hp_modifier, 1))
 
     @property
     def max_mana(self) -> int:
-        return int(self.stats['Will'] * 10 * self._effect_modifiers.get(config.max_mana_modifier, 1))
+        base_mana = self.stats['Will'] * 10
+        return int(base_mana * self._effect_modifiers.get(config.max_mana_modifier, 1))
 
     @property
     def max_energy(self) -> int:
@@ -913,7 +916,7 @@ class Creature(GameObject):
     def receive_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
         dex_modifier = self.stats['Dex'] / config.max_stat_value
-        dodge_chance = dex_modifier * load_modifier * self._energy_modifier
+        dodge_chance = dex_modifier * load_modifier * self._exhaustion_modifier
         if random.random() > dodge_chance:
             self.hp -= max(0, damage - self.armor)
 

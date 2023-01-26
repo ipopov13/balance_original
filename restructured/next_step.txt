@@ -1,11 +1,7 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs
-
-Only humanoids will need their own name generation
-Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
-Build an AI library to choose from in species?
-How to combine this with Humanoids having different AIs based on the profession?
+Troll passive: sledgehammer fists (pickaxe)
 
 Inventory
     Add item descriptions in details (line formatted)
@@ -48,6 +44,10 @@ Character
     Skills
     Skills improvement
 Creatures:
+    Only humanoids will need their own name generation
+    Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
+    Build an AI library to choose from in species?
+    How to combine this with Humanoids having different AIs based on the profession?
     AI
         The creature knows the GOALS it wants (e.g., @, grass, rocks, a rabbit)
         The creature has priorities: a list of GOALS from which the current ones are chosen
