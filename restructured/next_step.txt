@@ -1,6 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves,
+    Done: humans, dwarves, elves, gnomes
 
 Make eagles fly over rocks!
 Only humanoids will need their own name generation

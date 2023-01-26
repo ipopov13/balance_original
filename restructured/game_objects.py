@@ -518,8 +518,8 @@ dwarf_race = HumanoidSpecies(name='Dwarf',
 gnome_race = HumanoidSpecies(name='Gnome',
                              icon='G',
                              color=config.order_color,
-                             description='The only race that views rocks as living things,'
-                                         ' gnomes are friendly and easygoing.',
+                             description='A friendly and easygoing people, gnomes are the only race '
+                                         'that views rocks as living things. Rocks adore them in return.',
                              sort_key=2)
 elf_race = HumanoidSpecies(name='Elf',
                            icon='E',
@@ -661,9 +661,9 @@ class Creature(GameObject):
         self._disposition = self.race.initial_disposition
         self._ai = self.race.ai
         self.stats = self.race.base_stats.copy()
-        self.equipment_slots = self.race.equipment_slots
         self._effect_modifiers = self.race.base_effect_modifiers
         self._active_effects: dict[str, int] = self.race.active_effects
+        self.equipment_slots = self.race.equipment_slots
         self.current_equipment = {k: empty_space for k in self.equipment_slots}
         for item_type in self.race.initial_equipment:
             self.swap_equipment(item_type())
@@ -1437,16 +1437,19 @@ class Game:
 # TODO: Add Terrains
 class Terrain(GameObject):
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
-                 spawned_creatures: list[Species] = (),
-                 substances: list[SubstanceSource] = None, **kwargs):
+                 spawned_creatures: list[Species] = None,
+                 substances: list[SubstanceSource] = None,
+                 allowed_species: list[Species] = None,
+                 **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
         self.exhaustion_factor = exhaustion_factor
-        self.spawned_creatures: list[Species] = spawned_creatures
+        self._allowed_species = allowed_species or []
+        self.spawned_creatures: list[Species] = spawned_creatures or []
         self.substances = substances or []
 
-    def is_passable_for(self, creature):
-        return self.passable
+    def is_passable_for(self, creature: Creature) -> bool:
+        return self.passable or creature.race in self._allowed_species
 
 
 class FlavorTerrain(Terrain):
@@ -1479,7 +1482,7 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
                     spawned_creatures=[winter_wolf_species, ice_bear_species])
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
-                spawned_creatures=[bear_species, eagle_species])
+                spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species])
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[fox_species])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
                 spawned_creatures=[crocodile_species, swamp_dragon_species, hydra_species])
@@ -1500,13 +1503,17 @@ junk_pile = FlavorTerrain(color=console.fg.lightblack, name='junk pile', icon='o
 lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~', passable=False,
                      required_base_terrains=all_base_terrains, required_climates=[HOT_CLIMATE])
 gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%', passable=False,
-                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
+                          allowed_species=[gnome_race, eagle_species])
 silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%', passable=False,
-                            required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+                            required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
+                            allowed_species=[gnome_race, eagle_species])
 iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%', passable=False,
-                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES)
+                          required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
+                          allowed_species=[gnome_race, eagle_species])
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%', passable=False,
-                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
+                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES,
+                           allowed_species=[gnome_race, eagle_species])
 lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
                              required_base_terrains=all_base_terrains, required_climates=[COLD_CLIMATE])
 flowers = FlavorTerrain(color=console.fg.purple, name='flowers', icon='*',
