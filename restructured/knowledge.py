@@ -17,5 +17,7 @@ knowledge = {
     "gnome": ["A wondrous race of short-statured people, gnomes can pass through rocks as if they"
               " were thin air. Unfortunately, they are never willing to talk about the feeling"
               " of being inside a block of granite. Instead, they blush and turn the conversation"
-              " to the current weather..."]
+              " to the current weather..."],
+    "orc": ["...as disgusting as it may sound. An orc is capable of consuming raw meat just like a"
+            " wild animal, and only the foulest of meals will give them discomfort. I shudder..."]
 }
