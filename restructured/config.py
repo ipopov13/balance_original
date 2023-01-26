@@ -45,8 +45,9 @@ sick_effect = 'Sick'
 drunk_effect = 'Drunk'
 non_rest_energy_regen_effect = 'non_rest_energy_regen'
 non_rest_hp_regen_effect = 'non_rest_hp_regen_effect'
-armor_modifier_effect = 'armor_modifier_effect'
+armor_modifier = 'armor_modifier'
 travel_energy_loss_modifier = 'travel_energy_loss_modifier'
+max_mana_modifier = 'max_mana_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
 

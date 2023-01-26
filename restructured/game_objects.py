@@ -514,7 +514,7 @@ dwarf_race = HumanoidSpecies(name='Dwarf',
                              description='Masters of the forge, they are drawn down into the depths of the world by '
                                          'an ancient instinct that rivals the bravery of human explorers.',
                              sort_key=1,
-                             base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier_effect: 1.2})
+                             base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier: 1.2})
 gnome_race = HumanoidSpecies(name='Gnome',
                              icon='G',
                              color=config.order_color,
@@ -526,7 +526,8 @@ elf_race = HumanoidSpecies(name='Elf',
                            color=config.order_color,
                            description='Expert mages and librarians, the elves have given the world'
                                        ' a lot of legendary heroes.',
-                           sort_key=3)
+                           sort_key=3,
+                           base_effect_modifiers={config.max_mana_modifier: 1.2})
 orc_race = HumanoidSpecies(name='Orc',
                            icon='O',
                            color=config.chaos_color,
@@ -699,7 +700,7 @@ class Creature(GameObject):
                 armor += item.armor
             except AttributeError:
                 pass
-        return int(armor * self._effect_modifiers.get(config.armor_modifier_effect, 1))
+        return int(armor * self._effect_modifiers.get(config.armor_modifier, 1))
 
     def weapon_damage(self) -> int:
         dmg = 0
@@ -784,11 +785,11 @@ class Creature(GameObject):
         return self.stats['Str'] + 2 * self.stats['End']
 
     @property
-    def max_mana(self):
-        return self.stats['Will'] * 10
+    def max_mana(self) -> int:
+        return int(self.stats['Will'] * 10 * self._effect_modifiers.get(config.max_mana_modifier, 1))
 
     @property
-    def max_energy(self):
+    def max_energy(self) -> int:
         return self.stats['End'] * 10
 
     @property
@@ -1343,7 +1344,7 @@ class Game:
             target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
         statuses = '|'.join(self.character.get_statuses())
         inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-        hud += str(self.character.equipment_armor()) # target + inner_padding + statuses
+        hud += target + inner_padding + statuses
         return hud
 
     @staticmethod
@@ -1357,14 +1358,12 @@ class Game:
         percentage_full = int((current_stat / max_stat) * 10)
         percentage_ailment = int((ailment_score / max_stat) * 10)
         percentage_empty = 10 - percentage_ailment - percentage_full
-        colored_gauge = color + raw_gauge[:percentage_full] + console.fx.end \
-                        + raw_gauge[percentage_full:percentage_full + percentage_empty] \
-                        + ailment_color + raw_gauge[percentage_full + percentage_empty:] + console.fx.end
+        colored_gauge = (color + raw_gauge[:percentage_full] + console.fx.end
+                         + raw_gauge[percentage_full:percentage_full + percentage_empty]
+                         + ailment_color + raw_gauge[percentage_full + percentage_empty:] + console.fx.end)
         return colored_gauge
 
     def get_area_view(self) -> str:
-        # TODO: The Game gets the 8 neighbor locations and displays the Tiles to make the scene consistent
-        #     when there is impassable Terrain in the neighbor Location
         return self._current_location.data_with_creatures(self._creature_coords)
 
     def get_character_position_in_location(self) -> tuple[int, int]:

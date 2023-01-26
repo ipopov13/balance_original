@@ -1,6 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves
+    Done: humans, dwarves, elves,
 
 Make eagles fly over rocks!
 Only humanoids will need their own name generation
@@ -85,6 +85,8 @@ Creatures:
         3) random creatures are rolled and added.
     Creature priority: permanent > respawning. Random are always rerolled and added.
 Locations:
+    Add location escaping, allow leaving a location and appearing on a tile that is not a direct neighbor
+      of the last one
     Add Structure flavors from the excel
     Add creature profile to Locations (automatic from the terrains/Structures?)
     Creature profile includes respawn times, location keeps track (the Creature sends a message to the
