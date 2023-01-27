@@ -274,6 +274,7 @@ class HideArmor(Armor):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
                          description='Armor made from light hide')
         self.armor = 1
+        self.combat_exhaustion = 1
 
 
 class LeatherArmor(Armor):
@@ -281,6 +282,7 @@ class LeatherArmor(Armor):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
                          description='Armor made from leather')
         self.armor = 3
+        self.combat_exhaustion = 1
 
 
 class PlateArmor(Armor):
@@ -288,6 +290,7 @@ class PlateArmor(Armor):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates')
         self.armor = 5
+        self.combat_exhaustion = 5
 
 
 class Back(PhysicalContainer):
@@ -309,11 +312,20 @@ class MainHand(Item):
     pass
 
 
+class Fist(Item):
+    def __init__(self):
+        super().__init__(name="Your fist", description="When you don't have a sword at hand.",
+                         weight=0, icon='.', color=console.fg.lightblack)
+        self.damage = 0
+        self.combat_exhaustion = 1
+
+
 class ShortSword(MainHand):
     def __init__(self, color=console.fg.default):
         super().__init__(name='short sword', weight=3, icon='|', color=color,
-                         description='Made for stabbing')
+                         description='Made for stabbing.')
         self.damage = 3
+        self.combat_exhaustion = 3
 
 
 class Offhand(Item):
@@ -321,7 +333,9 @@ class Offhand(Item):
 
 
 class AnimalWeapon(Item):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.combat_exhaustion = 1
 
 
 class SmallTeeth(AnimalWeapon):
@@ -447,6 +461,7 @@ class Species(GameObject):
                  base_effect_modifiers: dict[str, int] = None,
                  active_effects: dict[str, int] = None,
                  consumable_types: list[Type[Item]] = None,
+                 fist_weapon: Type[Item] = Fist,
                  **kwargs):
         super().__init__(**kwargs)
         basic_ai = {config.indifferent_disposition: [config.random_behavior],
@@ -458,6 +473,7 @@ class Species(GameObject):
             basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
+        self.fist_weapon: Item = fist_weapon()
         self.base_effect_modifiers = base_effect_modifiers or {}
         self.active_effects = {config.non_rest_energy_regen_effect: 1}
         if active_effects is not None:
@@ -650,23 +666,23 @@ hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgree
 class Creature(GameObject):
     """Defines how a creature interacts with the environment"""
 
-    def __init__(self, race: Species, **kwargs):
+    def __init__(self, species: Species, **kwargs):
         if kwargs.get('icon') is None:
-            kwargs['icon'] = race.raw_icon
+            kwargs['icon'] = species.raw_icon
         if kwargs.get('color') is None:
-            kwargs['color'] = race.color
+            kwargs['color'] = species.color
         if kwargs.get('name') is None:
-            kwargs['name'] = race.name
+            kwargs['name'] = species.name
         super().__init__(**kwargs)
-        self.race = race
-        self._disposition = self.race.initial_disposition
-        self._ai = self.race.ai
-        self.stats = self.race.base_stats.copy()
-        self._effect_modifiers = self.race.base_effect_modifiers
-        self._active_effects: dict[str, int] = self.race.active_effects
-        self.equipment_slots = self.race.equipment_slots
-        self.current_equipment = {k: empty_space for k in self.equipment_slots}
-        for item_type in self.race.initial_equipment:
+        self.species = species
+        self._disposition = self.species.initial_disposition
+        self._ai = self.species.ai
+        self.stats = self.species.base_stats.copy()
+        self._effect_modifiers = self.species.base_effect_modifiers
+        self._active_effects: dict[str, int] = self.species.active_effects
+        self.equipment_slots = self.species.equipment_slots
+        self.equipped_items = {k: empty_space for k in self.equipment_slots}
+        for item_type in self.species.initial_equipment:
             self.swap_equipment(item_type())
         # TODO: Add ageing for NPCs here between the stats and the sub-stats
         self._hp = self.max_hp
@@ -678,12 +694,16 @@ class Creature(GameObject):
         self._age: int = 0
 
     @property
+    def effective_equipment(self) -> dict:
+        return self.equipped_items
+
+    @property
     def perception_radius(self) -> int:
         return self.stats['Per']
 
     @property
     def load(self) -> int:
-        return sum([item.weight for item in self.current_equipment.values()])
+        return sum([item.weight for item in self.equipped_items.values()])
 
     @property
     def damage(self) -> int:
@@ -696,7 +716,7 @@ class Creature(GameObject):
 
     def equipment_armor(self) -> int:
         armor = 0
-        for item in self.current_equipment.values():
+        for item in self.effective_equipment.values():
             try:
                 armor += item.armor
             except AttributeError:
@@ -705,7 +725,7 @@ class Creature(GameObject):
 
     def weapon_damage(self) -> int:
         dmg = 0
-        for item in self.current_equipment.values():
+        for item in self.effective_equipment.values():
             try:
                 dmg += item.damage
             except AttributeError:
@@ -716,9 +736,9 @@ class Creature(GameObject):
     @property
     def _combat_exhaustion(self) -> int:
         exhaustion = 0
-        for item in self.current_equipment.values():
-            if hasattr(item, 'damage'):
-                exhaustion += item.weight
+        for item in self.effective_equipment.values():
+            if hasattr(item, 'combat_exhaustion'):
+                exhaustion += item.combat_exhaustion
         return exhaustion
 
     @property
@@ -840,7 +860,7 @@ class Creature(GameObject):
                 self._active_effects.pop(effect)
 
     def can_consume(self, item: Item) -> bool:
-        return any([isinstance(item, consumable_type) for consumable_type in self.race.consumable_types])
+        return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
     def consume(self, item: Item) -> None:
         for name, effect in item.effects.items():
@@ -879,7 +899,7 @@ class Creature(GameObject):
 
     @property
     def bag(self):
-        return self.current_equipment['Back']
+        return self.equipped_items['Back']
 
     def can_equip(self, item: Item) -> bool:
         return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
@@ -891,22 +911,22 @@ class Creature(GameObject):
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
                 available_load = self.max_load - self.load
-                load_difference = item.weight - self.current_equipment[slot].weight
+                load_difference = item.weight - self.equipped_items[slot].weight
                 return available_load >= load_difference
         return False
 
     def swap_equipment(self, item: Item) -> Item:
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
-                old_item = self.current_equipment[slot]
-                self.current_equipment[slot] = item
+                old_item = self.equipped_items[slot]
+                self.equipped_items[slot] = item
                 return old_item
 
     def get_goals(self) -> list[str]:
         return self._ai[self._disposition]
 
     def get_drops(self):
-        return [item for item in self.current_equipment.values() if item is not empty_space]
+        return [item for item in self.equipped_items.values() if item is not empty_space]
 
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
@@ -930,6 +950,23 @@ class Creature(GameObject):
         return self.hp <= 0
 
 
+class Animal(Creature):
+    def __init__(self, species: AnimalSpecies, **kwargs):
+        super().__init__(species, **kwargs)
+
+
+class Humanoid(Creature):
+    def __init__(self, species: HumanoidSpecies, **kwargs):
+        super().__init__(species, **kwargs)
+
+    @property
+    def effective_equipment(self) -> dict:
+        effective_items = {**self.equipped_items}
+        if effective_items['Main hand'] is empty_space:
+            effective_items['Main hand'] = self.species.fist_weapon
+        return effective_items
+
+
 class Game:
     """
     Keep the game state: All elements that can change their own state (Creatures, effects, crops, etc.)
@@ -951,7 +988,7 @@ class Game:
 
     def __init__(self):
         self._turn = 0
-        self.character: Optional[Creature] = None
+        self.character: Optional[Humanoid] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
         self._last_character_target = None
@@ -969,12 +1006,12 @@ class Game:
 
     @property
     def _selected_equipped_item(self):
-        return list(self.character.current_equipment.values())[self.selected_equipped_item_index]
+        return list(self.character.equipped_items.values())[self.selected_equipped_item_index]
 
     def start_game(self, character_race) -> None:
         if character_race is None:
             return
-        self.character = Creature(name=self.character_name, race=character_race,
+        self.character = Humanoid(name=self.character_name, species=character_race,
                                   description='You are standing here.', color=console.fg.default,
                                   icon='@')
         # TODO: This is the initial testing configuration. Add the selected starting location here.
@@ -1092,7 +1129,7 @@ class Game:
         return True
 
     def _equip_for_slot_from_inventory_screen(self, _) -> bool:
-        self._equipping_slot = list(self.character.current_equipment.keys())[self.selected_equipped_item_index]
+        self._equipping_slot = list(self.character.equipped_items.keys())[self.selected_equipped_item_index]
         self.substate = Game.equip_for_substate
         return True
 
@@ -1101,9 +1138,9 @@ class Game:
             self.character.bag.add_item(self._selected_equipped_item)
         else:
             self._ground_container.add_item(self._selected_equipped_item)
-        for slot, item in self.character.current_equipment.items():
+        for slot, item in self.character.equipped_items.items():
             if item is self._selected_equipped_item:
-                self.character.current_equipment[slot] = empty_space
+                self.character.equipped_items[slot] = empty_space
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _) -> bool:
@@ -1227,15 +1264,12 @@ class Game:
                 return coords
         raise ValueError(f'Creature {creature.name} cannot be found in coords dictionary!')
 
-    def get_equipment_list(self) -> dict[str, Item]:
-        return self.character.current_equipment
-
     def get_equipment_size(self) -> tuple[int, int]:
-        return len(self.character.current_equipment), 1
+        return len(self.character.equipped_items), 1
 
     def get_equipment_data(self) -> str:
         lines = []
-        for slot_name, item in self.character.current_equipment.items():
+        for slot_name, item in self.character.effective_equipment.items():
             empty_label = dim(f'[{slot_name.lower()}]')
             label = item.name.capitalize() if item.name != config.empty_string else empty_label
             lines.append(f'{item.icon} {label}')
@@ -1275,7 +1309,7 @@ class Game:
 
     def equip_item(self, item: Optional[Item]) -> None:
         if item is not None:
-            self.character.current_equipment[self._equipping_slot] = item
+            self.character.equipped_items[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
             self.character.bag.remove_item(item)
         self.substate = Game.inventory_substate
@@ -1323,7 +1357,8 @@ class Game:
 
     def get_equipped_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         self.selected_equipped_item_index = item_coords[0]
-        return self._selected_equipped_item.details()
+        effective_item = list(self.character.effective_equipment.values())[self.selected_equipped_item_index]
+        return effective_item.details()
 
     def get_current_location_name(self) -> str:
         return self._current_location.name
@@ -1452,7 +1487,7 @@ class Terrain(GameObject):
         self.substances = substances or []
 
     def is_passable_for(self, creature: Creature) -> bool:
-        return self.passable or creature.race in self._allowed_species
+        return self.passable or creature.species in self._allowed_species
 
 
 class FlavorTerrain(Terrain):
@@ -1709,7 +1744,7 @@ class Location(Container):
                             runner: Creature) -> tuple[int, int]:
         distance = runner.perception_radius
         for hunter_coords, hunter in other_creatures.items():
-            if isinstance(hunter.race, HumanoidSpecies) and coord_distance(coords, hunter_coords) <= distance:
+            if isinstance(hunter.species, HumanoidSpecies) and coord_distance(coords, hunter_coords) <= distance:
                 good_y_direction = [1, -1][hunter_coords[0] > coords[0]]
                 good_x_direction = [1, -1][hunter_coords[1] > coords[1]]
                 safe_steps = [(coords[0] + good_y_direction, coords[1] + good_x_direction),
@@ -1729,7 +1764,7 @@ class Location(Container):
                    hunter: Creature) -> tuple[int, int]:
         distance = hunter.perception_radius
         for prey_coords, prey in other_creatures.items():
-            if isinstance(prey.race, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
+            if isinstance(prey.species, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
                 path = direct_path(coords, prey_coords)
                 if self.tile_at(path[1]).is_passable_for(hunter):
                     return path[1]
@@ -1790,7 +1825,7 @@ class Location(Container):
                                      f' list of length {len(species_list)}!')
                 chosen_weights = config.creature_rarity_scale[:len(species_list)]
                 chosen_creature_species = random.choices(species_list, chosen_weights)[0]
-                additional_creatures.append(Creature(chosen_creature_species))
+                additional_creatures.append(Animal(chosen_creature_species))
         for creature_instance in additional_creatures:
             new_coords = self._random_coords()
             while new_coords in local_creatures or not self.can_ocupy(creature_instance, new_coords):
