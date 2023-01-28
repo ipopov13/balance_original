@@ -788,8 +788,8 @@ class Creature(GameObject):
         self._sustenance_needs += change
         if self._sustenance_needs >= 10:
             famine = self._sustenance_needs // 10
-            self._hunger += famine
-            self._thirst += famine
+            self.hunger += famine
+            self.thirst += famine
             self._sustenance_needs = self._sustenance_needs % 10
 
     @property
@@ -1455,19 +1455,20 @@ class Game:
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
         # Target and message line
-        if self.message_log:
-            message = self.message_log.pop(0)
-            hud += message
-        else:
-            target = ''
-            if self._last_character_target is not None:
-                target_hp_gauge = self._format_gauge(self._last_character_target.hp,
-                                                     self._last_character_target.max_hp,
-                                                     config.hp_color, show_numbers=False)
-                target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
-            statuses = '|'.join(self.character.get_statuses())
-            inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-            hud += target + inner_padding + statuses
+        hud += f'{self.character.hunger}'
+        # if self.message_log:
+        #     message = self.message_log.pop(0)
+        #     hud += message
+        # else:
+        #     target = ''
+        #     if self._last_character_target is not None:
+        #         target_hp_gauge = self._format_gauge(self._last_character_target.hp,
+        #                                              self._last_character_target.max_hp,
+        #                                              config.hp_color, show_numbers=False)
+        #         target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+        #     statuses = '|'.join(self.character.get_statuses())
+        #     inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
+        #     hud += target + inner_padding + statuses
         return hud
 
     @staticmethod
