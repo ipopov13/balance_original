@@ -3,7 +3,8 @@ Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs
 Troll passive: sledgehammer fists (pickaxe)
  Finish Humanoid.work_on()
- Add terrain transformations with target terrain and drops
+ Add terrain transformations with target terrain, drops, and messages
+ Tile tells the character that it transformed, so character tells the game to clear the target and print a message
 Move all slot names to config
 
 Inventory
