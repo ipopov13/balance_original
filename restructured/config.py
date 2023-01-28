@@ -40,6 +40,7 @@ hunger_water_effect = hunger_effect_prefix + 'water'
 hunger_rock_effect = hunger_effect_prefix + 'rock'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
+thirst_rock_effect = thirst_effect_prefix + 'rock'
 # Active character effects
 sick_effect = 'Sick'
 drunk_effect = 'Drunk'

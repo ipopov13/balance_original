@@ -461,7 +461,8 @@ class Rock(Item):
     def __init__(self):
         super().__init__(name='rock', weight=2, icon='*', color=console.fg.default,
                          description='Building material and throwing weapon',
-                         effects={config.hunger_rock_effect: 5})
+                         effects={config.hunger_rock_effect: 5,
+                                  config.thirst_rock_effect: 5})
 
 
 base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, config.main_hand_slot: MainHand,
@@ -998,14 +999,13 @@ class Humanoid(Creature):
                     return "You are too tired to work!"
                 current_skill = self._skills.get(item.skill, 0)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
-                tile.apply_skill(item.skill, strength=skill_strength)
                 self.energy -= item.work_exhaustion
                 if random.random() > current_skill / 100:
                     self._skills[item.skill] = self._skills.get(item.skill, 0) + 1
-                break
+                result = tile.apply_skill(item.skill, strength=skill_strength)
+                return result
         else:
             return "You don't have the right tools."
-        return ''
 
 
 class Game:
@@ -1403,7 +1403,8 @@ class Game:
     def get_bag_name(self) -> str:
         return '(no bag)' if self.character.bag is empty_space else f'Your {self.character.bag.name}'
 
-    def get_ground_name(self) -> str:
+    @staticmethod
+    def get_ground_name() -> str:
         return config.ground
 
     def get_ground_items(self) -> str:
@@ -1556,13 +1557,11 @@ class Game:
             pass
 
 
-# TODO: Add Terrains
 class Terrain(GameObject):
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
                  spawned_creatures: list[Species] = None,
                  substances: list[SubstanceSource] = None,
                  allowed_species: list[Species] = None,
-                 applicable_skills: list[str] = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
@@ -1570,7 +1569,6 @@ class Terrain(GameObject):
         self._allowed_species = allowed_species or []
         self.spawned_creatures: list[Species] = spawned_creatures or []
         self.substances = substances or []
-        self.applicable_skills = applicable_skills or []
 
     def is_passable_for(self, creature: Creature) -> bool:
         return self.passable or creature.species in self._allowed_species
@@ -1606,8 +1604,7 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
                     spawned_creatures=[winter_wolf_species, ice_bear_species])
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
-                spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species],
-                applicable_skills=[config.skill_mining])
+                spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species])
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[fox_species])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
                 spawned_creatures=[crocodile_species, swamp_dragon_species, hydra_species])
@@ -1661,6 +1658,10 @@ well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description
                        substances=[SubstanceSource(name='water well',
                                                    description='You can draw water from it.',
                                                    liquid=water_liquid)])
+
+terrain_transformations = {rocks: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+                                                         'drop_types': [Rock], 'drop_weights': [100],
+                                                         'message': 'You turn the boulder into rubble!'}}}
 
 
 class Well(FlavorTerrain):
@@ -1750,19 +1751,26 @@ class Tile(PhysicalContainer):
     def max_hp(self) -> int:
         return 100
 
-    def apply_skill(self, skill: str, strength: int) -> None:
+    def apply_skill(self, skill: str, strength: int) -> str:
         self._last_skill_applied = skill
         self._transformations[skill] = self._transformations.get(skill, 0) + strength
         if self._transformations[skill] >= 100:
-            self._apply_transformation(skill)
+            return self._apply_transformation(skill)
+        return ''
 
-    def _apply_transformation(self, skill: str) -> None:
-        self.terrain = dirt
+    def _apply_transformation(self, skill: str) -> str:
+        transformation_result = terrain_transformations[self.terrain][skill]
+        self.terrain = transformation_result['new_terrain']
+        for x in range(transformation_result['number_of_drops']):
+            item_type = random.choices(transformation_result['drop_types'],
+                                       transformation_result['drop_weights'])[0]
+            self.add_item(item_type())
         self._transformations = {}
+        return transformation_result['message']
 
     @property
     def applicable_skills(self) -> list[str]:
-        return self.terrain.applicable_skills
+        return list(terrain_transformations.get(self.terrain, []))
 
     @property
     def description(self):

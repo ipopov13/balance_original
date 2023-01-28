@@ -21,5 +21,12 @@ knowledge = {
     "orc": ["...as disgusting as it may sound. An orc is capable of consuming raw meat just like a"
             " wild animal, and only the foulest of meals will give them discomfort. I shudder..."],
     "troll": ["They can take a beating like no other civilized creature, if you consider the rock-"
-              "munching trolls civilized."]
+              "munching trolls civilized.",
+              "Troll fists are hard as rock, probably due to the diet of stone and ore that all"
+              " trolls follow. As a result, and probably as an evolutionary adaptation, they can"
+              " break rocks with their bare hands, providing the troll with food anywhere they go."
+              " This also makes them natural miners",
+              "Due to the silicate diet and body structure, a troll needs only a handful of stones"
+              " to feel sated. They do not have the need for both food and drink, unlike most"
+              " other races."]
 }

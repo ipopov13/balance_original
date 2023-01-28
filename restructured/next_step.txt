@@ -1,11 +1,11 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves, gnomes, orcs
-Troll passive: sledgehammer fists (pickaxe)
- Add terrain transformations with target terrain, drops, and messages
- Tile tells the character that it transformed, so character tells the game
-  to clear the target and print a message and exit work mode?
- Implement fully the mining skill
+    Done: humans, dwarves, elves, gnomes, orcs, trolls
+Make the game auto-exit work mode:
+    if the character is hit
+    if they point to a tile with a creature (do a bump instead)
+    if they don't have the right tools (do a move instead)
+Implement fully the mining skill (all transformations, tools, products)
 Move all slot names to config
 Move all stat names to the config
 
