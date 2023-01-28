@@ -1393,7 +1393,8 @@ class Game:
         if item is not None:
             self.character.equipped_items[self._equipping_slot] = item
             self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
-            self.character.bag.remove_item(item)
+            if self.character.bag is not empty_space:
+                self.character.bag.remove_item(item)
         self.substate = Game.inventory_substate
         self._equipping_slot = None
 
@@ -1404,10 +1405,7 @@ class Game:
         return '(no bag)' if self.character.bag is empty_space else f'Your {self.character.bag.name}'
 
     def get_ground_name(self) -> str:
-        if self._ground_container:
-            return self._ground_container.name or config.ground
-        else:
-            return config.ground
+        return config.ground
 
     def get_ground_items(self) -> str:
         return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
