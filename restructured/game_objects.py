@@ -116,10 +116,11 @@ class Item(GameObject):
 
 
 class Tool(Item):
-    def __init__(self, skill: str, work_exhaustion: int = None, **kwargs):
+    def __init__(self, skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
         self.skill = skill
         self.work_exhaustion = work_exhaustion or self.weight
+        self.work_stat = work_stat
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
@@ -337,9 +338,8 @@ class TrollFist(Tool, Weapon):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=5, skill=config.skill_mining)
-        # self.damage = 1
-        # self.combat_exhaustion = 1
+                         work_exhaustion=5, skill=config.skill_mining, work_stat='Str',
+                         damage=10, combat_exhaustion=1)
 
 
 class ShortSword(MainHand):
@@ -996,13 +996,12 @@ class Humanoid(Creature):
             if isinstance(item, Tool) and item.skill in tile.applicable_skills:
                 if item.work_exhaustion > self.energy:
                     return "You are too tired to work!"
-                # Define effect size
-                skill_strength = self._skills.get(item.skill, 10)
-                # Apply to tile
+                current_skill = self._skills.get(item.skill, 0)
+                skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 tile.apply_skill(item.skill, strength=skill_strength)
-                # get tired
                 self.energy -= item.work_exhaustion
-                # gain skill
+                if random.random() > current_skill / 100:
+                    self._skills[item.skill] = self._skills.get(item.skill, 0) + 1
                 break
         else:
             return "You don't have the right tools."
@@ -1455,20 +1454,19 @@ class Game:
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
         # Target and message line
-        hud += f'{self.character.hunger}'
-        # if self.message_log:
-        #     message = self.message_log.pop(0)
-        #     hud += message
-        # else:
-        #     target = ''
-        #     if self._last_character_target is not None:
-        #         target_hp_gauge = self._format_gauge(self._last_character_target.hp,
-        #                                              self._last_character_target.max_hp,
-        #                                              config.hp_color, show_numbers=False)
-        #         target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
-        #     statuses = '|'.join(self.character.get_statuses())
-        #     inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-        #     hud += target + inner_padding + statuses
+        if self.message_log:
+            message = self.message_log.pop(0)
+            hud += message
+        else:
+            target = ''
+            if self._last_character_target is not None:
+                target_hp_gauge = self._format_gauge(self._last_character_target.hp,
+                                                     self._last_character_target.max_hp,
+                                                     config.hp_color, show_numbers=False)
+                target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+            statuses = '|'.join(self.character.get_statuses())
+            inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
+            hud += target + inner_padding + statuses
         return hud
 
     @staticmethod

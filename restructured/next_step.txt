@@ -2,11 +2,12 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs
 Troll passive: sledgehammer fists (pickaxe)
- Finish Humanoid.work_on()
  Add terrain transformations with target terrain, drops, and messages
  Tile tells the character that it transformed, so character tells the game
   to clear the target and print a message and exit work mode?
+ Implement fully the mining skill
 Move all slot names to config
+Move all stat names to the config
 
 Inventory
     Add item descriptions in details (line formatted)
