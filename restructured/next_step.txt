@@ -6,7 +6,6 @@ Make the game auto-exit work mode:
     if they point to a tile with a creature (do a bump instead)
     if they don't have the right tools (do a move instead)
 Implement fully the mining skill (all transformations, tools, products)
-Move all slot names to config
 Move all stat names to the config
 
 Inventory

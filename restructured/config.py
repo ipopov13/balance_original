@@ -56,6 +56,14 @@ visible_effects = [sick_effect, drunk_effect]
 skill_mining = 'skill_mining'
 # Equipment slots
 main_hand_slot = 'Main hand'
+offhand_slot = 'Offhand'
+head_slot = 'Head'
+armor_slot = 'Armor'
+back_slot = 'Back'
+boots_slot = 'Boots'
+animal_weapon_slot = 'AnimalWeapon'
+animal_armor_slot = 'AnimalArmor'
+animal_meat_slot = 'Meat'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

@@ -441,14 +441,6 @@ class Feathers(AnimalArmor):
         self.armor = 1
 
 
-class Claws(Item):
-    pass
-
-
-class Tail(Item):
-    pass
-
-
 class RawMeat(Item):
     def __init__(self):
         super().__init__(name='raw meat', weight=1, icon=',', color=console.fg.red,
@@ -465,10 +457,12 @@ class Rock(Item):
                                   config.thirst_rock_effect: 5})
 
 
-base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, config.main_hand_slot: MainHand,
-                                 'Offhand': Offhand, 'Back': Back, 'Boots': Boots}
-base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
-                               'Claws': Claws, 'Tail': Tail, 'Meat': RawMeat}
+base_sentient_equipment_slots = {config.head_slot: Helmet, config.armor_slot: Armor,
+                                 config.main_hand_slot: MainHand, config.offhand_slot: Offhand,
+                                 config.back_slot: Back, config.boots_slot: Boots}
+base_animal_equipment_slots = {config.animal_weapon_slot: AnimalWeapon,
+                               config.animal_armor_slot: AnimalArmor,
+                               config.animal_meat_slot: RawMeat}
 
 
 # The species define what a creature is physically and how it looks in the game
@@ -923,7 +917,7 @@ class Creature(GameObject):
 
     @property
     def bag(self):
-        return self.equipped_items['Back']
+        return self.equipped_items[config.back_slot]
 
     def can_equip(self, item: Item) -> bool:
         return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
