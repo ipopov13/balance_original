@@ -168,11 +168,11 @@ class Liquid(Item):
 
 water_liquid = Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
                       description='The one thing everyone needs',
-                      effects={config.thirst_water_effect: 5,
+                      effects={config.thirst_water_effect: 20,
                                config.hunger_water_effect: 0})
 wine_liquid = Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
                      description='Fermented fruit juice',
-                     effects={config.thirst_water_effect: 5, config.drunk_effect: 10})
+                     effects={config.thirst_water_effect: 15, config.drunk_effect: 10})
 
 
 class LiquidContainer(Item):
@@ -1329,6 +1329,8 @@ class Game:
                     for item in other_creature.get_drops():
                         self._current_location.put_item(item, next_coords)
                     self._creature_coords.pop(next_coords)
+                if other_creature is self.character and self.substate == Game.working_substate:
+                    self.substate = Game.scene_substate
             else:
                 self._creature_coords.pop(old_coords)
                 self._creature_coords[next_coords] = creature
@@ -1524,20 +1526,23 @@ class Game:
         new_coords = calculate_new_position(old_coords, direction, *self.world.size)
         old_location = self._current_location
         new_location = self.world.get_location(new_coords)
-        if new_location.can_ocupy(self.character, new_coords):
-            if new_coords in self._creature_coords:
-                self._last_character_target = self._creature_coords[new_coords]
-                self.character.bump_with(self._last_character_target)
-                if self._last_character_target.is_dead:
-                    for item in self._last_character_target.get_drops():
-                        self._current_location.put_item(item, new_coords)
-                    self._creature_coords.pop(new_coords)
-                    self._last_character_target = None
-            else:
+        if new_coords in self._creature_coords:
+            self._last_character_target = self._creature_coords[new_coords]
+            self.character.bump_with(self._last_character_target)
+            if self._last_character_target.is_dead:
+                if new_location.can_ocupy(self.character, new_coords):
+                    drop_coords = new_coords
+                else:
+                    drop_coords = old_coords
+                for item in self._last_character_target.get_drops():
+                    self._current_location.put_item(item, drop_coords)
+                self._creature_coords.pop(new_coords)
                 self._last_character_target = None
-                self._creature_coords.pop(old_coords)
-                self._creature_coords[new_coords] = self.character
-                self._current_location = new_location
+        elif new_location.can_ocupy(self.character, new_coords):
+            self._last_character_target = None
+            self._creature_coords.pop(old_coords)
+            self._creature_coords[new_coords] = self.character
+            self._current_location = new_location
             if self._current_location is not old_location:
                 old_location.stored_creatures = []
                 for coords in list(self._creature_coords):
@@ -1547,8 +1552,7 @@ class Game:
                         self.character.travel()
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         else:
-            # TODO: Implement log message describing why the move is impossible
-            pass
+            self._add_message("You can't go through that!")
 
 
 class Terrain(GameObject):

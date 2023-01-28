@@ -2,8 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Make the game auto-exit work mode:
-    if the character is hit
-    if they point to a tile with a creature (do a bump instead)
+    if the character points to a tile with a creature (do a bump instead)
     if they don't have the right tools (do a move instead)
 Implement fully the mining skill (all transformations, tools, products)
 Move all stat names to the config
