@@ -1301,6 +1301,10 @@ class Game:
     def _character_labor(self, direction: str) -> None:
         work_coords = calculate_new_position(self._get_coords_of_creature(self.character),
                                              direction, *self.world.size)
+        if work_coords in self._creature_coords:
+            self.substate = Game.scene_substate
+            self._move_character(direction)
+            return
         try:
             tile = self._current_location.tile_at(work_coords)
         except IndexError:
