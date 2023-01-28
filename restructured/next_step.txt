@@ -1,9 +1,10 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs
-Implement default weapon: fist
-    ADd combat exhaustion to items/weapons, so that the weight is not coupled there!
 Troll passive: sledgehammer fists (pickaxe)
+ Finish Humanoid.work_on()
+ Adjust target in hud (make it a Game attribute) to show progress
+Move all slot names to config
 
 Inventory
     Add item descriptions in details (line formatted)

@@ -115,6 +115,13 @@ class Item(GameObject):
         return self._effects
 
 
+class Tool(Item):
+    def __init__(self, skill: str, work_exhaustion: int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.skill = skill
+        self.work_exhaustion = work_exhaustion or self.weight
+
+
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
 
 
@@ -312,12 +319,27 @@ class MainHand(Item):
     pass
 
 
-class Fist(Item):
+class Weapon(Item):
+    def __init__(self, damage: int = 0, combat_exhaustion: int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.damage = damage
+        self.combat_exhaustion = combat_exhaustion or self.weight
+
+
+class Fist(Weapon):
     def __init__(self):
         super().__init__(name="Your fist", description="When you don't have a sword at hand.",
-                         weight=0, icon='.', color=console.fg.lightblack)
-        self.damage = 0
-        self.combat_exhaustion = 1
+                         weight=0, icon='.', color=console.fg.lightblack,
+                         damage=0, combat_exhaustion=1)
+
+
+class TrollFist(Tool, Weapon):
+    def __init__(self):
+        super().__init__(name="Your fist", description="You can break rocks for eating with it!",
+                         weight=0, icon='.', color=console.fg.lightblack,
+                         work_exhaustion=5, skill=config.skill_mining)
+        # self.damage = 1
+        # self.combat_exhaustion = 1
 
 
 class ShortSword(MainHand):
@@ -442,7 +464,7 @@ class Rock(Item):
                          effects={config.hunger_rock_effect: 5})
 
 
-base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, 'Main hand': MainHand,
+base_sentient_equipment_slots = {'Head': Helmet, 'Armor': Armor, config.main_hand_slot: MainHand,
                                  'Offhand': Offhand, 'Back': Back, 'Boots': Boots}
 base_animal_equipment_slots = {'AnimalWeapon': AnimalWeapon, 'AnimalArmor': AnimalArmor,
                                'Claws': Claws, 'Tail': Tail, 'Meat': RawMeat}
@@ -559,7 +581,8 @@ troll_race = HumanoidSpecies(name='Troll',
                                          "can appreciate in full.",
                              sort_key=5,
                              consumable_types=[Rock],
-                             base_effect_modifiers={config.max_hp_modifier: 1.2})
+                             base_effect_modifiers={config.max_hp_modifier: 1.2},
+                             fist_weapon=TrollFist)
 goblin_race = HumanoidSpecies(name='Goblin',
                               icon='G',
                               color=config.chaos_color,
@@ -958,13 +981,32 @@ class Animal(Creature):
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
         super().__init__(species, **kwargs)
+        self._skills = {}
 
     @property
     def effective_equipment(self) -> dict:
         effective_items = {**self.equipped_items}
-        if effective_items['Main hand'] is empty_space:
-            effective_items['Main hand'] = self.species.fist_weapon
+        if effective_items[config.main_hand_slot] is empty_space:
+            effective_items[config.main_hand_slot] = self.species.fist_weapon
         return effective_items
+
+    def work_on(self, tile: 'Tile') -> str:
+        for slot in [config.main_hand_slot]:
+            item = self.effective_equipment[slot]
+            if isinstance(item, Tool) and item.skill in tile.applicable_skills:
+                if item.work_exhaustion > self.energy:
+                    return "You are too tired to work!"
+                # Define effect size
+                skill = self._skills.get(item.skill, 0)
+                # Apply to tile
+                # tile.apply_skill(skill)
+                # get tired
+                self.energy -= item.work_exhaustion
+                # gain skill
+                break
+        else:
+            return "You don't have the right tools."
+        return ''
 
 
 class Game:
@@ -982,6 +1024,7 @@ class Game:
     equip_for_substate = 'equip_for_screen'
     inventory_substate = 'inventory_substate'
     fill_container_substate = 'fill_container_substate'
+    working_substate = 'working_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -1003,6 +1046,7 @@ class Game:
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
+        self.message_log: list[str] = []
 
     @property
     def _selected_equipped_item(self):
@@ -1048,11 +1092,16 @@ class Game:
         if self.state is Game.welcome_state:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
+        elif self.state is Game.playing_state and self.substate is Game.working_substate:
+            return {commands.StopWork(): self._go_to_normal_mode,
+                    commands.Rest(): self._character_rests,
+                    commands.Move(): self._player_work}
         elif self.state is Game.playing_state and self.substate is Game.scene_substate:
             return {commands.Move(): self._player_move,
                     commands.Rest(): self._character_rests,
                     commands.Map(): self._open_map,
-                    commands.Inventory(): self._open_inventory}
+                    commands.Inventory(): self._open_inventory,
+                    commands.Work(): self._go_to_work_mode}
         elif self.state is Game.playing_state and self.substate is Game.map_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
@@ -1101,6 +1150,19 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _player_work(self, direction: str) -> bool:
+        self._character_labor(direction)
+        self._living_world()
+        return True
+
+    def _go_to_normal_mode(self, _) -> bool:
+        self.substate = Game.scene_substate
+        return True
+
+    def _go_to_work_mode(self, _) -> bool:
+        self.substate = Game.working_substate
+        return True
 
     def _empty_from_bag_in_inventory_screen(self, _) -> bool:
         if isinstance(self._selected_bag_item, LiquidContainer):
@@ -1161,6 +1223,7 @@ class Game:
 
     def _character_rests(self, _) -> bool:
         self.character.rest()
+        self._add_message('You rest for a bit.')
         self._living_world()
         return True
 
@@ -1237,6 +1300,21 @@ class Game:
         self._turn += 1
         self._move_npcs()
         self.character.live()
+
+    def _add_message(self, message: str) -> None:
+        if message:
+            self.message_log.append(message)
+
+    def _character_labor(self, direction: str) -> None:
+        work_coords = calculate_new_position(self._get_coords_of_creature(self.character),
+                                             direction, *self.world.size)
+        try:
+            tile = self._current_location.tile_at(work_coords)
+        except IndexError:
+            self._add_message('You cannot work on that!')
+            return
+        self._add_message(self.character.work_on(tile))
+        # Adjust target in hud (make it a Game attribute) to show progress
 
     def _move_npcs(self):
         for old_coords in list(self._creature_coords.keys()):
@@ -1374,15 +1452,20 @@ class Game:
                                           ailment_color=config.famine_color)
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
-        target = ''
-        if self._last_character_target is not None:
-            target_hp_gauge = self._format_gauge(self._last_character_target.hp,
-                                                 self._last_character_target.max_hp,
-                                                 config.hp_color, show_numbers=False)
-            target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
-        statuses = '|'.join(self.character.get_statuses())
-        inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-        hud += target + inner_padding + statuses
+        # Target and message line
+        if self.message_log:
+            message = self.message_log.pop(0)
+            hud += message
+        else:
+            target = ''
+            if self._last_character_target is not None:
+                target_hp_gauge = self._format_gauge(self._last_character_target.hp,
+                                                     self._last_character_target.max_hp,
+                                                     config.hp_color, show_numbers=False)
+                target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+            statuses = '|'.join(self.character.get_statuses())
+            inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
+            hud += target + inner_padding + statuses
         return hud
 
     @staticmethod
@@ -1478,6 +1561,7 @@ class Terrain(GameObject):
                  spawned_creatures: list[Species] = None,
                  substances: list[SubstanceSource] = None,
                  allowed_species: list[Species] = None,
+                 applicable_skills: list[str] = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
@@ -1485,6 +1569,7 @@ class Terrain(GameObject):
         self._allowed_species = allowed_species or []
         self.spawned_creatures: list[Species] = spawned_creatures or []
         self.substances = substances or []
+        self.applicable_skills = applicable_skills or []
 
     def is_passable_for(self, creature: Creature) -> bool:
         return self.passable or creature.species in self._allowed_species
@@ -1520,7 +1605,8 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
                     spawned_creatures=[winter_wolf_species, ice_bear_species])
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
-                spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species])
+                spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species],
+                applicable_skills=[config.skill_mining])
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[fox_species])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
                 spawned_creatures=[crocodile_species, swamp_dragon_species, hydra_species])
@@ -1648,6 +1734,10 @@ class Tile(PhysicalContainer):
     def __init__(self, terrain: Terrain):
         super().__init__(height=config.tile_size, width=config.tile_size)
         self.terrain = terrain
+
+    @property
+    def applicable_skills(self):
+        return self.terrain.applicable_skills
 
     @property
     def description(self):

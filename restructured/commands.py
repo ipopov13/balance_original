@@ -31,6 +31,12 @@ class InventoryEmpty(Command):
     description = 'Empty the selected container'
 
 
+class Work(Command):
+    character = 'W'
+    hint = '(W)ork'
+    description = 'Start working on the terrain around you'
+
+
 class InventoryFill(Command):
     character = 'f'
     hint = '(f)ill'
@@ -123,6 +129,12 @@ class Rest(Command):
     character = '5'
     hint = ''
     description = 'Rest and restore energy and hit points'
+
+
+class StopWork(Command):
+    character = 'S'
+    hint = '(S)top'
+    description = 'Stop working'
 
 
 class NextPage(Command):

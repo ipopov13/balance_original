@@ -51,6 +51,10 @@ max_mana_modifier = 'max_mana_modifier'
 max_hp_modifier = 'max_hp_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
+# Tools
+skill_mining = 'skill_mining'
+# Equipment slots
+main_hand_slot = 'Main hand'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
