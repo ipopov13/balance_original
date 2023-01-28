@@ -997,9 +997,9 @@ class Humanoid(Creature):
                 if item.work_exhaustion > self.energy:
                     return "You are too tired to work!"
                 # Define effect size
-                skill = self._skills.get(item.skill, 0)
+                skill_strength = self._skills.get(item.skill, 10)
                 # Apply to tile
-                # tile.apply_skill(skill)
+                tile.apply_skill(item.skill, strength=skill_strength)
                 # get tired
                 self.energy -= item.work_exhaustion
                 # gain skill
@@ -1313,8 +1313,12 @@ class Game:
         except IndexError:
             self._add_message('You cannot work on that!')
             return
-        self._add_message(self.character.work_on(tile))
-        # Adjust target in hud (make it a Game attribute) to show progress
+        result = self.character.work_on(tile)
+        if result:
+            self._add_message(result)
+            self._last_character_target = None
+        else:
+            self._last_character_target = tile
 
     def _move_npcs(self):
         for old_coords in list(self._creature_coords.keys()):
@@ -1734,9 +1738,33 @@ class Tile(PhysicalContainer):
     def __init__(self, terrain: Terrain):
         super().__init__(height=config.tile_size, width=config.tile_size)
         self.terrain = terrain
+        self._transformations = {}
+        self._last_skill_applied: Optional[str] = None
 
     @property
-    def applicable_skills(self):
+    def name(self):
+        return self.terrain.name
+
+    @property
+    def hp(self) -> int:
+        return 100 - self._transformations.get(self._last_skill_applied, 0)
+
+    @property
+    def max_hp(self) -> int:
+        return 100
+
+    def apply_skill(self, skill: str, strength: int) -> None:
+        self._last_skill_applied = skill
+        self._transformations[skill] = self._transformations.get(skill, 0) + strength
+        if self._transformations[skill] >= 100:
+            self._apply_transformation(skill)
+
+    def _apply_transformation(self, skill: str) -> None:
+        self.terrain = dirt
+        self._transformations = {}
+
+    @property
+    def applicable_skills(self) -> list[str]:
         return self.terrain.applicable_skills
 
     @property
