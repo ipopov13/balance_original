@@ -9,7 +9,10 @@ knowledge = {
               "Between the many accounts of the legendary items created by dwarven armorsmiths,"
               " one would be hard pressed to find one description of the extensive defensive fighting"
               " techniques studied by dwarven warriors. However, this humble scholar is certain in "
-              "the importance of describing those techniques in more detail..."],
+              "the importance of describing those techniques in more detail...",
+              "Fond of breaking things apart with a pickaxe, dwarves have explored the breadth of"
+              " objects that produce valuable materials. Among the more surprising ones, we find the ice"
+              " boulders found around glaciers and the still water columns produced by some magics."],
     "elf": ["Of the many remarkable abilities of elves, we should speak of their love of magic."
             " Their devotion to the Craft over many generations has led to an increased ability"
             " to draw on the deepest reservoirs of willpower, allowing elven mages to practice"

@@ -338,8 +338,16 @@ class TrollFist(Tool, Weapon):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
+                         work_exhaustion=2, skill=config.skill_mining, work_stat='Str',
+                         damage=1, combat_exhaustion=1)
+
+
+class Pickaxe(Tool, Weapon):
+    def __init__(self):
+        super().__init__(name="a pickaxe", description="Used to extract stone and ores",
+                         weight=6, icon='/', color=console.fg.lightblack,
                          work_exhaustion=5, skill=config.skill_mining, work_stat='Str',
-                         damage=10, combat_exhaustion=1)
+                         damage=1, combat_exhaustion=5)
 
 
 class ShortSword(MainHand):
@@ -451,10 +459,46 @@ class RawMeat(Item):
 
 class Rock(Item):
     def __init__(self):
-        super().__init__(name='rock', weight=2, icon='*', color=console.fg.default,
+        super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightblack,
                          description='Building material and throwing weapon',
-                         effects={config.hunger_rock_effect: 5,
+                         effects={config.hunger_rock_effect: 10,
+                                  config.thirst_rock_effect: 10})
+
+
+class IronOre(Item):
+    def __init__(self):
+        super().__init__(name='iron ore', weight=2, icon='*', color=console.fg.default,
+                         description='Can be smelted and turned into metal bars',
+                         effects={config.hunger_rock_effect: 20,
                                   config.thirst_rock_effect: 5})
+
+
+class SilverOre(Item):
+    def __init__(self):
+        super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightwhite,
+                         description='Can be smelted and turned into metal bars',
+                         effects={config.hunger_rock_effect: 5,
+                                  config.thirst_rock_effect: 15})
+
+
+class GoldOre(Item):
+    def __init__(self):
+        super().__init__(name='rock', weight=2, icon='*', color=console.fg.yellow,
+                         description='Can be smelted and turned into metal bars',
+                         effects={config.hunger_rock_effect: 5,
+                                  config.thirst_rock_effect: 25})
+
+
+class IceShard(Item):
+    def __init__(self):
+        super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightblue,
+                         description='Can be melted for drinking, or used to cool things')
+
+
+class StilledWaterShard(Item):
+    def __init__(self):
+        super().__init__(name='stilled water', weight=2, icon='*', color=console.fg.white,
+                         description='Used to meld still water equipment')
 
 
 base_sentient_equipment_slots = {config.head_slot: Helmet, config.armor_slot: Armor,
@@ -1656,14 +1700,35 @@ farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='f
 # Structure building blocks
 poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~')
 water = Terrain(color=console.fg.blue, name='water', icon='~')
+stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%', passable=False)
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well',
                        substances=[SubstanceSource(name='water well',
                                                    description='You can draw water from it.',
                                                    liquid=water_liquid)])
 
-terrain_transformations = {rocks: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
-                                                         'drop_types': [Rock], 'drop_weights': [100],
-                                                         'message': 'You turn the boulder into rubble!'}}}
+terrain_transformations = {
+    rocks: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+                                  'drop_types': [Rock], 'drop_weights': [100],
+                                  'message': 'You turn the boulder into rubble!'}},
+    iron_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+                                      'drop_types': [Rock, IronOre],
+                                      'drop_weights': [75, 25],
+                                      'message': 'You turn the boulder into rubble!'}},
+    gold_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+                                      'drop_types': [Rock, GoldOre],
+                                      'drop_weights': [75, 25],
+                                      'message': 'You turn the boulder into rubble!'}},
+    silver_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+                                        'drop_types': [Rock, SilverOre],
+                                        'drop_weights': [75, 25],
+                                        'message': 'You turn the boulder into rubble!'}},
+    ice_block: {config.skill_mining: {'new_terrain': ice, 'number_of_drops': 10,
+                                      'drop_types': [IceShard], 'drop_weights': [100],
+                                      'message': 'The ice breaks into razor-sharp pieces!'}},
+    stilled_water: {config.skill_mining: {'new_terrain': water, 'number_of_drops': 10,
+                                          'drop_types': [StilledWaterShard], 'drop_weights': [100],
+                                          'message': 'The translucent column breaks apart!'}},
+    }
 
 
 class Well(FlavorTerrain):
