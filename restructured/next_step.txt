@@ -1,6 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Implement RangedWeapon (can_shoot()), RangedAmmo
+    Implement damage as an effects dictionary
     The shooter checks weapon and ammo compatibility (config ranged_weapon tag)
         weapon is main hand, can be offhand for thrown weapons
         ammo container/item is offhand, or main hand for thrown weapons
@@ -21,8 +21,8 @@ Ranged combat (weapons with ammo)
     If there are effects on the list, Game does a sub-turn tick, resolves collisions,
      removes any expired effects, places/removes items on the scene, then returns the data
     If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
-    Add creatures setting their ranged targets
-    Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
+Add creatures setting their ranged targets
+Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
 Make the help overlay have dynamic top_left (must become a property in Window)
 Make the help overlay content format multi-lines properly
 Adding the racial passives and documenting them in knowledge

@@ -66,6 +66,8 @@ boots_slot = 'Boots'
 animal_weapon_slot = 'AnimalWeapon'
 animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
+# Ranged weapon types
+thrown_weapon_type = 'thrown_weapon_type'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

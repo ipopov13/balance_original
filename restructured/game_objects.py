@@ -115,14 +115,6 @@ class Item(GameObject):
         return self._effects
 
 
-class Tool(Item):
-    def __init__(self, skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
-        super().__init__(**kwargs)
-        self.skill = skill
-        self.work_exhaustion = work_exhaustion or self.weight
-        self.work_stat = work_stat
-
-
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
 
 
@@ -318,24 +310,37 @@ class Boots(Item):
 
 
 class MainHand(Item):
-    pass
-
-
-class Weapon(Item):
     def __init__(self, damage: int = 0, combat_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
         self.damage = damage
         self.combat_exhaustion = combat_exhaustion or self.weight
 
 
-class Fist(Weapon):
+class RangedWeapon(MainHand):
+    def __init__(self, ranged_weapon_type: str, **kwargs):
+        super().__init__(**kwargs)
+        self.ranged_weapon_type = ranged_weapon_type
+
+    def can_shoot(self, ammo: Optional[Item]) -> bool:
+        return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
+
+
+class Tool(MainHand):
+    def __init__(self, skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.skill = skill
+        self.work_exhaustion = work_exhaustion or self.weight
+        self.work_stat = work_stat
+
+
+class Fist(MainHand):
     def __init__(self):
         super().__init__(name="Your fist", description="When you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
                          damage=0, combat_exhaustion=1)
 
 
-class TrollFist(Tool, Weapon):
+class TrollFist(Tool):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
@@ -343,7 +348,7 @@ class TrollFist(Tool, Weapon):
                          damage=1, combat_exhaustion=1)
 
 
-class Pickaxe(Tool, Weapon):
+class Pickaxe(Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
@@ -354,13 +359,30 @@ class Pickaxe(Tool, Weapon):
 class ShortSword(MainHand):
     def __init__(self, color=console.fg.default):
         super().__init__(name='short sword', weight=3, icon='|', color=color,
-                         description='Made for stabbing.')
-        self.damage = 3
-        self.combat_exhaustion = 3
+                         description='Made for stabbing.',
+                         damage=3, combat_exhaustion=3)
 
 
 class Offhand(Item):
     pass
+
+
+class RangedAmmo(Offhand):
+    def __init__(self, ranged_ammo_type: str, **kwargs):
+        super().__init__(**kwargs)
+        self.ranged_ammo_type = ranged_ammo_type
+
+
+class ThrownWeapon(RangedWeapon, RangedAmmo):
+    pass
+
+
+class ThrowingKnife(ThrownWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='throwing knife', weight=1, icon='}', color=color,
+                         description='A light knife, balanced for throwing.',
+                         damage=2, combat_exhaustion=1, ranged_weapon_type=config.thrown_weapon_type,
+                         ranged_ammo_type=config.thrown_weapon_type)
 
 
 class AnimalWeapon(Item):
@@ -1057,14 +1079,14 @@ class Humanoid(Creature):
             effective_items[config.main_hand_slot] = self.species.fist_weapon
         return effective_items
 
-    def _get_ranged_weapon(self) -> Optional[Item]:
+    def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
             item = self.effective_equipment[slot]
             if isinstance(item, RangedWeapon):
                 return item
         return None
 
-    def _get_ranged_ammo(self) -> Optional[Item]:
+    def _get_ranged_ammo(self) -> Optional[RangedAmmo]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
             item = self.effective_equipment[slot]
             if isinstance(item, RangedAmmo):
@@ -1073,14 +1095,14 @@ class Humanoid(Creature):
 
     @property
     def can_shoot_or_throw(self) -> bool:
-        # Cases:
-        #  ranged main hand and matching ammo offhand
-        #  thrown in any hand
         ranged_weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
         if ranged_weapon is not None and ranged_weapon.can_shoot(ammo):
             return True
         return False
+
+    def shoot(self):
+        raise IOError("Shooting!")
 
     def work_on(self, tile: 'Tile') -> str:
         for slot in [config.main_hand_slot]:
@@ -1160,12 +1182,8 @@ class Game:
 
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
-        full_skin = WaterSkin()
-        full_skin.fill(water_liquid, 2)
-        full_skin2 = WaterSkin()
-        full_skin2.fill(wine_liquid, 2)
-        self._current_location.put_item(full_skin, character_coords)
-        self._current_location.put_item(full_skin2, character_coords)
+        self._current_location.put_item(ThrowingKnife(), character_coords)
+        self._current_location.put_item(ThrowingKnife(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state

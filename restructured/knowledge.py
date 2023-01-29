@@ -1,7 +1,10 @@
 knowledge = {
     "general": ["Travelling with a heavy load on your back has caused many an explorer sizeable"
                 " discomfort. Meeting a hungry wolf right after arriving in a new place is not a"
-                " pleasant experience."],
+                " pleasant experience.",
+                "Some advice for beginner archers: always wield your bow in your strong hand. A"
+                " knife thrower might be able to throw with both hands, but you are limited to"
+                " your main if you want to hit anything smaller than a mountain."],
     "human": ["The thrill of discovery drives humans forward, making them immune to the draining"
               " effects of long travel and silent nights around the camp fire."],
     "dwarf": ["The fame of dwarven breweries is eclipsed only by the outstanding amount of ale "
