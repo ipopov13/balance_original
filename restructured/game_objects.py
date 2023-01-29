@@ -1117,11 +1117,13 @@ class Humanoid(Creature):
         return random.randint(0, max(stats // 2, 1)) + weapon_damage
 
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
-        # TODO: remove ammo
         ammo = self._get_ranged_ammo()
         effects = {config.normal_damage_effect: self._ranged_damage}
         current_skill = self._skills.get(ammo.ranged_ammo_type, 0)
         self._increase_skill(ammo.ranged_ammo_type)
+        for slot, item in self.equipped_items.items():
+            if item is ammo:
+                self.equipped_items[slot] = empty_space
         return ammo, current_skill, effects
 
     def _increase_skill(self, skill_name: str) -> None:
