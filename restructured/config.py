@@ -21,6 +21,8 @@ brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
 
 multiple_items_icon = '?'
+target_cross_icon = console.fg.lightred + 'X' + console.fx.end
+target_path_icon = console.fg.yellow + '*' + console.fx.end
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')

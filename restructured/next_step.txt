@@ -1,17 +1,16 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Add target display with projectile path for the Look mode
-    Target adds an object (Creature or Tile) as the character's target
-    Add a Shoot command
+    Add a Shoot/Throw command
     A Creature/player selects a target
     A Creature decides to shoot its target / Player uses the Shoot command
-    The shooter checks the weapon and ammo for compatibility (config ranged_weapon tag)
-    weapon is main hand
-    ammo container/item is offhand
+    The shooter checks if a target is selected, and weapon and ammo compatibility (config ranged_weapon tag)
+    weapon is main hand, can be offhand for thrown weapons
+    ammo container/item is offhand, or main hand for thrown weapons
         ammo container is like a LiquidContainer, but sucks up physical items instead
         Has a Fill and an Empty method, but the Empty drops all the contents on the ground
-    The shooter removes the Projectile from equipment
-    The shooter gives the skill, Projectile, and effects (e.g. damage, explosion, etc.)
+    Thrown weapons are their own ammo (tag check is done on both slots)
+    The shooter removes the Projectile from equipment (ammo or thrown)
+    The shooter gives to the Game the skill, Projectile, and effects (e.g. damage, explosion, etc.)
     Game determines the end position and the path based on skill, shooter and target locations
     The path, the Projectile, and its effects are turned into a sub-turn effect item
     Game adds the sub-turn item to a list of sub-turn effects

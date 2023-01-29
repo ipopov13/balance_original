@@ -1589,6 +1589,13 @@ class Game:
         return colored_gauge
 
     def get_area_view(self) -> str:
+        if self.substate == Game.looking_substate and self.character.ranged_target is not None:
+            target_from = self._get_coords_of_creature(self.character)
+            target_to = {v: k for k, v in self._creature_coords.items()}.get(self.character.ranged_target,
+                                                                             self.character.ranged_target)
+            return self._current_location.data_with_creatures(self._creature_coords,
+                                                              target_from=target_from,
+                                                              target_to=target_to)
         return self._current_location.data_with_creatures(self._creature_coords)
 
     def get_cursor_position_in_location(self) -> tuple[int, int]:
@@ -2180,12 +2187,20 @@ class Location(Container):
     def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
         return coords[0] - self._top_left[0], coords[1] - self._top_left[1]
 
-    def data_with_creatures(self, creatures: dict[tuple[int, int], Creature] = None) -> str:
+    def data_with_creatures(self, creatures: dict[tuple[int, int], Creature] = None,
+                            target_from: tuple[int, int] = None,
+                            target_to: tuple[int, int] = None) -> str:
         rows = [[c.icon for c in row]
                 for row in self.contents]
         for coords, creature in creatures.items():
             local_coords = self._local_coords(coords)
             rows[local_coords[0]][local_coords[1]] = creature.icon
+        if target_from and target_to:
+            path = direct_path(target_from, target_to)[1:]
+            for coords in path:
+                icon = config.target_cross_icon if coords == path[-1] else config.target_path_icon
+                local_coords = self._local_coords(coords)
+                rows[local_coords[0]][local_coords[1]] = icon
         rows = [''.join(row) for row in rows]
         return '\n'.join(rows)
 
