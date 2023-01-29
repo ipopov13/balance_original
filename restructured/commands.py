@@ -37,6 +37,12 @@ class Work(Command):
     description = 'Start working on the terrain around you'
 
 
+class Look(Command):
+    character = 'L'
+    hint = '(L)ook'
+    description = 'Look around you and select a target for ranged skills'
+
+
 class InventoryFill(Command):
     character = 'f'
     hint = '(f)ill'
@@ -131,10 +137,10 @@ class Rest(Command):
     description = 'Rest and restore energy and hit points'
 
 
-class StopWork(Command):
+class Stop(Command):
     character = 'S'
     hint = '(S)top'
-    description = 'Stop working'
+    description = 'Stop what you are doing'
 
 
 class NextPage(Command):

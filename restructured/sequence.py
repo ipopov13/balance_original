@@ -17,7 +17,8 @@ class GameSequence:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=SentientSpeciesList(ui.game), target=ui.game.start_game)
         elif ui.game.state is Game.playing_state and ui.game.substate in [Game.scene_substate,
-                                                                          Game.working_substate]:
+                                                                          Game.working_substate,
+                                                                          Game.looking_substate]:
             return Window(ui=ui, title_source=ui.game.get_current_location_name, border=True,
                           content=GameScene(ui.game))
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.map_substate:

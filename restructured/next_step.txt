@@ -1,6 +1,5 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Implement a Look mode
     Implement a Target command within the Look mode
     Target adds an object (Creature or Tile) as the character's target
     Add a Shoot command

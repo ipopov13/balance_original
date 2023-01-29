@@ -30,7 +30,7 @@ class GameObject:
         self._name = name
         self.raw_icon = icon
         self.color = color
-        self._description = description or name
+        self._description = description
         self.sort_key = sort_key
 
     @property
@@ -161,6 +161,7 @@ class PhysicalContainer(Container, Item):
 
 class Liquid(Item):
     """A container class for singleton object instances to be used as liquids in the game"""
+
     @property
     def name(self) -> str:
         return self.color + self._name + console.fx.end
@@ -668,55 +669,71 @@ fay_race = HumanoidSpecies(name='Fay',
                                        "trespass into the dreams of others is an insignificant side effect.",
                            sort_key=12,
                            base_effect_modifiers={config.hunger_meat_effect: -20})
-field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color)
+field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color,
+                              description='A field mouse.')
 rat_species = AnimalSpecies(name='rat', icon='r', color=console.fg.lightblack,
-                            equipment=[RawMeat])
+                            description='A big rat.', equipment=[RawMeat])
 snow_hare_species = AnimalSpecies(name='snow hare', icon='h', color=console.fg.lightwhite,
-                                  equipment=[RawMeat])
-ash_beetle_species = AnimalSpecies(name='ash beetle', icon='b', color=console.fg.lightblack)
-ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg.blue)
+                              description='A snow hare.', equipment=[RawMeat])
+ash_beetle_species = AnimalSpecies(name='ash beetle', icon='b', color=console.fg.lightblack,
+                              description='An ash beetle')
+ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg.blue,
+                              description='An ice mantis.')
 sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg.yellow,
-                                   equipment=[RawMeat])
-scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack)
+                              description='A desert snake', equipment=[RawMeat])
+scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack,
+                              description='A black scorpion')
 fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
+                              description='A fox.',
                             equipment=[RawMeat, SmallTeeth, LightHide])
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
+                              description='A jaguar.',
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8, 'Per': 8},
                                equipment=[RawMeat, MediumTeeth, LightHide],
                                initial_disposition=config.aggressive_disposition)
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
+                              description='A wolf.',
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                              equipment=[RawMeat, MediumTeeth, LightHide],
                              initial_disposition=config.aggressive_disposition)
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
+                              description='A white wolf.',
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                                     equipment=[RawMeat, MediumTeeth, LightHide],
                                     initial_disposition=config.aggressive_disposition)
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
+                              description='A polar bear!',
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
                                  equipment=[RawMeat, LargeClaws, MediumHide],
                                  initial_disposition=config.aggressive_disposition)
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
+                             description='A big bear!',
                              base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
                              equipment=[RawMeat, LargeClaws, MediumHide],
                              initial_disposition=config.aggressive_disposition)
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
+                              description='A swamp dragon!',
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5, 'Per': 6},
                                      equipment=[RawMeat, LargeTeeth, MediumScales],
                                      initial_disposition=config.aggressive_disposition)
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
+                              description='A big crocodile!',
                                   base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 4},
                                   equipment=[RawMeat, LargeTeeth, MediumScales],
                                   initial_disposition=config.aggressive_disposition)
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
+                              description='A monkey.',
                                equipment=[RawMeat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
+                              description='An ice fox.',
                                 equipment=[RawMeat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
+                              description='An eagle.',
                               base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10, 'Per': 15},
                               equipment=[RawMeat, MediumClaws, Feathers],
                               initial_disposition=config.aggressive_disposition)
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
+                              description='A giant hydra!',
                               base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15, 'Per': 16},
                               equipment=[RawMeat, HugeClaws, HeavyScales],
                               initial_disposition=config.aggressive_disposition)
@@ -737,6 +754,8 @@ class Creature(GameObject):
             kwargs['name'] = species.name
         super().__init__(**kwargs)
         self.species = species
+        if self.description == config.empty_string:
+            self._description = self.species.description
         self._disposition = self.species.initial_disposition
         self._ai = self.species.ai
         self.stats = self.species.base_stats.copy()
@@ -1023,6 +1042,13 @@ class Humanoid(Creature):
         self._skills = {}
 
     @property
+    def description(self) -> str:
+        if self.raw_icon == '@':
+            return self._description
+        member = "An" if self.species.name[0] in 'EIO' else "A"
+        return f"{member} {self.species.name}."
+
+    @property
     def effective_equipment(self) -> dict:
         effective_items = {**self.equipped_items}
         if effective_items[config.main_hand_slot] is empty_space:
@@ -1062,6 +1088,7 @@ class Game:
     inventory_substate = 'inventory_substate'
     fill_container_substate = 'fill_container_substate'
     working_substate = 'working_substate'
+    looking_substate = 'looking_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -1084,6 +1111,7 @@ class Game:
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
         self.message_log: list[str] = []
+        self._observed_target: Optional[tuple[int, int]] = None
 
     @property
     def _selected_equipped_item(self):
@@ -1126,22 +1154,26 @@ class Game:
         return True
 
     def commands(self) -> dict:
-        if self.state is Game.welcome_state:
+        if self.state == Game.welcome_state:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
-        elif self.state is Game.playing_state and self.substate is Game.working_substate:
-            return {commands.StopWork(): self._go_to_normal_mode,
+        elif self.state == Game.playing_state and self.substate == Game.working_substate:
+            return {commands.Stop(): self._go_to_normal_mode,
                     commands.Rest(): self._character_rests,
                     commands.Move(): self._player_work}
-        elif self.state is Game.playing_state and self.substate is Game.scene_substate:
+        elif self.state == Game.playing_state and self.substate == Game.looking_substate:
+            return {commands.Stop(): self._go_to_normal_mode,
+                    commands.Move(): self._move_observed_target}
+        elif self.state == Game.playing_state and self.substate == Game.scene_substate:
             return {commands.Move(): self._player_move,
                     commands.Rest(): self._character_rests,
                     commands.Map(): self._open_map,
                     commands.Inventory(): self._open_inventory,
-                    commands.Work(): self._go_to_work_mode}
-        elif self.state is Game.playing_state and self.substate is Game.map_substate:
+                    commands.Work(): self._go_to_work_mode,
+                    commands.Look(): self._go_to_look_mode}
+        elif self.state == Game.playing_state and self.substate == Game.map_substate:
             return {commands.Close(): self._back_to_scene}
-        elif self.state is Game.playing_state and self.substate is Game.inventory_substate:
+        elif self.state == Game.playing_state and self.substate == Game.inventory_substate:
             inventory_commands = {commands.Close(): self._back_to_scene}
             # "From ground" commands
             if self.active_inventory_container_name == self.get_ground_name():
@@ -1187,6 +1219,19 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _go_to_look_mode(self, _) -> bool:
+        self.substate = Game.looking_substate
+        self._observed_target = self._get_coords_of_creature(self.character)
+        return True
+
+    def _move_observed_target(self, direction) -> bool:
+        new_coords = calculate_new_position(self._observed_target, direction, *self.world.size)
+        if self.world.get_location(new_coords) is not self._current_location:
+            return True
+        else:
+            self._observed_target = new_coords
+        return True
 
     def _player_work(self, direction: str) -> bool:
         self._character_labor(direction)
@@ -1406,7 +1451,7 @@ class Game:
         bag_items = [] if self.character.bag is empty_space else self.character.bag.item_list
         compatible_substance_sources = []
         for item in tile_items + tile_terrain_substance + bag_items:
-            if (isinstance(item, LiquidContainer) or isinstance(item, SubstanceSource))\
+            if (isinstance(item, LiquidContainer) or isinstance(item, SubstanceSource)) \
                     and self._container_to_fill.can_hold(item.liquid) \
                     and item is not self._container_to_fill:
                 compatible_substance_sources.append(item)
@@ -1499,9 +1544,12 @@ class Game:
         load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
         hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
         # Target and message line
-        if self.message_log:
+        if self.substate == Game.looking_substate:
+            message = self._current_location.tile_at(self._observed_target).description
+            if self._observed_target in self._creature_coords:
+                message += ' ' + self._creature_coords[self._observed_target].description
+        elif self.message_log:
             message = self.message_log.pop(0)
-            hud += message
         else:
             target = ''
             if self._last_character_target is not None:
@@ -1511,7 +1559,8 @@ class Game:
                 target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
             statuses = '|'.join(self.character.get_statuses())
             inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-            hud += target + inner_padding + statuses
+            message = target + inner_padding + statuses
+        hud += message
         return hud
 
     @staticmethod
@@ -1533,9 +1582,12 @@ class Game:
     def get_area_view(self) -> str:
         return self._current_location.data_with_creatures(self._creature_coords)
 
-    def get_character_position_in_location(self) -> tuple[int, int]:
-        return self._get_coords_of_creature(self.character)[0] % config.location_height, \
-               self._get_coords_of_creature(self.character)[1] % config.location_width
+    def get_cursor_position_in_location(self) -> tuple[int, int]:
+        if self.substate == Game.looking_substate:
+            coords = self._observed_target
+        else:
+            coords = self._get_coords_of_creature(self.character)
+        return coords[0] % config.location_height, coords[1] % config.location_width
 
     def get_character_position_in_region(self) -> tuple[int, int]:
         row, column = self._get_coords_of_creature(self.character)
@@ -1635,27 +1687,42 @@ class FlavorTerrain(Terrain):
 
 
 # Ground fillers
-grass = Terrain(color=console.fg.lightgreen, name='grass', spawned_creatures=[field_mouse_species])
-ashes = Terrain(color=console.fg.lightblack, name='ashes', spawned_creatures=[ash_beetle_species, rat_species])
-dirt = Terrain(color=config.brown_fg_color, name='dirt', spawned_creatures=[field_mouse_species])
-snow = Terrain(color=console.fg.white, name='snow', spawned_creatures=[snow_hare_species])
-sand = Terrain(color=console.fg.yellow, name='sand', spawned_creatures=[sand_snake_species, scorpion_species])
-ice = Terrain(color=console.fg.lightblue, name='ice', spawned_creatures=[ice_mantis_species])
+grass = Terrain(color=console.fg.lightgreen, name='grass',
+                description='Grass.', spawned_creatures=[field_mouse_species])
+ashes = Terrain(color=console.fg.lightblack, name='ashes',
+                description='Ashes.', spawned_creatures=[ash_beetle_species, rat_species])
+dirt = Terrain(color=config.brown_fg_color, name='dirt',
+               description='Dirt.', spawned_creatures=[field_mouse_species])
+snow = Terrain(color=console.fg.white, name='snow',
+               description='Snow.', spawned_creatures=[snow_hare_species])
+sand = Terrain(color=console.fg.yellow, name='sand',
+               description='Sand.', spawned_creatures=[sand_snake_species, scorpion_species])
+ice = Terrain(color=console.fg.lightblue, name='ice',
+              description='Slippery-looking ice.', spawned_creatures=[ice_mantis_species])
 # Other base terrains
-tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T', spawned_creatures=[fox_species, wolf_species])
+tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T',
+               description='A tree.', spawned_creatures=[fox_species, wolf_species])
 dead_tree = Terrain(color=console.fg.lightblack, name='dead tree', icon='T',
+                    description='A dead-looking tree.',
                     spawned_creatures=[wolf_species, swamp_dragon_species])
 frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
+                      description='An ice-covered tree.',
                       spawned_creatures=[ice_fox_species, winter_wolf_species])
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
+                    description='A huge block of ice.',
                     spawned_creatures=[winter_wolf_species, ice_bear_species])
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
+                description='A rock outcropping.',
                 spawned_creatures=[bear_species, eagle_species], allowed_species=[gnome_race, eagle_species])
-bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#', spawned_creatures=[fox_species])
+bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#',
+               description='A bush.', spawned_creatures=[fox_species])
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
+                description='Swampy ground.',
                 spawned_creatures=[crocodile_species, swamp_dragon_species, hydra_species])
-salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake', spawned_creatures=[crocodile_species])
+salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake',
+                    description='Salt-encrusted water.', spawned_creatures=[crocodile_species])
 jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False,
+                 description='Impenetrable jungle.',
                  spawned_creatures=[monkey_species, crocodile_species, jaguar_species])
 all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
                      rocks, bush, swamp, salt_lake, jungle]
@@ -1663,47 +1730,63 @@ all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, froze
 poisonous_flowers = FlavorTerrain(color=console.fg.purple, name='poisonous flowers', icon='*',
                                   required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 bones = FlavorTerrain(color=console.fg.lightwhite, name='bones', icon='~',
+                      description='Grizzly-looking bones.',
                       required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 venomous_thorns = FlavorTerrain(color=console.fg.lightgreen, name='venomous thorns', icon='#',
+                                description='A bush.',
                                 required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 junk_pile = FlavorTerrain(color=console.fg.lightblack, name='junk pile', icon='o',
+                          description='Foul-smelling junk.',
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~', passable=False,
+                     description='A hole with bubbling lava!',
                      required_base_terrains=all_base_terrains, required_climates=[HOT_CLIMATE])
 gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%', passable=False,
+                          description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
                           allowed_species=[gnome_race, eagle_species])
 silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%', passable=False,
+                            description='A rock outcropping.',
                             required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
                             allowed_species=[gnome_race, eagle_species])
 iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%', passable=False,
+                          description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=ALL_CLIMATES,
                           allowed_species=[gnome_race, eagle_species])
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%', passable=False,
+                           description='A moss-covered boulder.',
                            required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES,
                            allowed_species=[gnome_race, eagle_species])
 lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
+                             description='A big clump of lichen.',
                              required_base_terrains=all_base_terrains, required_climates=[COLD_CLIMATE])
 flowers = FlavorTerrain(color=console.fg.purple, name='flowers', icon='*',
+                        description='A patch of flowers.',
                         required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 old_pavement = FlavorTerrain(color=console.fg.lightyellow, name='old pavement',
+                             description='Old pavement.',
                              required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 ruined_wall = FlavorTerrain(color=config.brown_fg_color, name='ruined wall', icon='#', passable=False,
+                            description='Ancient wall.',
                             required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 engraved_column = FlavorTerrain(color=config.brown_fg_color, name='engraved column', icon='|', passable=False,
+                                description='An engraved column.',
                                 required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o', passable=False,
+                          description='A fireplace.',
                           required_base_terrains=all_base_terrains, required_climates=ALL_CLIMATES)
 farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='farmland', icon='=',
+                         description='A tilled field.',
                          required_base_terrains=[grass, dirt, tree, jungle, bush, swamp],
                          required_climates=ALL_CLIMATES)
 # Structure building blocks
-poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~')
-water = Terrain(color=console.fg.blue, name='water', icon='~')
-stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%', passable=False)
-well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='a well',
+poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~', description='Murky water.')
+water = Terrain(color=console.fg.blue, name='water', icon='~', description='Water.')
+stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%', passable=False,
+                        description='A column of stilled water.')
+well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='A water well.',
                        substances=[SubstanceSource(name='water well',
-                                                   description='You can draw water from it.',
+                                                   description='A water well.',
                                                    liquid=water_liquid)])
 
 terrain_transformations = {
@@ -1728,7 +1811,7 @@ terrain_transformations = {
     stilled_water: {config.skill_mining: {'new_terrain': water, 'number_of_drops': 10,
                                           'drop_types': [StilledWaterShard], 'drop_weights': [100],
                                           'message': 'The translucent column breaks apart!'}},
-    }
+}
 
 
 class Well(FlavorTerrain):
@@ -1841,7 +1924,10 @@ class Tile(PhysicalContainer):
 
     @property
     def description(self):
-        return self.terrain.description
+        description = self.terrain.description
+        if self.item_list:
+            description += ' There are items here.'
+        return description
 
     @property
     def icon(self):
@@ -1863,9 +1949,6 @@ class Tile(PhysicalContainer):
         return self.terrain.substances
 
 
-# TODO: Structures&NPCs generation
-# TODO: Tile neighboring
-# TODO: Answer calls from the NPCs for the path to their closest goal (e.g. rock to mine, character to attack)
 class Location(Container):
     """
     Generates the terrain data
@@ -1892,7 +1975,6 @@ class Location(Container):
         self._structure_terrains = {}
         self._select_terrains()
         visual = self._structure or self._flavor or main_terrain
-        # TODO: Add the structure name
         self._local_name = None if self._structure is None else self._structure.name
         if self._local_name:
             name = ', '.join([self._local_name, self._region_name])
@@ -2116,7 +2198,6 @@ class Location(Container):
         self.tile_at(coords).remove_item(item)
 
 
-# TODO: Rolls the base terrains on init
 # TODO: PoI selection and randomization
 # TODO: Init the locations with the PoI/force/base terrains (handles gradients)
 class Region(Container):
@@ -2221,7 +2302,6 @@ class Region(Container):
         return '\n'.join(rows)
 
 
-# TODO: Randomize forces and pass to regions on init
 class World(Container):
     region_suffixes = {CHAOS_FORCE: """of Blood
 of Blisters

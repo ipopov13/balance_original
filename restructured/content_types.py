@@ -41,7 +41,7 @@ class GameScene(WindowContent):
         return '\n'.join([area_view, character_hud])
 
     def cursor_pos(self) -> tuple[int, int]:
-        return self.game_object.get_character_position_in_location()
+        return self.game_object.get_cursor_position_in_location()
 
 
 class MultiContainerScreen(WindowContent):
