@@ -1,6 +1,5 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Implement damage as an effects dictionary
     The shooter checks weapon and ammo compatibility (config ranged_weapon tag)
         weapon is main hand, can be offhand for thrown weapons
         ammo container/item is offhand, or main hand for thrown weapons

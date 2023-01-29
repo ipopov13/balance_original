@@ -967,8 +967,8 @@ class Creature(GameObject):
     def can_consume(self, item: Item) -> bool:
         return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
-    def consume(self, item: Item) -> None:
-        for name, effect in item.effects.items():
+    def apply_effects(self, effects: dict[str, int]) -> None:
+        for name, effect in effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
     def _apply_effect(self, name: str, effect_size: int) -> None:
@@ -983,6 +983,8 @@ class Creature(GameObject):
             self.hunger -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
         elif name.startswith(config.thirst_effect_prefix):
             self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
+        elif name == config.normal_damage_effect:
+            self._receive_normal_damage(effect_size)
         else:
             self._active_effects[name] = \
                 self._active_effects.get(name, 0) + effect_size
@@ -1036,9 +1038,11 @@ class Creature(GameObject):
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
             self.energy -= self._combat_exhaustion
-            other_creature.receive_damage(self.damage)
+            # TODO: Build combat effects dict here, pass to enemy apply_effects()
+            hit_effects = {config.normal_damage_effect: self.damage}
+            other_creature.apply_effects(hit_effects)
 
-    def receive_damage(self, damage: int) -> None:
+    def _receive_normal_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
         dex_modifier = self.stats['Dex'] / config.max_stat_value
         dodge_chance = dex_modifier * load_modifier * self._exhaustion_modifier
@@ -1346,7 +1350,7 @@ class Game:
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _) -> bool:
-        self.character.consume(self._selected_bag_item)
+        self.character.apply_effects(self._selected_bag_item.effects)
         if isinstance(self._selected_bag_item, LiquidContainer):
             self._selected_bag_item.decant(1)
         else:
@@ -1354,7 +1358,7 @@ class Game:
         return True
 
     def _consume_from_ground_in_inventory_screen(self, _) -> bool:
-        self.character.consume(self._selected_ground_item)
+        self.character.apply_effects(self._selected_ground_item.effects)
         if isinstance(self._selected_ground_item, LiquidContainer):
             self._selected_ground_item.decant(1)
         else:

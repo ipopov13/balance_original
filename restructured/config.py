@@ -35,7 +35,7 @@ fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
-
+# Applied effects
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'
 hunger_water_effect = hunger_effect_prefix + 'water'
@@ -43,6 +43,7 @@ hunger_rock_effect = hunger_effect_prefix + 'rock'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 thirst_rock_effect = thirst_effect_prefix + 'rock'
+normal_damage_effect = 'normal_damage_effect'
 # Active character effects
 sick_effect = 'Sick'
 drunk_effect = 'Drunk'
