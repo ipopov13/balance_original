@@ -40,7 +40,7 @@ class Work(Command):
 class Look(Command):
     character = 'L'
     hint = '(L)ook'
-    description = 'Look around you and select a target for ranged skills'
+    description = 'Look around'
 
 
 class InventoryFill(Command):
@@ -135,6 +135,12 @@ class Rest(Command):
     character = '5'
     hint = ''
     description = 'Rest and restore energy and hit points'
+
+
+class Target(Command):
+    character = 't'
+    hint = '(t)arget'
+    description = 'Select your target'
 
 
 class Stop(Command):

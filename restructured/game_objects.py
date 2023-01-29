@@ -670,39 +670,39 @@ fay_race = HumanoidSpecies(name='Fay',
                            sort_key=12,
                            base_effect_modifiers={config.hunger_meat_effect: -20})
 field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color,
-                              description='A field mouse.')
+                                    description='A field mouse.')
 rat_species = AnimalSpecies(name='rat', icon='r', color=console.fg.lightblack,
                             description='A big rat.', equipment=[RawMeat])
 snow_hare_species = AnimalSpecies(name='snow hare', icon='h', color=console.fg.lightwhite,
-                              description='A snow hare.', equipment=[RawMeat])
+                                  description='A snow hare.', equipment=[RawMeat])
 ash_beetle_species = AnimalSpecies(name='ash beetle', icon='b', color=console.fg.lightblack,
-                              description='An ash beetle')
+                                   description='An ash beetle')
 ice_mantis_species = AnimalSpecies(name='ice mantis', icon='m', color=console.fg.blue,
-                              description='An ice mantis.')
+                                   description='An ice mantis.')
 sand_snake_species = AnimalSpecies(name='sand snake', icon='s', color=console.fg.yellow,
-                              description='A desert snake', equipment=[RawMeat])
+                                   description='A desert snake', equipment=[RawMeat])
 scorpion_species = AnimalSpecies(name='scorpion', icon='s', color=console.fg.lightblack,
-                              description='A black scorpion')
+                                 description='A black scorpion')
 fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
-                              description='A fox.',
+                            description='A fox.',
                             equipment=[RawMeat, SmallTeeth, LightHide])
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
-                              description='A jaguar.',
+                               description='A jaguar.',
                                base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8, 'Per': 8},
                                equipment=[RawMeat, MediumTeeth, LightHide],
                                initial_disposition=config.aggressive_disposition)
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
-                              description='A wolf.',
+                             description='A wolf.',
                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                              equipment=[RawMeat, MediumTeeth, LightHide],
                              initial_disposition=config.aggressive_disposition)
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
-                              description='A white wolf.',
+                                    description='A white wolf.',
                                     base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
                                     equipment=[RawMeat, MediumTeeth, LightHide],
                                     initial_disposition=config.aggressive_disposition)
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
-                              description='A polar bear!',
+                                 description='A polar bear!',
                                  base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
                                  equipment=[RawMeat, LargeClaws, MediumHide],
                                  initial_disposition=config.aggressive_disposition)
@@ -712,20 +712,20 @@ bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              equipment=[RawMeat, LargeClaws, MediumHide],
                              initial_disposition=config.aggressive_disposition)
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
-                              description='A swamp dragon!',
+                                     description='A swamp dragon!',
                                      base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5, 'Per': 6},
                                      equipment=[RawMeat, LargeTeeth, MediumScales],
                                      initial_disposition=config.aggressive_disposition)
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
-                              description='A big crocodile!',
+                                  description='A big crocodile!',
                                   base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 4},
                                   equipment=[RawMeat, LargeTeeth, MediumScales],
                                   initial_disposition=config.aggressive_disposition)
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
-                              description='A monkey.',
+                               description='A monkey.',
                                equipment=[RawMeat, SmallTeeth, LightHide])
 ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
-                              description='An ice fox.',
+                                description='An ice fox.',
                                 equipment=[RawMeat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               description='An eagle.',
@@ -773,6 +773,7 @@ class Creature(GameObject):
         self._thirst: int = 0
         self._sustenance_needs: int = 0
         self._age: int = 0
+        self.ranged_target: Optional[Union[Creature, tuple[int, int]]] = None
 
     @property
     def effective_equipment(self) -> dict:
@@ -915,6 +916,7 @@ class Creature(GameObject):
         fraction = self._effect_modifiers.get(config.travel_energy_loss_modifier, self.load / self.max_load)
         energy_to_lose = int(self.max_energy * fraction)
         self.energy -= energy_to_lose
+        self.ranged_target = None
 
     def live(self) -> None:
         """
@@ -1163,7 +1165,8 @@ class Game:
                     commands.Move(): self._player_work}
         elif self.state == Game.playing_state and self.substate == Game.looking_substate:
             return {commands.Stop(): self._go_to_normal_mode,
-                    commands.Move(): self._move_observed_target}
+                    commands.Move(): self._move_observed_target,
+                    commands.Target(): self._set_character_ranged_target}
         elif self.state == Game.playing_state and self.substate == Game.scene_substate:
             return {commands.Move(): self._player_move,
                     commands.Rest(): self._character_rests,
@@ -1219,6 +1222,11 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _set_character_ranged_target(self, _) -> bool:
+        self.character.ranged_target = self._creature_coords.get(self._observed_target,
+                                                                 self._observed_target)
+        return True
 
     def _go_to_look_mode(self, _) -> bool:
         self.substate = Game.looking_substate
@@ -1551,15 +1559,16 @@ class Game:
         elif self.message_log:
             message = self.message_log.pop(0)
         else:
-            target = ''
-            if self._last_character_target is not None:
-                target_hp_gauge = self._format_gauge(self._last_character_target.hp,
-                                                     self._last_character_target.max_hp,
+            target_text = ''
+            target_creature = self._last_character_target or self.character.ranged_target
+            if isinstance(target_creature, Creature):
+                target_hp_gauge = self._format_gauge(target_creature.hp,
+                                                     target_creature.max_hp,
                                                      config.hp_color, show_numbers=False)
-                target = f'Target: {self._last_character_target.name} [{target_hp_gauge}]'
+                target_text = f'Target: {target_creature.name} [{target_hp_gauge}]'
             statuses = '|'.join(self.character.get_statuses())
-            inner_padding = ' ' * (config.location_width - raw_length(target) - raw_length(statuses))
-            message = target + inner_padding + statuses
+            inner_padding = ' ' * (config.location_width - raw_length(target_text) - raw_length(statuses))
+            message = target_text + inner_padding + statuses
         hud += message
         return hud
 
@@ -1648,8 +1657,7 @@ class Game:
                 for coords in list(self._creature_coords):
                     if self._creature_coords[coords] is not self.character:
                         old_location.stored_creatures.append(self._creature_coords.pop(coords))
-                    else:
-                        self.character.travel()
+                self.character.travel()
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
         else:
             self._add_message("You can't go through that!")

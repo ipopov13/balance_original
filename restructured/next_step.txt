@@ -1,6 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Implement a Target command within the Look mode
+    Add target display with projectile path for the Look mode
     Target adds an object (Creature or Tile) as the character's target
     Add a Shoot command
     A Creature/player selects a target
@@ -23,6 +23,8 @@ Ranged combat (weapons with ammo)
     If there are effects on the list, Game does a sub-turn tick, resolves collisions,
      removes any expired effects, places/removes items on the scene, then returns the data
     If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
+Make the help overlay have dynamic top_left (must become a property in Window)
+Make the help overlay content format multi-lines properly
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Move all stat names to the config
