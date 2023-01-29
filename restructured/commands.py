@@ -143,6 +143,12 @@ class Target(Command):
     description = 'Select your target'
 
 
+class Shoot(Command):
+    character = 's'
+    hint = ''
+    description = 'Shoot/throw at your current target'
+
+
 class Stop(Command):
     character = 'S'
     hint = '(S)top'

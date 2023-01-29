@@ -1,16 +1,15 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Add a Shoot/Throw command
-    A Creature/player selects a target
-    A Creature decides to shoot its target / Player uses the Shoot command
-    The shooter checks if a target is selected, and weapon and ammo compatibility (config ranged_weapon tag)
-    weapon is main hand, can be offhand for thrown weapons
-    ammo container/item is offhand, or main hand for thrown weapons
-        ammo container is like a LiquidContainer, but sucks up physical items instead
-        Has a Fill and an Empty method, but the Empty drops all the contents on the ground
-    Thrown weapons are their own ammo (tag check is done on both slots)
+    Implement RangedWeapon (can_shoot()), RangedAmmo
+    The shooter checks weapon and ammo compatibility (config ranged_weapon tag)
+        weapon is main hand, can be offhand for thrown weapons
+        ammo container/item is offhand, or main hand for thrown weapons
+            ammo container is like a LiquidContainer, but sucks up physical items instead
+            Has a Fill and an Empty method, but the Empty drops all the contents on the ground
+        Thrown weapons are their own ammo (tag check is done on both slots)
     The shooter removes the Projectile from equipment (ammo or thrown)
     The shooter gives to the Game the skill, Projectile, and effects (e.g. damage, explosion, etc.)
+    Game selects the target (NPCs must always have one, PC defaults to the _last_character_target)
     Game determines the end position and the path based on skill, shooter and target locations
     The path, the Projectile, and its effects are turned into a sub-turn effect item
     Game adds the sub-turn item to a list of sub-turn effects
@@ -22,6 +21,8 @@ Ranged combat (weapons with ammo)
     If there are effects on the list, Game does a sub-turn tick, resolves collisions,
      removes any expired effects, places/removes items on the scene, then returns the data
     If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
+    Add creatures setting their ranged targets
+    Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
 Make the help overlay have dynamic top_left (must become a property in Window)
 Make the help overlay content format multi-lines properly
 Adding the racial passives and documenting them in knowledge

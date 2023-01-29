@@ -1057,6 +1057,31 @@ class Humanoid(Creature):
             effective_items[config.main_hand_slot] = self.species.fist_weapon
         return effective_items
 
+    def _get_ranged_weapon(self) -> Optional[Item]:
+        for slot in [config.main_hand_slot, config.offhand_slot]:
+            item = self.effective_equipment[slot]
+            if isinstance(item, RangedWeapon):
+                return item
+        return None
+
+    def _get_ranged_ammo(self) -> Optional[Item]:
+        for slot in [config.main_hand_slot, config.offhand_slot]:
+            item = self.effective_equipment[slot]
+            if isinstance(item, RangedAmmo):
+                return item
+        return None
+
+    @property
+    def can_shoot_or_throw(self) -> bool:
+        # Cases:
+        #  ranged main hand and matching ammo offhand
+        #  thrown in any hand
+        ranged_weapon = self._get_ranged_weapon()
+        ammo = self._get_ranged_ammo()
+        if ranged_weapon is not None and ranged_weapon.can_shoot(ammo):
+            return True
+        return False
+
     def work_on(self, tile: 'Tile') -> str:
         for slot in [config.main_hand_slot]:
             item = self.effective_equipment[slot]
@@ -1114,6 +1139,7 @@ class Game:
         self.substate: Optional[str] = None
         self.message_log: list[str] = []
         self._observed_target: Optional[tuple[int, int]] = None
+        self._sub_turn_effects: list = []
 
     @property
     def _selected_equipped_item(self):
@@ -1173,7 +1199,8 @@ class Game:
                     commands.Map(): self._open_map,
                     commands.Inventory(): self._open_inventory,
                     commands.Work(): self._go_to_work_mode,
-                    commands.Look(): self._go_to_look_mode}
+                    commands.Look(): self._go_to_look_mode,
+                    commands.Shoot(): self._character_shoots}
         elif self.state == Game.playing_state and self.substate == Game.map_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state == Game.playing_state and self.substate == Game.inventory_substate:
@@ -1222,6 +1249,11 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _character_shoots(self, _) -> bool:
+        if self.character.can_shoot_or_throw:
+            self._sub_turn_effects.append(self.character.shoot())
+        return True
 
     def _set_character_ranged_target(self, _) -> bool:
         self.character.ranged_target = self._creature_coords.get(self._observed_target,
