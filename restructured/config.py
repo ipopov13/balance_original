@@ -56,7 +56,7 @@ max_hp_modifier = 'max_hp_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
 # Tools
-skill_mining = 'skill_mining'
+skill_mining = 'Mining'
 # Equipment slots
 main_hand_slot = 'Main hand'
 offhand_slot = 'Offhand'
@@ -68,7 +68,7 @@ animal_weapon_slot = 'AnimalWeapon'
 animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
 # Ranged weapon types
-thrown_weapon_type = 'thrown_weapon_type'
+thrown_weapon_type = 'Thrown weapons'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]

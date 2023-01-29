@@ -1,13 +1,9 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    The shooter checks weapon and ammo compatibility (config ranged_weapon tag)
-        weapon is main hand, can be offhand for thrown weapons
-        ammo container/item is offhand, or main hand for thrown weapons
-            ammo container is like a LiquidContainer, but sucks up physical items instead
-            Has a Fill and an Empty method, but the Empty drops all the contents on the ground
-        Thrown weapons are their own ammo (tag check is done on both slots)
-    The shooter removes the Projectile from equipment (ammo or thrown)
-    The shooter gives to the Game the skill, Projectile, and effects (e.g. damage, explosion, etc.)
+    Remove ammo in Humanoid.shoot()
+    ammo container/item is offhand, or main hand for thrown weapons
+        ammo container is like a LiquidContainer, but sucks up physical items instead
+        Has a Fill and an Empty method, but the Empty drops all the contents on the ground
     Game selects the target (NPCs must always have one, PC defaults to the _last_character_target)
     Game determines the end position and the path based on skill, shooter and target locations
     The path, the Projectile, and its effects are turned into a sub-turn effect item

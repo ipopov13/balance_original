@@ -368,9 +368,10 @@ class Offhand(Item):
 
 
 class RangedAmmo(Offhand):
-    def __init__(self, ranged_ammo_type: str, **kwargs):
+    def __init__(self, ranged_ammo_type: str, damage: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.ranged_ammo_type = ranged_ammo_type
+        self.damage = damage
 
 
 class ThrownWeapon(RangedWeapon, RangedAmmo):
@@ -1038,7 +1039,6 @@ class Creature(GameObject):
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
             self.energy -= self._combat_exhaustion
-            # TODO: Build combat effects dict here, pass to enemy apply_effects()
             hit_effects = {config.normal_damage_effect: self.damage}
             other_creature.apply_effects(hit_effects)
 
@@ -1105,8 +1105,29 @@ class Humanoid(Creature):
             return True
         return False
 
-    def shoot(self):
-        raise IOError("Shooting!")
+    @property
+    def _ranged_damage(self) -> int:
+        ranged_weapon = self._get_ranged_weapon()
+        ammo = self._get_ranged_ammo()
+        if ranged_weapon is ammo:
+            weapon_damage = ranged_weapon.damage
+        else:
+            weapon_damage = ranged_weapon.damage + ammo.damage
+        stats = (self.stats['Dex'] + self.stats['Per']) // 2
+        return random.randint(0, max(stats // 2, 1)) + weapon_damage
+
+    def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
+        # TODO: remove ammo
+        ammo = self._get_ranged_ammo()
+        effects = {config.normal_damage_effect: self._ranged_damage}
+        current_skill = self._skills.get(ammo.ranged_ammo_type, 0)
+        self._increase_skill(ammo.ranged_ammo_type)
+        return ammo, current_skill, effects
+
+    def _increase_skill(self, skill_name: str) -> None:
+        current_skill = self._skills.get(skill_name, 0)
+        if random.random() > current_skill / 100:
+            self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
 
     def work_on(self, tile: 'Tile') -> str:
         for slot in [config.main_hand_slot]:
@@ -1117,8 +1138,7 @@ class Humanoid(Creature):
                 current_skill = self._skills.get(item.skill, 0)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
-                if random.random() > current_skill / 100:
-                    self._skills[item.skill] = self._skills.get(item.skill, 0) + 1
+                self._increase_skill(item.skill)
                 result = tile.apply_skill(item.skill, strength=skill_strength)
                 return result
         else:
