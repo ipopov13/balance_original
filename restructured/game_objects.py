@@ -1357,6 +1357,7 @@ class Game:
                         self._current_location.put_item(item, projectile_path[path_index])
                     self._creature_coords.pop(projectile_path[path_index])
                     self.character.ranged_target = None
+        self._living_world()
         return True
 
     def _set_character_ranged_target(self, _) -> bool:
