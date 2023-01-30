@@ -317,9 +317,10 @@ class MainHand(Item):
 
 
 class RangedWeapon(MainHand):
-    def __init__(self, ranged_weapon_type: str, **kwargs):
+    def __init__(self, ranged_weapon_type: str, max_distance: int, **kwargs):
         super().__init__(**kwargs)
         self.ranged_weapon_type = ranged_weapon_type
+        self.max_distance = max_distance
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
         return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
@@ -337,7 +338,8 @@ class AcornGun(RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='acorn gun', weight=4, icon='{', color=color,
                          description='A gun of dryadic design.',
-                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.gun_type)
+                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.gun_type,
+                         max_distance=15)
 
 
 class Fist(MainHand):
@@ -389,7 +391,8 @@ class ThrowingKnife(ThrownWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
-                         damage=2, combat_exhaustion=1, ranged_weapon_type=config.thrown_weapon_type,
+                         damage=2, combat_exhaustion=1,
+                         ranged_weapon_type=config.thrown_weapon_type, max_distance=7,
                          ranged_ammo_type=config.thrown_weapon_type)
 
 
@@ -1104,6 +1107,12 @@ class Humanoid(Creature):
                 return item
         return None
 
+    def get_shooting_range(self) -> int:
+        ranged_weapon = self._get_ranged_weapon()
+        if ranged_weapon is not None:
+            return ranged_weapon.max_distance
+        return 0
+
     def can_shoot_or_throw(self) -> Optional[str]:
         ranged_weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
@@ -1309,7 +1318,27 @@ class Game:
         if ranged_response is not None:
             self._add_message(ranged_response)
         else:
-            self._sub_turn_effects.append(self.character.shoot())
+            target = self.character.ranged_target or self._last_character_target
+            if target is None:
+                self._add_message("No target selected!")
+                return True
+            if isinstance(target, Creature):
+                target = self._get_coords_of_creature(target)
+            # TODO: use skill and define actual path
+            character_position = self._get_coords_of_creature(self.character)
+            distance = len(direct_path(character_position, target))
+            max_distance = self.character.get_shooting_range()
+            if distance > max_distance:
+                self._add_message("The target is beyond your weapon's range!")
+                return True
+            # define deviation range using skill&distance, calculate deviation,
+            # apply deviation to target, calculate final path, apply max distance
+            projectile, skill, effects = self.character.shoot()
+            max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
+            max_deviation = max(max_deviation, 1)
+            deviation_range = list(range(max_deviation))
+            x_deviation = random.choices([0, ])[0]
+            self._sub_turn_effects.append((projectile, path, effects))
         return True
 
     def _set_character_ranged_target(self, _) -> bool:
