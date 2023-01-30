@@ -16,8 +16,8 @@ class UserInterface:
         if not self._screens:
             cls()
             self._screens.append(self._game_sequence.get_window(self))
-        display_data = self._top_screen.get_display_data()
-        self.display(display_data)
+        viewable_content, cursor_pos = self._top_screen.get_display_data()
+        self.display(viewable_content, cursor_pos)
 
     @property
     def _top_screen(self):
@@ -49,14 +49,13 @@ class UserInterface:
     def is_top(self, window) -> bool:
         return window is self._top_screen
 
-    def display(self, updates: tuple[dict, tuple[int, int]]):
+    def display(self, content_dict: dict, cursor_pos: tuple[int, int]):
         """
         Display the data sent by the window
         updates: {'drop': Window,
                   'update': {coords: update_string},
                   'add': Window}
         """
-        content_dict, cursor_pos = updates
         for coordinates, update_string in content_dict.items():
             with self.sc.hidden_cursor():
                 with console.screen.sc.location(*coordinates):

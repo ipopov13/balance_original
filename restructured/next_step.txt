@@ -2,19 +2,17 @@ FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage
     2) Make projectiles stop at impassable terrain and other creatures
-        Some terrains are blocking, others only impassable (e.g. lava)
+        Some terrains are LoS-blocking, others impassable (e.g. lava, fences)
+        LoS-blocking terrains also stop effects
     3) ammo container/item is offhand, or main hand for thrown weapons
         ammo container is like a LiquidContainer, but sucks up physical items instead
         Has a Fill and an Empty method, but the Empty drops all the contents on the ground
-    4) Game does a sub-turn tick in _living_world()
-            moving all effects one step forward
-            calculating collisions and applying effects
+    4) Game does a sub-turn tick in a method that is not related to _living_world() !
         Game returns data to the Content
         Content returns data to the Window
         The Window displays the data, then asks for more data
         Request is passed to Content, who requests more new data from the Game
-        If there are effects on the list, Game does a sub-turn tick, resolves collisions,
-         removes any expired effects, places/removes items on the scene, then returns the data
+        If there are effects on the list, Game does a sub-turn tick
         If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
 Implement impassable tiles passing items to neighbors
 Add creatures setting their ranged targets

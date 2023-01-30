@@ -1516,11 +1516,35 @@ class Game:
                     ver 0.7
                   Ivan Popov'''
 
-    def _living_world(self):
+    def _living_world(self) -> None:
         # TODO: Change effect visuals (blinking fires, etc)
         self._turn += 1
+        # self._sub_turn_tick()
         self._move_npcs()
         self.character.live()
+
+    def _sub_turn_tick(self) -> None:
+        for position in list(self._sub_turn_effects):
+            if position not in self._sub_turn_effects:
+                continue
+            effect = self._sub_turn_effects.pop(position)
+            current_pos_index = effect['path'].index(position)
+            next_position = effect['path'][current_pos_index + 1]
+            if next_position in self._creature_coords:
+                self._creature_coords[next_position].apply_effects(effect['effects'])
+                self._end_effect(effect, next_position)
+            elif next_position in self._sub_turn_effects:
+                other_effect = self._sub_turn_effects.pop(next_position)
+                for eff in [effect, other_effect]:
+                    self._end_effect(eff, next_position)
+            elif next_position == effect['path'][-1]:
+                self._end_effect(effect, next_position)
+            else:
+                self._sub_turn_effects[next_position] = effect
+
+    def _end_effect(self, effect: dict, position: tuple[int, int]) -> None:
+        if 'item' in effect:
+            self._current_location.put_item(effect['item'], position)
 
     def _creature_died(self, creature: Creature) -> None:
         coords = self._get_coords_of_creature(creature)
@@ -1560,6 +1584,10 @@ class Game:
         for old_coords in list(self._creature_coords.keys()):
             creature = self._creature_coords.get(old_coords)
             if creature is self.character or creature is None:
+                continue
+            if creature.is_dead:
+                # This check is needed if an effect killed the creature already in _living_world()
+                self._creature_died(creature)
                 continue
             creature.live()
             goals = creature.get_goals()

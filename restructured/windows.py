@@ -89,7 +89,8 @@ class Window(ABC):
                 if command.changes_window:
                     self.ui.drop_window(self)
                 elif self.ui.is_top(self):
-                    return self.ui.display(self.get_display_data())
+                    viewable_content, cursor_pos = self.get_display_data()
+                    return self.ui.display(viewable_content, cursor_pos)
                 return should_game_continue
         return True
 
