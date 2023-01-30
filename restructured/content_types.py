@@ -36,6 +36,7 @@ class WindowContent:
 
 class GameScene(WindowContent):
     def data(self) -> str:
+        self.game_object.sub_turn_tick()
         character_hud = self.game_object.get_character_hud()
         area_view = self.game_object.get_area_view()
         return '\n'.join([area_view, character_hud])

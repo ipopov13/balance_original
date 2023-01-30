@@ -1,4 +1,6 @@
 from abc import ABC
+from time import sleep
+
 from content_types import DescriptionList
 import commands
 from utils import strip_ansi_escape_sequences, horizontal_pad
@@ -89,8 +91,15 @@ class Window(ABC):
                 if command.changes_window:
                     self.ui.drop_window(self)
                 elif self.ui.is_top(self):
-                    viewable_content, cursor_pos = self.get_display_data()
-                    return self.ui.display(viewable_content, cursor_pos)
+                    displayed_content, cursor_pos = self.get_display_data()
+                    result = self.ui.display(displayed_content, cursor_pos)
+                    new_content, new_cursor_pos = self.get_display_data()
+                    while new_content != displayed_content:
+                        sleep(.3)
+                        result = self.ui.display(new_content, new_cursor_pos)
+                        displayed_content = new_content
+                        new_content, new_cursor_pos = self.get_display_data()
+                    return result
                 return should_game_continue
         return True
 

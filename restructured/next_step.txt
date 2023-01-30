@@ -1,3 +1,5 @@
+Make the hud messages stay around after a bump!
+
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage

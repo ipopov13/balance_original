@@ -1338,19 +1338,19 @@ class Game:
             projectile_path = direct_path(character_position, final_target)[1:]
             flying_projectile = {'item': projectile, 'path': projectile_path, 'effects': effects}
             self._sub_turn_effects[projectile_path[0]] = flying_projectile
-            # Direct application for testing
-            path_index = -1
-            while True:
-                try:
-                    self._current_location.put_item(projectile, projectile_path[path_index])
-                    break
-                except ValueError:
-                    path_index -= 1
-            if projectile_path[path_index] in self._creature_coords:
-                creature = self._creature_coords[projectile_path[path_index]]
-                creature.apply_effects(effects)
-                if creature.is_dead:
-                    self._creature_died(creature)
+            # # Direct application for testing
+            # path_index = -1
+            # while True:
+            #     try:
+            #         self._current_location.put_item(projectile, projectile_path[path_index])
+            #         break
+            #     except ValueError:
+            #         path_index -= 1
+            # if projectile_path[path_index] in self._creature_coords:
+            #     creature = self._creature_coords[projectile_path[path_index]]
+            #     creature.apply_effects(effects)
+            #     if creature.is_dead:
+            #         self._creature_died(creature)
         self._living_world()
         return True
 
@@ -1519,11 +1519,10 @@ class Game:
     def _living_world(self) -> None:
         # TODO: Change effect visuals (blinking fires, etc)
         self._turn += 1
-        # self._sub_turn_tick()
         self._move_npcs()
         self.character.live()
 
-    def _sub_turn_tick(self) -> None:
+    def sub_turn_tick(self) -> None:
         for position in list(self._sub_turn_effects):
             if position not in self._sub_turn_effects:
                 continue
@@ -1756,6 +1755,11 @@ class Game:
                          + ailment_color + raw_gauge[percentage_full + percentage_empty:] + console.fx.end)
         return colored_gauge
 
+    def _collate_creatures_and_effects(self) -> dict[tuple[int, int], GameObject]:
+        effect_visuals = {pos: effect['item'] for pos, effect in self._sub_turn_effects.items()}
+        combined_dict = {**self._creature_coords, **effect_visuals}
+        return combined_dict
+
     def get_area_view(self) -> str:
         if self.substate == Game.looking_substate and self.character.ranged_target is not None:
             target_from = self._get_coords_of_creature(self.character)
@@ -1764,7 +1768,8 @@ class Game:
             return self._current_location.data_with_creatures(self._creature_coords,
                                                               target_from=target_from,
                                                               target_to=target_to)
-        return self._current_location.data_with_creatures(self._creature_coords)
+        creatures_and_effects = self._collate_creatures_and_effects()
+        return self._current_location.data_with_creatures(creatures_and_effects)
 
     def get_cursor_position_in_location(self) -> tuple[int, int]:
         if self.substate == Game.looking_substate:
@@ -2348,7 +2353,7 @@ class Location(Container):
     def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
         return coords[0] - self._top_left[0], coords[1] - self._top_left[1]
 
-    def data_with_creatures(self, creatures: dict[tuple[int, int], Creature] = None,
+    def data_with_creatures(self, creatures: dict[tuple[int, int], GameObject] = None,
                             target_from: tuple[int, int] = None,
                             target_to: tuple[int, int] = None) -> str:
         rows = [[c.icon for c in row]
