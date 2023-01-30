@@ -1,6 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Add messages when there is no weapon or ammo
+    Separate ranged and melee damage
     ammo container/item is offhand, or main hand for thrown weapons
         ammo container is like a LiquidContainer, but sucks up physical items instead
         Has a Fill and an Empty method, but the Empty drops all the contents on the ground

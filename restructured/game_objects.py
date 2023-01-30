@@ -333,6 +333,13 @@ class Tool(MainHand):
         self.work_stat = work_stat
 
 
+class AcornGun(RangedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='acorn gun', weight=4, icon='{', color=color,
+                         description='A gun of dryadic design.',
+                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.gun_type)
+
+
 class Fist(MainHand):
     def __init__(self):
         super().__init__(name="Your fist", description="When you don't have a sword at hand.",
@@ -1097,13 +1104,16 @@ class Humanoid(Creature):
                 return item
         return None
 
-    @property
-    def can_shoot_or_throw(self) -> bool:
+    def can_shoot_or_throw(self) -> Optional[str]:
         ranged_weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
-        if ranged_weapon is not None and ranged_weapon.can_shoot(ammo):
-            return True
-        return False
+        if ranged_weapon is None:
+            return "You don't have a ranged weapon equipped!"
+        if ammo is None:
+            return "You don't have ammunition!"
+        if not ranged_weapon.can_shoot(ammo):
+            return "Your ammo and weapon don't match!"
+        return
 
     @property
     def _ranged_damage(self) -> int:
@@ -1209,7 +1219,7 @@ class Game:
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(ThrowingKnife(), character_coords)
-        self._current_location.put_item(ThrowingKnife(), character_coords)
+        self._current_location.put_item(AcornGun(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1295,7 +1305,10 @@ class Game:
             return {}
 
     def _character_shoots(self, _) -> bool:
-        if self.character.can_shoot_or_throw:
+        ranged_response = self.character.can_shoot_or_throw()
+        if ranged_response is not None:
+            self._add_message(ranged_response)
+        else:
             self._sub_turn_effects.append(self.character.shoot())
         return True
 
