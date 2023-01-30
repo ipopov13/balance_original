@@ -1,21 +1,20 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
-    Separate ranged and melee damage
-    ammo container/item is offhand, or main hand for thrown weapons
+    1) Separate ranged and melee damage
+    2) Make projectiles stop at impassable terrain?
+        Some terrains are blocking, others only impassable (e.g. lava)
+    3) ammo container/item is offhand, or main hand for thrown weapons
         ammo container is like a LiquidContainer, but sucks up physical items instead
         Has a Fill and an Empty method, but the Empty drops all the contents on the ground
-    Game selects the target (NPCs must always have one, PC defaults to the _last_character_target)
-    Game determines the end position and the path based on skill, shooter and target locations
-    The path, the Projectile, and its effects are turned into a sub-turn effect item
-    Game adds the sub-turn item to a list of sub-turn effects
-    Game does a sub-turn tick, moving all effects one step forward
-    Game returns data to the Content
-    Content returns data to the Window
-    The Window displays the data, then asks for more data
-    Request is passed to Content, who requests more new data from the Game
-    If there are effects on the list, Game does a sub-turn tick, resolves collisions,
-     removes any expired effects, places/removes items on the scene, then returns the data
-    If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
+    4) Game does a sub-turn tick, moving all effects one step forward
+        Game returns data to the Content
+        Content returns data to the Window
+        The Window displays the data, then asks for more data
+        Request is passed to Content, who requests more new data from the Game
+        If there are effects on the list, Game does a sub-turn tick, resolves collisions,
+         removes any expired effects, places/removes items on the scene, then returns the data
+        If not, Game doesn't return anything and the Content tells the Window to return to the UI for commands
+Implement impassable tiles passing items to neighbors
 Add creatures setting their ranged targets
 Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
 Make the help overlay have dynamic top_left (must become a property in Window)

@@ -1326,7 +1326,7 @@ class Game:
                 target = self._get_coords_of_creature(target)
             # TODO: use skill and define actual path
             character_position = self._get_coords_of_creature(self.character)
-            distance = len(direct_path(character_position, target))
+            distance = coord_distance(character_position, target)
             max_distance = self.character.get_shooting_range()
             if distance > max_distance:
                 self._add_message("The target is beyond your weapon's range!")
@@ -1336,9 +1336,27 @@ class Game:
             projectile, skill, effects = self.character.shoot()
             max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
             max_deviation = max(max_deviation, 1)
-            deviation_range = list(range(max_deviation))
-            x_deviation = random.choices([0, ])[0]
-            self._sub_turn_effects.append((projectile, path, effects))
+            x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+            y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+            final_target = (target[0] + y_deviation, target[1] + x_deviation)
+            projectile_path = direct_path(character_position, final_target)[1:]
+            self._sub_turn_effects.append((projectile, projectile_path, effects))
+            # Direct application for testing
+            path_index = -1
+            while True:
+                try:
+                    self._current_location.put_item(projectile, projectile_path[path_index])
+                    break
+                except ValueError:
+                    path_index -= 1
+            if projectile_path[path_index] in self._creature_coords:
+                creature = self._creature_coords[projectile_path[path_index]]
+                creature.apply_effects(effects)
+                if creature.is_dead:
+                    for item in creature.get_drops():
+                        self._current_location.put_item(item, projectile_path[path_index])
+                    self._creature_coords.pop(projectile_path[path_index])
+                    self.character.ranged_target = None
         return True
 
     def _set_character_ranged_target(self, _) -> bool:
@@ -1522,7 +1540,7 @@ class Game:
             return
         try:
             tile = self._current_location.tile_at(work_coords)
-        except IndexError:
+        except ValueError:
             self._add_message('You cannot work on that!')
             return
         result = self.character.work_on(tile)
@@ -2160,7 +2178,7 @@ class Location(Container):
                     try:
                         if self.tile_at(step).is_passable_for(runner):
                             return step
-                    except IndexError:
+                    except ValueError:
                         pass
         return coords
 
@@ -2299,7 +2317,7 @@ class Location(Container):
     def tile_at(self, coords: tuple[int, int]) -> Tile:
         new_coords = self._local_coords(coords)
         if -1 in new_coords or new_coords[0] == self._height or new_coords[1] == self._width:
-            raise IndexError(f'Bad coordinates {coords} / {new_coords} for Location tile!')
+            raise ValueError(f'Bad coordinates {coords} / {new_coords} for Location tile!')
         return self.contents[new_coords[0]][new_coords[1]]
 
     def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
