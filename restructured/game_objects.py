@@ -1205,7 +1205,7 @@ class Game:
         self.substate: Optional[str] = None
         self.message_log: list[str] = []
         self._observed_target: Optional[tuple[int, int]] = None
-        self._sub_turn_effects: list = []
+        self._sub_turn_effects: dict = {}
 
     @property
     def _selected_equipped_item(self):
@@ -1336,7 +1336,8 @@ class Game:
             y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
             final_target = (target[0] + y_deviation, target[1] + x_deviation)
             projectile_path = direct_path(character_position, final_target)[1:]
-            self._sub_turn_effects.append((projectile, projectile_path, effects))
+            flying_projectile = {'item': projectile, 'path': projectile_path, 'effects': effects}
+            self._sub_turn_effects[projectile_path[0]] = flying_projectile
             # Direct application for testing
             path_index = -1
             while True:
