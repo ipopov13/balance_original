@@ -876,13 +876,13 @@ class Creature(GameObject):
         self._energy = min(self.max_energy - self.current_max_energy, max(0, value))
 
     def _get_hungry(self, change):
-        """Add hunger and thirst on every 10 points of energy spent or every 100 turns"""
+        """Add hunger and thirst on every 100 points of energy spent or every 100 turns"""
         self._sustenance_needs += change
-        if self._sustenance_needs >= 10:
-            famine = self._sustenance_needs // 10
+        if self._sustenance_needs >= 100:
+            famine = self._sustenance_needs // 100
             self.hunger += famine
             self.thirst += famine
-            self._sustenance_needs = self._sustenance_needs % 10
+            self._sustenance_needs = self._sustenance_needs % 100
 
     @property
     def hunger(self):
@@ -947,7 +947,7 @@ class Creature(GameObject):
 
     def travel(self) -> None:
         fraction = self._effect_modifiers.get(config.travel_energy_loss_modifier, self.load / self.max_load)
-        energy_to_lose = int(self.max_energy * fraction)
+        energy_to_lose = int(self.max_energy * fraction) // 2
         self.energy -= energy_to_lose
         self.ranged_target = None
 
@@ -957,8 +957,7 @@ class Creature(GameObject):
         Effects with values of 0 or lower are removed
         """
         self._age += 1
-        if not self._age % 10:
-            self._get_hungry(1)
+        self._get_hungry(1)
         for effect, value in self._active_effects.items():
             if effect in [config.sick_effect, config.drunk_effect]:
                 if random.random() > value / (value + self.stats['End']):
@@ -1324,15 +1323,12 @@ class Game:
                 return True
             if isinstance(target, Creature):
                 target = self._get_coords_of_creature(target)
-            # TODO: use skill and define actual path
             character_position = self._get_coords_of_creature(self.character)
             distance = coord_distance(character_position, target)
             max_distance = self.character.get_shooting_range()
             if distance > max_distance:
                 self._add_message("The target is beyond your weapon's range!")
                 return True
-            # define deviation range using skill&distance, calculate deviation,
-            # apply deviation to target, calculate final path, apply max distance
             projectile, skill, effects = self.character.shoot()
             max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
             max_deviation = max(max_deviation, 1)
@@ -1353,10 +1349,7 @@ class Game:
                 creature = self._creature_coords[projectile_path[path_index]]
                 creature.apply_effects(effects)
                 if creature.is_dead:
-                    for item in creature.get_drops():
-                        self._current_location.put_item(item, projectile_path[path_index])
-                    self._creature_coords.pop(projectile_path[path_index])
-                    self.character.ranged_target = None
+                    self._creature_died(creature)
         self._living_world()
         return True
 
@@ -1528,6 +1521,17 @@ class Game:
         self._move_npcs()
         self.character.live()
 
+    def _creature_died(self, creature: Creature) -> None:
+        coords = self._get_coords_of_creature(creature)
+        for item in creature.get_drops():
+            self._current_location.put_item(item, coords)
+        self._creature_coords.pop(coords)
+        for other_creature in self._creature_coords.values():
+            if creature is other_creature.ranged_target:
+                other_creature.ranged_target = None
+        if creature is self._last_character_target:
+            self._last_character_target = None
+
     def _add_message(self, message: str) -> None:
         if message:
             self.message_log.append(message)
@@ -1564,9 +1568,7 @@ class Game:
                 other_creature = self._creature_coords[next_coords]
                 creature.bump_with(other_creature)
                 if other_creature.is_dead:
-                    for item in other_creature.get_drops():
-                        self._current_location.put_item(item, next_coords)
-                    self._creature_coords.pop(next_coords)
+                    self._creature_died(other_creature)
                 if other_creature is self.character and self.substate == Game.working_substate:
                     self.substate = Game.scene_substate
             else:
@@ -1783,14 +1785,7 @@ class Game:
             self._last_character_target = self._creature_coords[new_coords]
             self.character.bump_with(self._last_character_target)
             if self._last_character_target.is_dead:
-                if new_location.can_ocupy(self.character, new_coords):
-                    drop_coords = new_coords
-                else:
-                    drop_coords = old_coords
-                for item in self._last_character_target.get_drops():
-                    self._current_location.put_item(item, drop_coords)
-                self._creature_coords.pop(new_coords)
-                self._last_character_target = None
+                self._creature_died(self._last_character_target)
         elif new_location.can_ocupy(self.character, new_coords):
             self._last_character_target = None
             self._creature_coords.pop(old_coords)

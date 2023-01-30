@@ -1,7 +1,7 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage
-    2) Make projectiles stop at impassable terrain?
+    2) Make projectiles stop at impassable terrain and other creatures
         Some terrains are blocking, others only impassable (e.g. lava)
     3) ammo container/item is offhand, or main hand for thrown weapons
         ammo container is like a LiquidContainer, but sucks up physical items instead
