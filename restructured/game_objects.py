@@ -98,10 +98,12 @@ class Container(GameObject):
 
 
 class Item(GameObject):
-    def __init__(self, weight: int = 0, effects: dict[str, int] = None, **kwargs):
+    def __init__(self, weight: int = 0, effects: dict[str, int] = None,
+                 is_stackable: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._own_weight = weight
         self._effects = effects or {}
+        self.is_stackable = is_stackable
 
     def details(self, weight_color=console.fg.default) -> list[str]:
         return [self.name, weight_color + f'Weight: {self.weight}' + console.fx.end]
@@ -113,6 +115,29 @@ class Item(GameObject):
     @property
     def effects(self) -> dict[str, int]:
         return self._effects
+
+
+class ItemStack(Item):
+    def __init__(self, items: list[Item]):
+        if len(set([type(item) for item in items])) > 1:
+            raise TypeError(f"Cannot stack items of types: {set([type(item) for item in items])}!")
+        template = items[0]
+        super().__init__(effects=template.effects, is_stackable=template.is_stackable,
+                         icon=template.raw_icon, color=template.color, description=template.description)
+        self._items = items
+
+    @property
+    def name(self) -> str:
+        return f'a stack of {len(self._items)} {self._items[0].name}s'
+
+    def split(self, count: int) -> Union['ItemStack', Item]:
+        if count >= len(self._items):
+            return self
+        if count == 1 or count == len(self._items) - 1:
+            return self._items.pop()
+        removed_items = self._items[:count]
+        self._items = self._items[count:]
+        return ItemStack(removed_items)
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)

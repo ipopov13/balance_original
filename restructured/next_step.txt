@@ -4,9 +4,14 @@ Ranged combat (weapons with ammo)
     2) Make projectiles stop at impassable terrain and other creatures
         Some terrains are LoS-blocking, others impassable (e.g. lava, fences)
         LoS-blocking terrains also stop effects
-    3) ammo container/item is offhand, or main hand for thrown weapons
-        ammo container is like a LiquidContainer, but sucks up physical items instead
-        Has a Fill and an Empty method, but the Empty drops all the contents on the ground
+    3) ammo item is offhand, or main hand for thrown weapons
+        non-thrown ammo is stackable
+        Stackable items are always kept as an ItemStack
+        Stacks have a split(count) method that returns a new object with the specified count (or self
+         if the count is too big)
+        containers trying to call can_stack(item) on each existing item before adding a new one
+        add a split command and state with a window for digit input
+        split items are auto-dropped if there is no space in bag
 Implement impassable tiles passing items to neighbors
 Add creatures setting their ranged targets
 Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
