@@ -1270,9 +1270,10 @@ class Humanoid(Creature):
         if not item.is_stackable:
             raise TypeError(f"Item {item.name} is not stackable!")
         for slot, equipped_item in self.equipped_items.items():
-            if hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item):
+            if hasattr(equipped_item, 'add') and hasattr(equipped_item, 'can_stack')\
+                    and equipped_item.can_stack(item):
                 equipped_item.add(item)
-            elif hasattr(item, 'can_stack') and item.can_stack(equipped_item):
+            elif hasattr(item, 'add') and hasattr(item, 'can_stack') and item.can_stack(equipped_item):
                 item.add(equipped_item)
                 self.equipped_items[slot] = item
             elif type(item) is type(equipped_item):
@@ -1453,15 +1454,13 @@ class Game:
                     projectile, skill, effects = self.character.shoot()
                     max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
                     max_deviation = max(max_deviation, 1)
-                    while True:
+                    x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                    y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                    final_target = (target[0] + y_deviation, target[1] + x_deviation)
+                    while not self._current_location.contains_coords(final_target):
                         x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
                         y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
                         final_target = (target[0] + y_deviation, target[1] + x_deviation)
-                        try:
-                            self._current_location.tile_at(final_target)
-                            break
-                        except ValueError:
-                            pass
                     projectile_path = direct_path(character_position, final_target)[1:]
                     flying_projectile = {'item': projectile, 'path': projectile_path,
                                          'effects': effects}
@@ -2472,10 +2471,14 @@ class Location(Container):
         return self.tile_at(coords).is_passable_for(creature)
 
     def tile_at(self, coords: tuple[int, int]) -> Tile:
+        if not self.contains_coords(coords):
+            raise ValueError(f'Bad coordinates {coords} for Location tile!')
         new_coords = self._local_coords(coords)
-        if -1 in new_coords or new_coords[0] == self._height or new_coords[1] == self._width:
-            raise ValueError(f'Bad coordinates {coords} / {new_coords} for Location tile!')
         return self.contents[new_coords[0]][new_coords[1]]
+
+    def contains_coords(self, coords: tuple[int, int]) -> bool:
+        local_coords = self._local_coords(coords)
+        return 0 <= local_coords[0] < config.location_height and 0 <= local_coords[1] < config.location_width
 
     def _local_coords(self, coords: tuple[int, int]) -> tuple[int, int]:
         return coords[0] - self._top_left[0], coords[1] - self._top_left[1]

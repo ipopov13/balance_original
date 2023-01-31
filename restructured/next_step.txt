@@ -1,4 +1,4 @@
-projectiles fly off the screen and appear on the opposite side!
+stacks don't stack in equipment again
 
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
