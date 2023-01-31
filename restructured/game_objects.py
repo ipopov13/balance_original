@@ -118,16 +118,35 @@ class Item(GameObject):
 
 
 class ItemStack(Item):
+    # def __init__(self, items: list[Item]):
+    #     if len(set([type(item) for item in items])) > 1:
+    #         raise TypeError(f"Cannot stack items of types: {set([type(item) for item in items])}!")
+    #     template = items[0]
+    #     super().__init__(effects=template.effects, is_stackable=True,
+    #                      icon=template.raw_icon, color=template.color, description=template.description)
+    #     self._items = items
+
     def __init__(self, items: list[Item]):
-        if len(set([type(item) for item in items])) > 1:
+        unstacked_items = []
+        for possible_stack in items:
+            if hasattr(possible_stack, 'is_empty') and hasattr(possible_stack, 'split'):
+                while not possible_stack.is_empty:
+                    unstacked_items.append(possible_stack.split(1))
+            else:
+                unstacked_items.append(possible_stack)
+        if len(set([type(item) for item in unstacked_items])) > 1:
             raise TypeError(f"Cannot stack items of types: {set([type(item) for item in items])}!")
-        template = items[0]
+        template = unstacked_items[0]
         super().__init__(effects=template.effects, is_stackable=True,
                          icon=template.raw_icon, color=template.color, description=template.description)
-        self._items = items
+        self._items = unstacked_items
 
     def __getattr__(self, item):
         return getattr(self._items[0], item)
+
+    @property
+    def size(self) -> int:
+        return len(self._items)
 
     @property
     def name(self) -> str:
@@ -1212,6 +1231,8 @@ class Humanoid(Creature):
                     ammo = self.equipped_items[slot].split(1)
                     if self.equipped_items[slot].is_empty:
                         self.equipped_items[slot] = empty_space
+                    elif self.equipped_items[slot].size == 1:
+                        self.equipped_items[slot] = self.equipped_items[slot].split(1)
                 except AttributeError:
                     self.equipped_items[slot] = empty_space
         return ammo, current_skill, effects
@@ -1235,6 +1256,25 @@ class Humanoid(Creature):
                 return result
         else:
             return "You don't have the right tools."
+
+    def can_stack_equipment(self, item: Item) -> bool:
+        if not item.is_stackable or not self.can_carry(item):
+            return False
+        for slot, equipped_item in self.equipped_items.items():
+            if (hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item)) or \
+                    type(item) is type(equipped_item):
+                return True
+        return False
+
+    def stack_equipment(self, item: Item) -> None:
+        if not item.is_stackable:
+            raise TypeError(f"Item {item.name} is not stackable!")
+        for slot, equipped_item in self.equipped_items.items():
+            if hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item):
+                equipped_item.add(item)
+            elif type(item) is type(equipped_item):
+                new_stack = ItemStack([equipped_item, item])
+                self.equipped_items[slot] = new_stack
 
 
 class Game:
@@ -1301,8 +1341,8 @@ class Game:
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(ThrowingKnife(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
-        self._current_location.put_item(Acorn(), character_coords)
-        self._current_location.put_item(Acorn(), character_coords)
+        for i in range(10):
+            self._current_location.put_item(Acorn(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -1349,7 +1389,10 @@ class Game:
                         and self.character.can_carry(self._selected_ground_item) \
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
-                if self.character.can_swap_equipment(self._selected_ground_item) \
+                if self.character.can_stack_equipment(self._selected_ground_item) \
+                        and self._selected_ground_item is not empty_space:
+                    inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_ground_in_inventory_screen
+                elif self.character.can_swap_equipment(self._selected_ground_item) \
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
                 if self.character.can_consume(self._selected_ground_item):
@@ -1534,6 +1577,11 @@ class Game:
         dropped_item = self.character.swap_equipment(self._selected_ground_item)
         if dropped_item is not empty_space:
             self._ground_container.add_item(dropped_item)
+        return True
+
+    def _stack_equip_from_ground_in_inventory_screen(self, _):
+        self._ground_container.remove_item(self._selected_ground_item)
+        self.character.stack_equipment(self._selected_ground_item)
         return True
 
     def _pick_up_item(self, _) -> bool:

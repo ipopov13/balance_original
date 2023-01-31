@@ -1,4 +1,4 @@
-Make equipping from ground directly add the ammo to the stack
+equipping a stack on top of a single items swaps instead of stacking
 
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
