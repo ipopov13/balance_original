@@ -1,6 +1,4 @@
 Reworking Game._character_shoots()
-bug with creatures moving before being hit and dying
-bug with 1st step of path not displaying
 Make the hud messages stay around after a bump!
 
 FEATURES (following the spreadsheet roadmap)
