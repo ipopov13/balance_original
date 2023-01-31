@@ -2243,7 +2243,7 @@ class Tile(PhysicalContainer):
         return self.terrain.is_passable_for(creature)
 
     def has_space(self):
-        return self.terrain.passable and len(self.item_list) < self._height * self._width
+        return len(self.item_list) < self._height * self._width
 
     @property
     def terrain_substances(self) -> list[SubstanceSource]:

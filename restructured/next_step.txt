@@ -1,9 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage
-    2) Make projectiles stop at impassable terrain and other creatures
-        Some terrains are LoS-blocking, others impassable (e.g. lava, fences)
-        LoS-blocking terrains also stop effects
     3) add a split command and state with a window for digit input
         add a stack command that merges the current stack with the first encountered compatible stack
         split items are auto-dropped if there is no space in bag
