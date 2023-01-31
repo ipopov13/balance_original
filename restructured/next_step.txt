@@ -1,5 +1,3 @@
-stacks don't stack in equipment again
-
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage

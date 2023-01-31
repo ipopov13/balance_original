@@ -118,20 +118,11 @@ class Item(GameObject):
 
 
 class ItemStack(Item):
-    # def __init__(self, items: list[Item]):
-    #     if len(set([type(item) for item in items])) > 1:
-    #         raise TypeError(f"Cannot stack items of types: {set([type(item) for item in items])}!")
-    #     template = items[0]
-    #     super().__init__(effects=template.effects, is_stackable=True,
-    #                      icon=template.raw_icon, color=template.color, description=template.description)
-    #     self._items = items
-
     def __init__(self, items: list[Item]):
         unstacked_items = []
         for possible_stack in items:
-            if hasattr(possible_stack, 'is_empty') and hasattr(possible_stack, 'split'):
-                while not possible_stack.is_empty:
-                    unstacked_items.append(possible_stack.split(1))
+            if hasattr(possible_stack, 'items'):
+                unstacked_items += possible_stack.items
             else:
                 unstacked_items.append(possible_stack)
         if len(set([type(item) for item in unstacked_items])) > 1:
@@ -139,47 +130,53 @@ class ItemStack(Item):
         template = unstacked_items[0]
         super().__init__(effects=template.effects, is_stackable=True,
                          icon=template.raw_icon, color=template.color, description=template.description)
-        self._items = unstacked_items
+        self.items = unstacked_items
 
     def __getattr__(self, item):
-        return getattr(self._items[0], item)
+        return getattr(self.items[0], item)
 
     @property
     def size(self) -> int:
-        return len(self._items)
+        return len(self.items)
 
     @property
     def name(self) -> str:
-        return f'a stack of {len(self._items)} {self._items[0].name}s'
+        return f'a stack of {len(self.items)} {self.items[0].name}s'
 
     @property
     def __class__(self) -> Type:
-        return self._items[0].__class__
+        return self.items[0].__class__
 
     @property
     def is_empty(self) -> bool:
-        return len(self._items) == 0
+        return len(self.items) == 0
 
     def split(self, count: int) -> Union['ItemStack', Item]:
-        if count == 1 or count == len(self._items) - 1:
-            return self._items.pop()
-        if count >= len(self._items):
+        if count == 1 or count == len(self.items) - 1:
+            return self.items.pop()
+        if count >= len(self.items):
             return self
-        removed_items = self._items[:count]
-        self._items = self._items[count:]
+        removed_items = self.items[:count]
+        self.items = self.items[count:]
         return ItemStack(removed_items)
 
     def can_stack(self, item: Item):
-        return type(item) is type(self._items[0])
+        return type(item) is type(self.items[0]) or\
+            (isinstance(item, ItemStack) and item.can_stack(self.items[0]))
 
     def add(self, item: Item):
-        if type(item) is not type(self._items[0]):
-            raise TypeError(f"Stack of {type(self._items[0])} cannot take {type(item)}")
-        self._items.append(item)
+        if isinstance(item, ItemStack):
+            while not item.is_empty:
+                stacked_item = item.split(1)
+                self.add(stacked_item)
+        else:
+            if type(item) is not type(self.items[0]):
+                raise TypeError(f"Stack of {type(self.items[0])} cannot take {type(item)}")
+            self.items.append(item)
 
     @property
     def weight(self) -> int:
-        return len(self._items) * self._items[0].weight
+        return len(self.items) * self.items[0].weight
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
@@ -203,14 +200,13 @@ class PhysicalContainer(Container, Item):
             raise TypeError(f"Cannot add empty_space to container!")
         if item.is_stackable and not ignore_stackability:
             for possible_stack in self.item_list:
-                if isinstance(possible_stack, ItemStack) and possible_stack.can_stack(item):
-                    possible_stack.add(item)
-                    return
-                elif type(possible_stack) is type(item):
-                    new_stack = ItemStack([item, possible_stack])
+                try:
+                    new_stack = ItemStack([possible_stack, item])
                     self.remove_item(possible_stack)
                     self.add_item(new_stack, ignore_stackability=True)
                     return
+                except TypeError:
+                    pass
         for row_index in range(self._height):
             if len(self._contents[row_index]) < self._width:
                 self._contents[row_index].append(item)
@@ -1270,15 +1266,13 @@ class Humanoid(Creature):
         if not item.is_stackable:
             raise TypeError(f"Item {item.name} is not stackable!")
         for slot, equipped_item in self.equipped_items.items():
-            if hasattr(equipped_item, 'add') and hasattr(equipped_item, 'can_stack')\
-                    and equipped_item.can_stack(item):
-                equipped_item.add(item)
-            elif hasattr(item, 'add') and hasattr(item, 'can_stack') and item.can_stack(equipped_item):
-                item.add(equipped_item)
-                self.equipped_items[slot] = item
-            elif type(item) is type(equipped_item):
+            try:
                 new_stack = ItemStack([equipped_item, item])
                 self.equipped_items[slot] = new_stack
+                return
+            except TypeError:
+                pass
+        raise TypeError(f"Could not find equipment slot to stack {item.name}!")
 
 
 class Game:
