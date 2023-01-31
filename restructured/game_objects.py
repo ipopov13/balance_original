@@ -1257,11 +1257,11 @@ class Humanoid(Creature):
             return "You don't have the right tools."
 
     def can_stack_equipment(self, item: Item) -> bool:
-        if not item.is_stackable or not self.can_carry(item):
+        if not item.is_stackable:
             return False
         for slot, equipped_item in self.equipped_items.items():
             try:
-                new_stack = ItemStack([item, equipped_item])
+                _ = ItemStack([item, equipped_item])
                 return True
             except TypeError:
                 pass
@@ -1393,6 +1393,7 @@ class Game:
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
+                        and self.character.can_carry(self._selected_ground_item) \
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_ground_in_inventory_screen
                 elif self.character.can_swap_equipment(self._selected_ground_item) \
@@ -1411,7 +1412,10 @@ class Game:
                 if self._selected_bag_item is not empty_space \
                         and self._ground_container.has_space():
                     inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
-                if self.character.can_equip(self._selected_bag_item):
+                if self.character.can_stack_equipment(self._selected_bag_item) \
+                        and self._selected_bag_item is not empty_space:
+                    inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_bag_in_inventory_screen
+                elif self.character.can_equip(self._selected_bag_item):
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
                 if self.character.can_consume(self._selected_bag_item):
                     inventory_commands[commands.InventoryConsume()] = self._consume_from_bag_in_inventory_screen
@@ -1580,7 +1584,12 @@ class Game:
             self._ground_container.add_item(dropped_item)
         return True
 
-    def _stack_equip_from_ground_in_inventory_screen(self, _):
+    def _stack_equip_from_bag_in_inventory_screen(self, _) -> bool:
+        self.character.bag.remove_item(self._selected_bag_item)
+        self.character.stack_equipment(self._selected_bag_item)
+        return True
+
+    def _stack_equip_from_ground_in_inventory_screen(self, _) -> bool:
         self._ground_container.remove_item(self._selected_ground_item)
         self.character.stack_equipment(self._selected_ground_item)
         return True
