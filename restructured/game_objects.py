@@ -122,22 +122,45 @@ class ItemStack(Item):
         if len(set([type(item) for item in items])) > 1:
             raise TypeError(f"Cannot stack items of types: {set([type(item) for item in items])}!")
         template = items[0]
-        super().__init__(effects=template.effects, is_stackable=template.is_stackable,
+        super().__init__(effects=template.effects, is_stackable=True,
                          icon=template.raw_icon, color=template.color, description=template.description)
         self._items = items
+
+    def __getattr__(self, item):
+        return getattr(self._items[0], item)
 
     @property
     def name(self) -> str:
         return f'a stack of {len(self._items)} {self._items[0].name}s'
 
+    @property
+    def __class__(self) -> Type:
+        return self._items[0].__class__
+
+    @property
+    def is_empty(self) -> bool:
+        return len(self._items) == 0
+
     def split(self, count: int) -> Union['ItemStack', Item]:
-        if count >= len(self._items):
-            return self
         if count == 1 or count == len(self._items) - 1:
             return self._items.pop()
+        if count >= len(self._items):
+            return self
         removed_items = self._items[:count]
         self._items = self._items[count:]
         return ItemStack(removed_items)
+
+    def can_stack(self, item: Item):
+        return type(item) is type(self._items[0])
+
+    def add(self, item: Item):
+        if type(item) is not type(self._items[0]):
+            raise TypeError(f"Stack of {type(self._items[0])} cannot take {type(item)}")
+        self._items.append(item)
+
+    @property
+    def weight(self) -> int:
+        return len(self._items) * self._items[0].weight
 
 
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
@@ -156,9 +179,19 @@ class PhysicalContainer(Container, Item):
             row += [empty_space] * (self._width - len(row))
         return padded_contents
 
-    def add_item(self, item: Item):
+    def add_item(self, item: Item, ignore_stackability: bool = False) -> None:
         if item is empty_space:
             raise TypeError(f"Cannot add empty_space to container!")
+        if item.is_stackable and not ignore_stackability:
+            for possible_stack in self.item_list:
+                if isinstance(possible_stack, ItemStack) and possible_stack.can_stack(item):
+                    possible_stack.add(item)
+                    return
+                elif type(possible_stack) is type(item):
+                    new_stack = ItemStack([item, possible_stack])
+                    self.remove_item(possible_stack)
+                    self.add_item(new_stack, ignore_stackability=True)
+                    return
         for row_index in range(self._height):
             if len(self._contents[row_index]) < self._width:
                 self._contents[row_index].append(item)
@@ -342,10 +375,11 @@ class MainHand(Item):
 
 
 class RangedWeapon(MainHand):
-    def __init__(self, ranged_weapon_type: str, max_distance: int, **kwargs):
+    def __init__(self, ranged_weapon_type: str, skill: str, max_distance: int, **kwargs):
         super().__init__(**kwargs)
         self.ranged_weapon_type = ranged_weapon_type
         self.max_distance = max_distance
+        self.skill = skill
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
         return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
@@ -363,8 +397,8 @@ class AcornGun(RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='acorn gun', weight=4, icon='{', color=color,
                          description='A gun of dryadic design.',
-                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.gun_type,
-                         max_distance=15)
+                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
+                         skill=config.gun_skill, max_distance=15)
 
 
 class Fist(MainHand):
@@ -408,6 +442,13 @@ class RangedAmmo(Offhand):
         self.damage = damage
 
 
+class Acorn(RangedAmmo):
+    def __init__(self):
+        super().__init__(name='acorn', weight=1, icon='*', color=config.brown_fg_color,
+                         is_stackable=True, description='The seed of an oak tree.',
+                         damage=2, ranged_ammo_type=config.acorn_gun_type)
+
+
 class ThrownWeapon(RangedWeapon, RangedAmmo):
     pass
 
@@ -418,7 +459,7 @@ class ThrowingKnife(ThrownWeapon):
                          description='A light knife, balanced for throwing.',
                          damage=2, combat_exhaustion=1,
                          ranged_weapon_type=config.thrown_weapon_type, max_distance=7,
-                         ranged_ammo_type=config.thrown_weapon_type)
+                         ranged_ammo_type=config.thrown_weapon_type, skill=config.throwing_knife_skill)
 
 
 class AnimalWeapon(Item):
@@ -1160,13 +1201,19 @@ class Humanoid(Creature):
         return random.randint(0, max(stats // 2, 1)) + weapon_damage
 
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
+        weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
         effects = {config.normal_damage_effect: self._ranged_damage}
-        current_skill = self._skills.get(ammo.ranged_ammo_type, 0)
-        self._increase_skill(ammo.ranged_ammo_type)
+        current_skill = self._skills.get(weapon.skill, 0)
+        self._increase_skill(weapon.skill)
         for slot, item in self.equipped_items.items():
             if item is ammo:
-                self.equipped_items[slot] = empty_space
+                try:
+                    ammo = self.equipped_items[slot].split(1)
+                    if self.equipped_items[slot].is_empty:
+                        self.equipped_items[slot] = empty_space
+                except AttributeError:
+                    self.equipped_items[slot] = empty_space
         return ammo, current_skill, effects
 
     def _increase_skill(self, skill_name: str) -> None:
@@ -1254,6 +1301,8 @@ class Game:
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(ThrowingKnife(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
+        self._current_location.put_item(Acorn(), character_coords)
+        self._current_location.put_item(Acorn(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state

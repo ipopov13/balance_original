@@ -1,3 +1,5 @@
+Make equipping from ground directly add the ammo to the stack
+
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
     1) Separate ranged and melee damage
@@ -6,11 +8,8 @@ Ranged combat (weapons with ammo)
         LoS-blocking terrains also stop effects
     3) ammo item is offhand, or main hand for thrown weapons
         non-thrown ammo is stackable
-        Stackable items are always kept as an ItemStack
-        Stacks have a split(count) method that returns a new object with the specified count (or self
-         if the count is too big)
-        containers trying to call can_stack(item) on each existing item before adding a new one
         add a split command and state with a window for digit input
+        add a stack command that merges the current stack with the first encountered compatible stack
         split items are auto-dropped if there is no space in bag
 Implement impassable tiles passing items to neighbors
 Add creatures setting their ranged targets

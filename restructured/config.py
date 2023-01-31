@@ -71,7 +71,9 @@ animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
 # Ranged weapon types
 thrown_weapon_type = 'Thrown weapons'
-gun_type = "Guns"
+gun_skill = "Guns"
+throwing_knife_skill = "Throwing knives"
+acorn_gun_type = 'acorn_gun_type'
 
 random_creatures_respawn_period = 1  # 500
 creature_rarity_scale = [1, 1/2, 1/9]
