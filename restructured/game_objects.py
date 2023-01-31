@@ -1262,7 +1262,7 @@ class Humanoid(Creature):
             return False
         for slot, equipped_item in self.equipped_items.items():
             if (hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item)) or \
-                    type(item) is type(equipped_item):
+                    (hasattr(item, 'can_stack') and item.can_stack(equipped_item)):
                 return True
         return False
 
@@ -1272,6 +1272,9 @@ class Humanoid(Creature):
         for slot, equipped_item in self.equipped_items.items():
             if hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item):
                 equipped_item.add(item)
+            elif hasattr(item, 'can_stack') and item.can_stack(equipped_item):
+                item.add(equipped_item)
+                self.equipped_items[slot] = item
             elif type(item) is type(equipped_item):
                 new_stack = ItemStack([equipped_item, item])
                 self.equipped_items[slot] = new_stack

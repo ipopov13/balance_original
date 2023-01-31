@@ -1,4 +1,4 @@
-equipping a stack on top of a single items swaps instead of stacking
+projectiles fly off the screen and appear on the opposite side!
 
 FEATURES (following the spreadsheet roadmap)
 Ranged combat (weapons with ammo)
