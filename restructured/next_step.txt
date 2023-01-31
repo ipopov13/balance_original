@@ -1,4 +1,4 @@
-BUG: Single items don't equip-stack
+add equip-stacking from bag too
 
 FEATURES (following the spreadsheet roadmap)
 Implement full tiles passing items to neighbors

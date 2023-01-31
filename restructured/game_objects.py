@@ -1260,9 +1260,11 @@ class Humanoid(Creature):
         if not item.is_stackable or not self.can_carry(item):
             return False
         for slot, equipped_item in self.equipped_items.items():
-            if (hasattr(equipped_item, 'can_stack') and equipped_item.can_stack(item)) or \
-                    (hasattr(item, 'can_stack') and item.can_stack(equipped_item)):
+            try:
+                new_stack = ItemStack([item, equipped_item])
                 return True
+            except TypeError:
+                pass
         return False
 
     def stack_equipment(self, item: Item) -> None:
