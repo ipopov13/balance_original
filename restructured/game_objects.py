@@ -1203,7 +1203,8 @@ class Game:
         self.world: Optional[World] = None
         self.state: str = Game.welcome_state
         self.substate: Optional[str] = None
-        self.message_log: list[str] = []
+        self._new_message: str = ''
+        self._current_message: str = ''
         self._observed_target: Optional[tuple[int, int]] = None
         self._sub_turn_effects: dict = {}
 
@@ -1320,31 +1321,31 @@ class Game:
             target = self.character.ranged_target or self._last_character_target
             if target is None:
                 self._add_message("No target selected!")
-                return True
-            if isinstance(target, Creature):
-                target = self._get_coords_of_creature(target)
-            character_position = self._get_coords_of_creature(self.character)
-            distance = coord_distance(character_position, target)
-            max_distance = self.character.get_shooting_range()
-            if distance > max_distance:
-                self._add_message("The target is beyond your weapon's range!")
-                return True
-            projectile, skill, effects = self.character.shoot()
-            max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
-            max_deviation = max(max_deviation, 1)
-            while True:
-                x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
-                y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
-                final_target = (target[0] + y_deviation, target[1] + x_deviation)
-                try:
-                    self._current_location.tile_at(final_target)
-                    break
-                except ValueError:
-                    pass
-            projectile_path = direct_path(character_position, final_target)[1:]
-            flying_projectile = {'item': projectile, 'path': projectile_path,
-                                 'effects': effects}
-            self._sub_turn_effects[projectile_path[0]] = flying_projectile
+            else:
+                if isinstance(target, Creature):
+                    target = self._get_coords_of_creature(target)
+                character_position = self._get_coords_of_creature(self.character)
+                distance = coord_distance(character_position, target)
+                max_distance = self.character.get_shooting_range()
+                if distance > max_distance:
+                    self._add_message("The target is beyond your weapon's range!")
+                else:
+                    projectile, skill, effects = self.character.shoot()
+                    max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
+                    max_deviation = max(max_deviation, 1)
+                    while True:
+                        x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                        y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                        final_target = (target[0] + y_deviation, target[1] + x_deviation)
+                        try:
+                            self._current_location.tile_at(final_target)
+                            break
+                        except ValueError:
+                            pass
+                    projectile_path = direct_path(character_position, final_target)[1:]
+                    flying_projectile = {'item': projectile, 'path': projectile_path,
+                                         'effects': effects}
+                    self._sub_turn_effects[projectile_path[0]] = flying_projectile
         self._living_world()
         return True
 
@@ -1512,6 +1513,8 @@ class Game:
 
     def _living_world(self) -> None:
         # TODO: Change effect visuals (blinking fires, etc)
+        self._current_message = self._new_message
+        self._new_message = ''
         self._turn += 1
         self._move_npcs()
         self.character.live()
@@ -1557,8 +1560,7 @@ class Game:
             self._last_character_target = None
 
     def _add_message(self, message: str) -> None:
-        if message:
-            self.message_log.append(message)
+        self._new_message = message
 
     def _character_labor(self, direction: str) -> None:
         work_coords = calculate_new_position(self._get_coords_of_creature(self.character),
@@ -1723,8 +1725,8 @@ class Game:
             message = self._current_location.tile_at(self._observed_target).description
             if self._observed_target in self._creature_coords:
                 message += ' ' + self._creature_coords[self._observed_target].description
-        elif self.message_log:
-            message = self.message_log.pop(0)
+        elif self._current_message:
+            message = self._current_message
         else:
             target_text = ''
             target_creature = self._last_character_target or self.character.ranged_target
