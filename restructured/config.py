@@ -9,6 +9,8 @@ world_size: int = 9  # Regions per row & column
 max_text_lines_on_page: int = 21
 max_text_line_length: int = 65
 
+frame_viewing_time: float = 0.07
+
 order_color = console.fg.lightblue
 nature_color = console.fg.lightgreen
 chaos_color = console.fg.red

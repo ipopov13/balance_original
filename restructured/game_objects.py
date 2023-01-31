@@ -1332,25 +1332,19 @@ class Game:
             projectile, skill, effects = self.character.shoot()
             max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
             max_deviation = max(max_deviation, 1)
-            x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
-            y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
-            final_target = (target[0] + y_deviation, target[1] + x_deviation)
+            while True:
+                x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
+                final_target = (target[0] + y_deviation, target[1] + x_deviation)
+                try:
+                    self._current_location.tile_at(final_target)
+                    break
+                except ValueError:
+                    pass
             projectile_path = direct_path(character_position, final_target)[1:]
-            flying_projectile = {'item': projectile, 'path': projectile_path, 'effects': effects}
+            flying_projectile = {'item': projectile, 'path': projectile_path,
+                                 'effects': effects}
             self._sub_turn_effects[projectile_path[0]] = flying_projectile
-            # # Direct application for testing
-            # path_index = -1
-            # while True:
-            #     try:
-            #         self._current_location.put_item(projectile, projectile_path[path_index])
-            #         break
-            #     except ValueError:
-            #         path_index -= 1
-            # if projectile_path[path_index] in self._creature_coords:
-            #     creature = self._creature_coords[projectile_path[path_index]]
-            #     creature.apply_effects(effects)
-            #     if creature.is_dead:
-            #         self._creature_died(creature)
         self._living_world()
         return True
 
@@ -1527,11 +1521,17 @@ class Game:
             if position not in self._sub_turn_effects:
                 continue
             effect = self._sub_turn_effects.pop(position)
-            current_pos_index = effect['path'].index(position)
-            next_position = effect['path'][current_pos_index + 1]
+            if position == effect['path'][-1]:
+                next_position = position
+            else:
+                current_pos_index = effect['path'].index(position)
+                next_position = effect['path'][current_pos_index + 1]
             if next_position in self._creature_coords:
-                self._creature_coords[next_position].apply_effects(effect['effects'])
+                creature = self._creature_coords[next_position]
+                creature.apply_effects(effect['effects'])
                 self._end_effect(effect, next_position)
+                if creature.is_dead:
+                    self._creature_died(creature)
             elif next_position in self._sub_turn_effects:
                 other_effect = self._sub_turn_effects.pop(next_position)
                 for eff in [effect, other_effect]:

@@ -4,6 +4,7 @@ from time import sleep
 from content_types import DescriptionList
 import commands
 from utils import strip_ansi_escape_sequences, horizontal_pad
+import config
 
 
 class Window(ABC):
@@ -95,7 +96,7 @@ class Window(ABC):
                     result = self.ui.display(displayed_content, cursor_pos)
                     new_content, new_cursor_pos = self.get_display_data()
                     while new_content != displayed_content:
-                        sleep(.3)
+                        sleep(config.frame_viewing_time)
                         result = self.ui.display(new_content, new_cursor_pos)
                         displayed_content = new_content
                         new_content, new_cursor_pos = self.get_display_data()
