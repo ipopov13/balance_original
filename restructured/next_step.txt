@@ -1,6 +1,6 @@
+BUG: Single items don't equip-stack
+
 FEATURES (following the spreadsheet roadmap)
-Ranged combat (weapons with ammo)
-    1) Separate ranged and melee damage
 Implement full tiles passing items to neighbors
 Add creatures setting their ranged targets
 Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)

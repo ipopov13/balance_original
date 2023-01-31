@@ -390,11 +390,13 @@ class MainHand(Item):
 
 
 class RangedWeapon(MainHand):
-    def __init__(self, ranged_weapon_type: str, skill: str, max_distance: int, **kwargs):
+    def __init__(self, ranged_weapon_type: str, skill: str, max_distance: int,
+                 ranged_damage: int, **kwargs):
         super().__init__(**kwargs)
         self.ranged_weapon_type = ranged_weapon_type
         self.max_distance = max_distance
         self.skill = skill
+        self.ranged_damage = ranged_damage
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
         return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
@@ -412,7 +414,7 @@ class AcornGun(RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='acorn gun', weight=4, icon='{', color=color,
                          description='A gun of dryadic design.',
-                         damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
+                         ranged_damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
                          skill=config.gun_skill, max_distance=15)
 
 
@@ -451,17 +453,17 @@ class Offhand(Item):
 
 
 class RangedAmmo(Offhand):
-    def __init__(self, ranged_ammo_type: str, damage: int = 0, **kwargs):
+    def __init__(self, ranged_ammo_type: str, ranged_damage: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.ranged_ammo_type = ranged_ammo_type
-        self.damage = damage
+        self.ranged_damage = ranged_damage
 
 
 class Acorn(RangedAmmo):
     def __init__(self):
         super().__init__(name='acorn', weight=1, icon='*', color=config.brown_fg_color,
                          is_stackable=True, description='The seed of an oak tree.',
-                         damage=2, ranged_ammo_type=config.acorn_gun_type)
+                         ranged_damage=1, ranged_ammo_type=config.acorn_gun_type)
 
 
 class ThrownWeapon(RangedWeapon, RangedAmmo):
@@ -472,7 +474,7 @@ class ThrowingKnife(ThrownWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
-                         damage=2, combat_exhaustion=1,
+                         damage=1, ranged_damage=3, combat_exhaustion=1,
                          ranged_weapon_type=config.thrown_weapon_type, max_distance=7,
                          ranged_ammo_type=config.thrown_weapon_type, skill=config.throwing_knife_skill)
 
@@ -1209,9 +1211,9 @@ class Humanoid(Creature):
         ranged_weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
         if ranged_weapon is ammo:
-            weapon_damage = ranged_weapon.damage
+            weapon_damage = ranged_weapon.ranged_damage
         else:
-            weapon_damage = ranged_weapon.damage + ammo.damage
+            weapon_damage = ranged_weapon.ranged_damage + ammo.ranged_damage
         stats = (self.stats['Dex'] + self.stats['Per']) // 2
         return random.randint(0, max(stats // 2, 1)) + weapon_damage
 
@@ -1231,6 +1233,7 @@ class Humanoid(Creature):
                         self.equipped_items[slot] = self.equipped_items[slot].split(1)
                 except AttributeError:
                     self.equipped_items[slot] = empty_space
+        self.energy -= self._combat_exhaustion // 2
         return ammo, current_skill, effects
 
     def _increase_skill(self, skill_name: str) -> None:
