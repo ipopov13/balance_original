@@ -1,15 +1,15 @@
 FEATURES (following the spreadsheet roadmap)
-Implement full tiles passing items to neighbors
-Add creatures setting their ranged targets
-Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
-Make the help overlay have dynamic top_left (must become a property in Window)
-Make the help overlay content format multi-lines properly
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Move all stat names to the config
 
+Interface
+    Make the help overlay have dynamic top_left (must become a property in Window)
+    Make the help overlay content format multi-lines properly
 Inventory
+    Implement dropping on full tiles
     Stacks
+        implement consuming from stacks
         add a split command and state with a window for digit input
         add a stack command that merges the current stack with the first encountered compatible stack
         split items are auto-dropped if there is no space in bag
@@ -40,6 +40,8 @@ Crafting
      ingredients and waits to execute
     Use the MultiContainerScreen with the recipe list replacing the equipment one
 Combat
+    Bumping with a ranged weapon should not give weapon skill, unless the weapon
+     has a melee skill tag and non-0 melee damage properties
     Attacked creatures should go into aggressive mode
     Creature disposition
     Normal mode
@@ -50,6 +52,8 @@ Character
     Skills
     Skills improvement
 Creatures:
+    Add creatures setting their ranged targets
+    Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
     Only humanoids will need their own name generation
     Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
     Build an AI library to choose from in species?

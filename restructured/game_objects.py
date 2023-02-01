@@ -1344,8 +1344,8 @@ class Game:
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(ThrowingKnife(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
-        for i in range(10):
-            self._current_location.put_item(Acorn(), character_coords)
+        for i in range(20*25):
+            self._current_location.put_item(Rock(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -2519,7 +2519,24 @@ class Location(Container):
         if tile.has_space():
             tile.add_item(item)
         else:
-            raise NotImplementedError(f'Implement flood fill algorithm for getting a tile with enough space.')
+            tile_list = [coords]
+            current_index = 0
+            while True:
+                neighbors = []
+                while current_index < len(tile_list):
+                    neighbors += self._all_neighbors(tile_list[current_index])
+                    current_index += 1
+                new_neighbors = list(set(neighbors) - set(tile_list))
+                for neighbor in new_neighbors:
+                    new_tile = self.tile_at(neighbor)
+                    if new_tile.has_space():
+                        new_tile.add_item(item)
+                        return
+                    else:
+                        tile_list.append(neighbor)
+                if not new_neighbors:
+                    break
+            raise NotImplementedError(f'Implement Overflow achievement here!')
 
     def remove_item(self, item: Item, coords: tuple[int, int]) -> None:
         self.tile_at(coords).remove_item(item)
