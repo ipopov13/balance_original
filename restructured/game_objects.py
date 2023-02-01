@@ -196,8 +196,12 @@ class PhysicalContainer(Container, Item):
         return padded_contents
 
     def add_item(self, item: Item, ignore_stackability: bool = False) -> None:
+        if item is self:
+            raise ValueError(f"Container {self.name} cannot contain itself!")
+        if not self.has_space():
+            raise IndexError(f"Container {self.name} has no space for items!")
         if item is empty_space:
-            raise TypeError(f"Cannot add empty_space to container!")
+            raise TypeError(f"Cannot add empty_space to container {self.name}!")
         if item.is_stackable and not ignore_stackability:
             for possible_stack in self.item_list:
                 try:
@@ -1241,12 +1245,12 @@ class Humanoid(Creature):
         if random.random() > current_skill / 100:
             self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
 
-    def work_on(self, tile: 'Tile') -> str:
+    def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
         for slot in [config.main_hand_slot]:
             item = self.effective_equipment[slot]
             if isinstance(item, Tool) and item.skill in tile.applicable_skills:
                 if item.work_exhaustion > self.energy:
-                    return "You are too tired to work!"
+                    return [], "You are too tired to work!"
                 current_skill = self._skills.get(item.skill, 0)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
@@ -1254,7 +1258,7 @@ class Humanoid(Creature):
                 result = tile.apply_skill(item.skill, strength=skill_strength)
                 return result
         else:
-            return "You don't have the right tools."
+            return [], "You don't have the right tools."
 
     def can_stack_equipment(self, item: Item) -> bool:
         if not item.is_stackable:
@@ -1410,7 +1414,8 @@ class Game:
             # "From bag" commands
             if self.active_inventory_container_name == self.get_bag_name():
                 if self._selected_bag_item is not empty_space \
-                        and self._ground_container.has_space():
+                        and (self._ground_container.has_space()
+                             or isinstance(self._ground_container, Tile)):
                     inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
                 if self.character.can_stack_equipment(self._selected_bag_item) \
                         and self._selected_bag_item is not empty_space:
@@ -1429,7 +1434,8 @@ class Game:
             if self.active_inventory_container_name == config.equipment_title:
                 if self._selected_equipped_item is not empty_space \
                         and ((self.character.bag is not empty_space and self.character.bag.has_space())
-                             or self._ground_container.has_space()):
+                             or (self._ground_container.has_space()
+                                 or isinstance(self._ground_container, Tile))):
                     inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
                 if self._selected_equipped_item is empty_space:
                     inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
@@ -1534,13 +1540,18 @@ class Game:
         return True
 
     def _unequip_from_inventory_screen(self, _) -> bool:
-        if self.character.bag is not empty_space and self.character.bag.has_space():
-            self.character.bag.add_item(self._selected_equipped_item)
-        else:
-            self._ground_container.add_item(self._selected_equipped_item)
-        for slot, item in self.character.equipped_items.items():
-            if item is self._selected_equipped_item:
+        item = self._selected_equipped_item
+        for slot, i in self.character.equipped_items.items():
+            if i is item:
                 self.character.equipped_items[slot] = empty_space
+                break
+        if self.character.bag is not empty_space and self.character.bag.has_space():
+            self.character.bag.add_item(item)
+        else:
+            if isinstance(self._ground_container, Tile):
+                self._current_location.put_item(item, self._get_coords_of_creature(self.character))
+            else:
+                self._ground_container.add_item(item)
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _) -> bool:
@@ -1567,7 +1578,11 @@ class Game:
 
     def _drop_from_inventory_screen(self, _) -> bool:
         self.character.bag.remove_item(self._selected_bag_item)
-        self._ground_container.add_item(self._selected_bag_item)
+        if isinstance(self._ground_container, Tile):
+            self._current_location.put_item(self._selected_bag_item,
+                                            self._get_coords_of_creature(self.character))
+        else:
+            self._ground_container.add_item(self._selected_bag_item)
         return True
 
     def _equip_from_bag_in_inventory_screen(self, _):
@@ -1706,9 +1721,11 @@ class Game:
         except ValueError:
             self._add_message('You cannot work on that!')
             return
-        result = self.character.work_on(tile)
-        if result:
-            self._add_message(result)
+        drops, message = self.character.work_on(tile)
+        if message:
+            for drop in drops:
+                self._current_location.put_item(drop, work_coords)
+            self._add_message(message)
             self._last_character_target = None
         else:
             self._last_character_target = tile
@@ -2216,22 +2233,23 @@ class Tile(PhysicalContainer):
     def max_hp(self) -> int:
         return 100
 
-    def apply_skill(self, skill: str, strength: int) -> str:
+    def apply_skill(self, skill: str, strength: int) -> tuple[list[Item], str]:
         self._last_skill_applied = skill
         self._transformations[skill] = self._transformations.get(skill, 0) + strength
         if self._transformations[skill] >= 100:
             return self._apply_transformation(skill)
-        return ''
+        return [], ''
 
-    def _apply_transformation(self, skill: str) -> str:
+    def _apply_transformation(self, skill: str) -> tuple[list[Item], str]:
         transformation_result = terrain_transformations[self.terrain][skill]
         self.terrain = transformation_result['new_terrain']
+        drops = []
         for x in range(transformation_result['number_of_drops']):
             item_type = random.choices(transformation_result['drop_types'],
                                        transformation_result['drop_weights'])[0]
-            self.add_item(item_type())
+            drops.append(item_type())
         self._transformations = {}
-        return transformation_result['message']
+        return drops, transformation_result['message']
 
     @property
     def applicable_skills(self) -> list[str]:
