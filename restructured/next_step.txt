@@ -7,7 +7,6 @@ Interface
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly
 Inventory
-    Implement dropping on full tiles
     Stacks
         implement consuming from stacks
         add a split command and state with a window for digit input

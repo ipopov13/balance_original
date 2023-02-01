@@ -1879,7 +1879,7 @@ class Game:
         else:
             target_text = ''
             target_creature = self._last_character_target or self.character.ranged_target
-            if isinstance(target_creature, Creature):
+            if isinstance(target_creature, (Creature, Tile)):
                 target_hp_gauge = self._format_gauge(target_creature.hp,
                                                      target_creature.max_hp,
                                                      config.hp_color, show_numbers=False)
