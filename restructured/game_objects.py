@@ -1114,6 +1114,9 @@ class Creature(GameObject):
     def can_carry(self, item: Item) -> bool:
         return item.weight <= self.max_load - self.load
 
+    def allowed_split_size(self, item_stack: ItemStack) -> int:
+        return (self.max_load - self.load) // item_stack.items[0].weight
+
     def can_swap_equipment(self, item: Item) -> bool:
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):

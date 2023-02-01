@@ -1,4 +1,9 @@
 FEATURES (following the spreadsheet roadmap)
+Equip case: (use Humanoid.allowed_split_size())
+    single item / empty slot
+    single item / stackable item in slot
+    single item / non-stackable item in slot
+
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Move all stat names to the config
@@ -10,9 +15,9 @@ Architecture
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Inventory
     Stacks
-        add drop/how many dialog when dropping stacks from bag
-        add pick up/how many dialog when taking stacks from ground
-        make equip from ground add a split with the max allowed weight if stack is too big
+        add (d/D)rop command to drop 1 or all items in a stack
+        add (t/T)ake command to take 1 or max possible items in a stack
+        add (e/E)quip command to equip 1 or max possible items in a stack
         ---
         add a split command and state with a window for digit input
         split items are auto-dropped if there is no space in bag
