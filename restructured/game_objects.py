@@ -583,7 +583,8 @@ class Rock(Item):
         super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightblack,
                          description='Building material and throwing weapon',
                          effects={config.hunger_rock_effect: 10,
-                                  config.thirst_rock_effect: 10})
+                                  config.thirst_rock_effect: 10},
+                         is_stackable=True)
 
 
 class IronOre(Item):
@@ -1348,7 +1349,9 @@ class Game:
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
         self._current_location.put_item(ThrowingKnife(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
-        for i in range(20*25):
+        for i in range(10):
+            self._current_location.put_item(Acorn(), character_coords)
+        for i in range(10):
             self._current_location.put_item(Rock(), character_coords)
         self._current_location.put_item(PlateArmor(), character_coords)
 
@@ -1558,6 +1561,10 @@ class Game:
         self.character.apply_effects(self._selected_bag_item.effects)
         if isinstance(self._selected_bag_item, LiquidContainer):
             self._selected_bag_item.decant(1)
+        elif isinstance(self._selected_bag_item, ItemStack):
+            self._selected_bag_item.split(1)
+            if self._selected_bag_item.is_empty:
+                self.character.bag.remove_item(self._selected_bag_item)
         else:
             self.character.bag.remove_item(self._selected_bag_item)
         return True
@@ -1566,6 +1573,10 @@ class Game:
         self.character.apply_effects(self._selected_ground_item.effects)
         if isinstance(self._selected_ground_item, LiquidContainer):
             self._selected_ground_item.decant(1)
+        elif isinstance(self._selected_ground_item, ItemStack):
+            self._selected_ground_item.split(1)
+            if self._selected_ground_item.is_empty:
+                self._ground_container.remove_item(self._selected_ground_item)
         else:
             self._ground_container.remove_item(self._selected_ground_item)
         return True
