@@ -97,7 +97,7 @@ class Map(Command):
 class SwitchContainers(Command):
     character = 's'
     hint = '(s)witch'
-    description = 'Switch between the two views'
+    description = 'Switch between the accessible views'
 
 
 class Close(Command):

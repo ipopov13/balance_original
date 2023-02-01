@@ -121,6 +121,8 @@ class ItemStack(Item):
     def __init__(self, items: list[Item]):
         unstacked_items = []
         for possible_stack in items:
+            if not possible_stack.is_stackable:
+                raise TypeError(f"Cannot stack unstackable item {possible_stack.name}!")
             if hasattr(possible_stack, 'items'):
                 unstacked_items += possible_stack.items
             else:
@@ -141,7 +143,7 @@ class ItemStack(Item):
 
     @property
     def name(self) -> str:
-        return f'a stack of {len(self.items)} {self.items[0].name}s'
+        return f'{len(self.items)} {self.items[0].name}s'
 
     @property
     def __class__(self) -> Type:
@@ -1262,8 +1264,6 @@ class Humanoid(Creature):
             return [], "You don't have the right tools."
 
     def can_stack_equipment(self, item: Item) -> bool:
-        if not item.is_stackable:
-            return False
         for slot, equipped_item in self.equipped_items.items():
             try:
                 _ = ItemStack([item, equipped_item])
@@ -1400,11 +1400,9 @@ class Game:
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
-                        and self.character.can_carry(self._selected_ground_item) \
-                        and self._selected_ground_item is not empty_space:
+                        and self.character.can_carry(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_ground_in_inventory_screen
-                elif self.character.can_swap_equipment(self._selected_ground_item) \
-                        and self._selected_ground_item is not empty_space:
+                elif self.character.can_swap_equipment(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
                 if self.character.can_consume(self._selected_ground_item):
                     inventory_commands[commands.InventoryConsume()] = self._consume_from_ground_in_inventory_screen
@@ -1420,8 +1418,7 @@ class Game:
                         and (self._ground_container.has_space()
                              or isinstance(self._ground_container, Tile)):
                     inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
-                if self.character.can_stack_equipment(self._selected_bag_item) \
-                        and self._selected_bag_item is not empty_space:
+                if self.character.can_stack_equipment(self._selected_bag_item):
                     inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_bag_in_inventory_screen
                 elif self.character.can_equip(self._selected_bag_item):
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_bag_in_inventory_screen
