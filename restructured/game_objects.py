@@ -208,13 +208,29 @@ class PhysicalContainer(Container, Item):
                 self._contents[row_index].append(item)
                 break
 
-    def remove_item(self, item: Item):
+    def remove_item(self, item: Item) -> None:
         if item is empty_space:
             raise TypeError(f"Cannot remove empty_space from container!")
         for row in self._contents:
             if item in row:
                 row.remove(item)
                 break
+
+    def provide_item(self, max_weight: int, item: Item, max_amount: int = None) -> Item:
+        if item not in self.item_list:
+            raise ValueError(f"Item {item.name} cannot be found in container {self.name}!")
+        if isinstance(item, ItemStack) and item.items[0].weight <= max_weight:
+            amount_to_provide = min(max_amount or max_weight // item.items[0].weight,
+                                    max_weight // item.items[0].weight)
+            item_to_provide = item.split(amount_to_provide)
+            if item.is_empty:
+                self.remove_item(item)
+        elif not isinstance(item, ItemStack) and item.weight <= max_weight:
+            item_to_provide = item
+            self.remove_item(item)
+        else:
+            raise ValueError(f"Requested item {item.name} weighs more than the max allowed weight!")
+        return item_to_provide
 
     def has_space(self) -> bool:
         return len(self.item_list) < self._height * self._width
@@ -1123,6 +1139,12 @@ class Creature(GameObject):
                 return available_load >= load_difference
         return False
 
+    def weight_gained_by_swapping_equipment(self, item: Item) -> int:
+        for slot, slot_type in self.equipment_slots.items():
+            if isinstance(item, slot_type):
+                return self.equipped_items[slot].weight
+        raise TypeError(f"Item {item.name} cannot be equipped in any slot!")
+
     def swap_equipment(self, item: Item) -> Item:
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
@@ -1233,13 +1255,11 @@ class Humanoid(Creature):
         self._increase_skill(weapon.skill)
         for slot, item in self.equipped_items.items():
             if item is ammo:
-                try:
-                    ammo = self.equipped_items[slot].split(1)
-                    if self.equipped_items[slot].is_empty:
+                if isinstance(item, ItemStack):
+                    ammo = item.split(1)
+                    if item.is_empty:
                         self.equipped_items[slot] = empty_space
-                    elif self.equipped_items[slot].size == 1:
-                        self.equipped_items[slot] = self.equipped_items[slot].split(1)
-                except AttributeError:
+                else:
                     self.equipped_items[slot] = empty_space
         self.energy -= self._combat_exhaustion // 2
         return ammo, current_skill, effects
@@ -1559,24 +1579,18 @@ class Game:
         self.character.apply_effects(self._selected_bag_item.effects)
         if isinstance(self._selected_bag_item, LiquidContainer):
             self._selected_bag_item.decant(1)
-        elif isinstance(self._selected_bag_item, ItemStack):
-            self._selected_bag_item.split(1)
-            if self._selected_bag_item.is_empty:
-                self.character.bag.remove_item(self._selected_bag_item)
         else:
-            self.character.bag.remove_item(self._selected_bag_item)
+            self.character.bag.provide_item(self._selected_bag_item.weight,
+                                            self._selected_bag_item, 1)
         return True
 
     def _consume_from_ground_in_inventory_screen(self, _) -> bool:
         self.character.apply_effects(self._selected_ground_item.effects)
         if isinstance(self._selected_ground_item, LiquidContainer):
             self._selected_ground_item.decant(1)
-        elif isinstance(self._selected_ground_item, ItemStack):
-            self._selected_ground_item.split(1)
-            if self._selected_ground_item.is_empty:
-                self._ground_container.remove_item(self._selected_ground_item)
         else:
-            self._ground_container.remove_item(self._selected_ground_item)
+            self._ground_container.provide_item(self._selected_ground_item.weight,
+                                                self._selected_ground_item, 1)
         return True
 
     def _character_rests(self, _) -> bool:
@@ -1594,23 +1608,18 @@ class Game:
             self._ground_container.add_item(self._selected_bag_item)
         return True
 
-    def _equip_from_bag_in_inventory_screen(self, _):
+    def _equip_from_bag_in_inventory_screen(self, _) -> bool:
         self.character.bag.remove_item(self._selected_bag_item)
         unequipped_item = self.character.swap_equipment(self._selected_bag_item)
         if unequipped_item is not empty_space:
             self.character.bag.add_item(unequipped_item)
         return True
 
-    def _equip_from_ground_in_inventory_screen(self, _):
-        if isinstance(self._selected_ground_item, ItemStack) and \
-                self.character.allowed_split_size(self._selected_ground_item) > 0:
-            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
-            item_to_equip = self._selected_ground_item.split(allowed_split_size)
-            if self._selected_ground_item.is_empty:
-                self._ground_container.remove_item(self._selected_ground_item)
-        else:
-            item_to_equip = self._selected_ground_item
-            self._ground_container.remove_item(self._selected_ground_item)
+    def _equip_from_ground_in_inventory_screen(self, _) -> bool:
+        extra_load = self.character.weight_gained_by_swapping_equipment(self._selected_ground_item)
+        available_load = self.character.max_load - self.character.load + extra_load
+        item_to_equip = self._ground_container.provide_item(available_load,
+                                                            self._selected_ground_item)
         dropped_item = self.character.swap_equipment(item_to_equip)
         if dropped_item is not empty_space:
             self._ground_container.add_item(dropped_item)
@@ -1622,27 +1631,17 @@ class Game:
         return True
 
     def _stack_equip_from_ground_in_inventory_screen(self, _) -> bool:
-        if isinstance(self._selected_ground_item, ItemStack):
-            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
-            split = self._selected_ground_item.split(allowed_split_size)
-            if self._selected_ground_item.is_empty:
-                self._ground_container.remove_item(self._selected_ground_item)
-            self.character.stack_equipment(split)
-        else:
-            self._ground_container.remove_item(self._selected_ground_item)
-            self.character.stack_equipment(self._selected_ground_item)
+        available_load = self.character.max_load - self.character.load
+        item_to_equip = self._ground_container.provide_item(available_load,
+                                                            self._selected_ground_item)
+        self.character.stack_equipment(item_to_equip)
         return True
 
     def _pick_up_item(self, _) -> bool:
-        if isinstance(self._selected_ground_item, ItemStack):
-            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
-            split = self._selected_ground_item.split(allowed_split_size)
-            if self._selected_ground_item.is_empty:
-                self._ground_container.remove_item(self._selected_ground_item)
-            self.character.bag.add_item(split)
-        else:
-            self._ground_container.remove_item(self._selected_ground_item)
-            self.character.bag.add_item(self._selected_ground_item)
+        available_load = self.character.max_load - self.character.load
+        item_to_equip = self._ground_container.provide_item(available_load,
+                                                            self._selected_ground_item)
+        self.character.bag.add_item(item_to_equip)
         return True
 
     def _open_inventory(self, _) -> bool:
@@ -1837,16 +1836,12 @@ class Game:
 
     def equip_item_from_selection_screen(self, item: Optional[Item]) -> None:
         if item is not None:
-            if isinstance(item, ItemStack) and item in self._ground_container.item_list:
-                allowed_split_size = self.character.allowed_split_size(item)
-                item_to_equip = item.split(allowed_split_size)
-                if item.is_empty:
-                    self._ground_container.remove_item(item)
+            if item in self._ground_container.item_list:
+                container = self._ground_container
             else:
-                item_to_equip = item
-                self._ground_container.remove_item(item)
-                if self.character.bag is not empty_space:
-                    self.character.bag.remove_item(item_to_equip)
+                container = self.character.bag
+            available_load = self.character.max_load - self.character.load
+            item_to_equip = container.provide_item(available_load, item)
             self.character.equipped_items[self._equipping_slot] = item_to_equip
         self.substate = Game.inventory_substate
         self._equipping_slot = None
