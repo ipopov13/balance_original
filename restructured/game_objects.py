@@ -1127,6 +1127,8 @@ class Creature(GameObject):
         return (self.max_load - self.load) // item_stack.items[0].weight
 
     def can_swap_equipment(self, item: Item) -> bool:
+        if isinstance(item, ItemStack):
+            item = item.items[0]
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
                 available_load = self.max_load - self.load
@@ -1613,8 +1615,15 @@ class Game:
         return True
 
     def _equip_from_ground_in_inventory_screen(self, _):
-        self._ground_container.remove_item(self._selected_ground_item)
-        dropped_item = self.character.swap_equipment(self._selected_ground_item)
+        if isinstance(self._selected_ground_item, ItemStack):
+            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
+            item_to_equip = self._selected_ground_item.split(allowed_split_size)
+            if self._selected_ground_item.is_empty:
+                self._ground_container.remove_item(self._selected_ground_item)
+        else:
+            item_to_equip = self._selected_ground_item
+            self._ground_container.remove_item(self._selected_ground_item)
+        dropped_item = self.character.swap_equipment(item_to_equip)
         if dropped_item is not empty_space:
             self._ground_container.add_item(dropped_item)
         return True

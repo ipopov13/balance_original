@@ -1,3 +1,5 @@
+BUG: Can equip full stack from Equipment view
+
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
