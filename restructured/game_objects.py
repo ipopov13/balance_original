@@ -1615,7 +1615,8 @@ class Game:
         return True
 
     def _equip_from_ground_in_inventory_screen(self, _):
-        if isinstance(self._selected_ground_item, ItemStack):
+        if isinstance(self._selected_ground_item, ItemStack) and \
+                self.character.allowed_split_size(self._selected_ground_item) > 0:
             allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
             item_to_equip = self._selected_ground_item.split(allowed_split_size)
             if self._selected_ground_item.is_empty:

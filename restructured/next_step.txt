@@ -13,7 +13,6 @@ Inventory
     Stacks
         add (d/D)rop command to drop 1 or all items in a stack
         add (t/T)ake command to take 1 or max possible items in a stack
-        add (e/E)quip command to equip 1 or max possible items in a stack
         ---
         add a split command and state with a window for digit input
         split items are auto-dropped if there is no space in bag
