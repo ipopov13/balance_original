@@ -143,7 +143,10 @@ class ItemStack(Item):
 
     @property
     def name(self) -> str:
-        return f'{len(self.items)} {self.items[0].name}s'
+        if self.size > 1:
+            return f'{len(self.items)} {self.items[0].name}s'
+        else:
+            return self.items[0].name
 
     @property
     def __class__(self) -> Type:
@@ -154,10 +157,10 @@ class ItemStack(Item):
         return len(self.items) == 0
 
     def split(self, count: int) -> Union['ItemStack', Item]:
-        if count == 1 or count == len(self.items) - 1:
+        if count == 1:
             return self.items.pop()
         if count >= len(self.items):
-            return self
+            count = len(self.items)
         removed_items = self.items[:count]
         self.items = self.items[count:]
         return ItemStack(removed_items)
@@ -1114,6 +1117,12 @@ class Creature(GameObject):
     def can_carry(self, item: Item) -> bool:
         return item.weight <= self.max_load - self.load
 
+    def can_carry_part_of_stack(self, item: Item) -> bool:
+        if not isinstance(item, ItemStack):
+            return self.can_carry(item)
+        single_unit = item.items[0]
+        return self.can_carry(single_unit)
+
     def allowed_split_size(self, item_stack: ItemStack) -> int:
         return (self.max_load - self.load) // item_stack.items[0].weight
 
@@ -1403,7 +1412,7 @@ class Game:
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
-                        and self.character.can_carry(self._selected_ground_item):
+                        and self.character.can_carry_part_of_stack(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_ground_in_inventory_screen
                 elif self.character.can_swap_equipment(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
@@ -1616,8 +1625,15 @@ class Game:
         return True
 
     def _stack_equip_from_ground_in_inventory_screen(self, _) -> bool:
-        self._ground_container.remove_item(self._selected_ground_item)
-        self.character.stack_equipment(self._selected_ground_item)
+        if isinstance(self._selected_ground_item, ItemStack):
+            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
+            split = self._selected_ground_item.split(allowed_split_size)
+            if self._selected_ground_item.is_empty:
+                self._ground_container.remove_item(self._selected_ground_item)
+            self.character.stack_equipment(split)
+        else:
+            self._ground_container.remove_item(self._selected_ground_item)
+            self.character.stack_equipment(self._selected_ground_item)
         return True
 
     def _pick_up_item(self, _) -> bool:

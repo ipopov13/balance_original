@@ -1,9 +1,4 @@
 FEATURES (following the spreadsheet roadmap)
-Equip case: (use Humanoid.allowed_split_size())
-    single item / empty slot
-    single item / stackable item in slot
-    single item / non-stackable item in slot
-
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Move all stat names to the config
