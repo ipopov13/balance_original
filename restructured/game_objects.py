@@ -197,11 +197,12 @@ class PhysicalContainer(Container, Item):
             for possible_stack in self.item_list:
                 try:
                     new_stack = ItemStack([possible_stack, item])
+                except TypeError:
+                    pass
+                else:
                     self.remove_item(possible_stack)
                     self.add_item(new_stack, ignore_stackability=True)
                     return
-                except TypeError:
-                    pass
         for row_index in range(self._height):
             if len(self._contents[row_index]) < self._width:
                 self._contents[row_index].append(item)

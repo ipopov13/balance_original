@@ -1,4 +1,4 @@
-? Implement PhysicalContainer.provide_item(for: Creature, item: Item, max_amount: int =None)
+? Implement PhysicalContainer.provide_item(max_weight: int, item: Item, max_amount: int = None)
 This will make the stack-checking logic have only one place, instead of:
     all consume methods
     all equip methods
