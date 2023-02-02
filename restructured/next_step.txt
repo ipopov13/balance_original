@@ -1,8 +1,17 @@
+? Implement PhysicalContainer.provide_item(for: Creature, item: Item, max_amount: int =None)
+This will make the stack-checking logic have only one place, instead of:
+    all consume methods
+    all equip methods
+    all pick up methods
+And the container will handle its own cleanup after a stack is depleted (should have only 1 is_empty check!)
+
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Move all stat names to the config
 
+Usability
+    Add "from scene" commands: consume, equip, pick up acting on the first applicable item
 Interface
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly
@@ -11,12 +20,7 @@ Architecture
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Inventory
     Stacks
-        add (d/D)rop command to drop 1 or all items in a stack
-        add (t/T)ake command to take 1 or max possible items in a stack
-        ---
-        add a split command and state with a window for digit input
-        split items are auto-dropped if there is no space in bag
-        add a stack command that merges the current stack with the first encountered compatible stack
+        add partial pick up command
     Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
     ? Open inner container on ground

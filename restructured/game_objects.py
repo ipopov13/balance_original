@@ -165,20 +165,6 @@ class ItemStack(Item):
         self.items = self.items[count:]
         return ItemStack(removed_items)
 
-    def can_stack(self, item: Item):
-        return type(item) is type(self.items[0]) or\
-            (isinstance(item, ItemStack) and item.can_stack(self.items[0]))
-
-    def add(self, item: Item):
-        if isinstance(item, ItemStack):
-            while not item.is_empty:
-                stacked_item = item.split(1)
-                self.add(stacked_item)
-        else:
-            if type(item) is not type(self.items[0]):
-                raise TypeError(f"Stack of {type(self.items[0])} cannot take {type(item)}")
-            self.items.append(item)
-
     @property
     def weight(self) -> int:
         return len(self.items) * self.items[0].weight
@@ -1410,7 +1396,7 @@ class Game:
             if self.active_inventory_container_name == self.get_ground_name():
                 if self.character.bag is not empty_space \
                         and self.character.bag.has_space() \
-                        and self.character.can_carry(self._selected_ground_item) \
+                        and self.character.can_carry_stack_or_item(self._selected_ground_item) \
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
@@ -1647,8 +1633,15 @@ class Game:
         return True
 
     def _pick_up_item(self, _) -> bool:
-        self._ground_container.remove_item(self._selected_ground_item)
-        self.character.bag.add_item(self._selected_ground_item)
+        if isinstance(self._selected_ground_item, ItemStack):
+            allowed_split_size = self.character.allowed_split_size(self._selected_ground_item)
+            split = self._selected_ground_item.split(allowed_split_size)
+            if self._selected_ground_item.is_empty:
+                self._ground_container.remove_item(self._selected_ground_item)
+            self.character.bag.add_item(split)
+        else:
+            self._ground_container.remove_item(self._selected_ground_item)
+            self.character.bag.add_item(self._selected_ground_item)
         return True
 
     def _open_inventory(self, _) -> bool:
