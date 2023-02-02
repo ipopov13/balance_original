@@ -1,25 +1,23 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
-Move all stat names to the config
+Goblins: scavenging bonus
 
 Usability
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
 Interface
+    Rename "pick up" to "take"
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly
     Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Architecture
+    Move all stat names to the config
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Inventory
-    Stacks
-        add partial pick up command
     Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
     ? Open inner container on ground
     ? Open inner container in bag
-    Pick up command from Scene (no hint, no window switching,
-        picks up first item from the list that the character can carry)
 Crafting
     Add "properties" to crafting ingredients: what the ingredient contains
     Different crafts act on different properties

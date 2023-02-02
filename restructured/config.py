@@ -55,6 +55,7 @@ armor_modifier = 'armor_modifier'
 travel_energy_loss_modifier = 'travel_energy_loss_modifier'
 max_mana_modifier = 'max_mana_modifier'
 max_hp_modifier = 'max_hp_modifier'
+max_load_modifier = 'max_load_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
 # Tools

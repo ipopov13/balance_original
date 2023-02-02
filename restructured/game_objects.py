@@ -748,8 +748,7 @@ troll_race = HumanoidSpecies(name='Troll',
                              description="Finding a tasty rock to eat makes a troll's day. Having "
                                          "someone to throw a rock at is a bonus that only a troll "
                                          "can appreciate in full.",
-                             sort_key=5,
-                             consumable_types=[Rock],
+                             sort_key=5, consumable_types=[Rock],
                              base_effect_modifiers={config.max_hp_modifier: 1.2},
                              fist_weapon=TrollFist)
 goblin_race = HumanoidSpecies(name='Goblin',
@@ -757,7 +756,7 @@ goblin_race = HumanoidSpecies(name='Goblin',
                               color=config.chaos_color,
                               description="For a goblin, everything can come in handy one day. They are"
                                           " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
-                              sort_key=6)
+                              sort_key=6, base_effect_modifiers={config.max_load_modifier: 1.2})
 kraken_race = HumanoidSpecies(name='Kraken',
                               icon='K',
                               color=config.chaos_color,
@@ -1107,8 +1106,9 @@ class Creature(GameObject):
         return statuses
 
     @property
-    def max_load(self):
-        return self.stats['Str'] * 5
+    def max_load(self) -> int:
+        base_load = self.stats['Str'] * 5
+        return int(base_load * self._effect_modifiers.get(config.max_load_modifier, 1))
 
     @property
     def bag(self):
