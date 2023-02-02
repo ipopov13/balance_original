@@ -1,5 +1,3 @@
-BUG: Can equip full stack from Equipment view
-
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
@@ -8,6 +6,7 @@ Move all stat names to the config
 Interface
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly
+    Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Architecture
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Inventory

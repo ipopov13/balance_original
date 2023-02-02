@@ -1830,22 +1830,29 @@ class Game:
         self._container_to_fill = None
 
     def get_available_equipment(self) -> list[GameObject]:
-        all_tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
-        allowed_tile_items = [item for item in all_tile_items if self.character.can_carry_stack_or_item(item)]
+        all_ground_items = self._ground_container.item_list
+        allowed_ground_items = [item for item in all_ground_items if self.character.can_carry_stack_or_item(item)]
         bag_items = [] if self.character.bag is empty_space else self.character.bag.item_list
         if self._equipping_slot is None:
             raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
-        filtered_items = [item for item in allowed_tile_items + bag_items if isinstance(item, item_type)]
+        filtered_items = [item for item in allowed_ground_items + bag_items if isinstance(item, item_type)]
         return filtered_items
 
-    def equip_item(self, item: Optional[Item]) -> None:
+    def equip_item_from_selection_screen(self, item: Optional[Item]) -> None:
         if item is not None:
-            self.character.equipped_items[self._equipping_slot] = item
-            self._current_location.remove_item(item, self._get_coords_of_creature(self.character))
-            if self.character.bag is not empty_space:
-                self.character.bag.remove_item(item)
+            if isinstance(item, ItemStack) and item in self._ground_container.item_list:
+                allowed_split_size = self.character.allowed_split_size(item)
+                item_to_equip = item.split(allowed_split_size)
+                if item.is_empty:
+                    self._ground_container.remove_item(item)
+            else:
+                item_to_equip = item
+                self._ground_container.remove_item(item)
+                if self.character.bag is not empty_space:
+                    self.character.bag.remove_item(item_to_equip)
+            self.character.equipped_items[self._equipping_slot] = item_to_equip
         self.substate = Game.inventory_substate
         self._equipping_slot = None
 

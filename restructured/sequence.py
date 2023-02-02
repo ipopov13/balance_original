@@ -25,7 +25,7 @@ class GameSequence:
             return Window(ui=ui, content=MapScreen(ui.game), border=True, title='Map')
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.equip_for_substate:
             return SelectionWindow(ui=ui, content=EquipmentList(ui.game), border=True,
-                                   title='What do you want to equip?', target=ui.game.equip_item)
+                                   title='What do you want to equip?', target=ui.game.equip_item_from_selection_screen)
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.fill_container_substate:
             return SelectionWindow(ui=ui, content=SubstancesList(ui.game), border=True,
                                    title='Where to fill this container from?', target=ui.game.fill_container)
