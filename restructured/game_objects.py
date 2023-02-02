@@ -1117,7 +1117,7 @@ class Creature(GameObject):
     def can_carry(self, item: Item) -> bool:
         return item.weight <= self.max_load - self.load
 
-    def can_carry_part_of_stack(self, item: Item) -> bool:
+    def can_carry_stack_or_item(self, item: Item) -> bool:
         if not isinstance(item, ItemStack):
             return self.can_carry(item)
         single_unit = item.items[0]
@@ -1414,7 +1414,7 @@ class Game:
                         and self._selected_ground_item is not empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
-                        and self.character.can_carry_part_of_stack(self._selected_ground_item):
+                        and self.character.can_carry_stack_or_item(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._stack_equip_from_ground_in_inventory_screen
                 elif self.character.can_swap_equipment(self._selected_ground_item):
                     inventory_commands[commands.InventoryEquip()] = self._equip_from_ground_in_inventory_screen
@@ -1830,13 +1830,14 @@ class Game:
         self._container_to_fill = None
 
     def get_available_equipment(self) -> list[GameObject]:
-        tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
+        all_tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
+        allowed_tile_items = [item for item in all_tile_items if self.character.can_carry_stack_or_item(item)]
         bag_items = [] if self.character.bag is empty_space else self.character.bag.item_list
         if self._equipping_slot is None:
             raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
-        filtered_items = [item for item in tile_items + bag_items if isinstance(item, item_type)]
+        filtered_items = [item for item in allowed_tile_items + bag_items if isinstance(item, item_type)]
         return filtered_items
 
     def equip_item(self, item: Optional[Item]) -> None:
