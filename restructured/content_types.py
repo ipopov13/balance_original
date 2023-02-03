@@ -1,7 +1,7 @@
 import commands
 import config
 import console
-from utils import center_ansi_multiline, calculate_new_position, longest_raw_line_len, line_up
+from utils import center_ansi_multiline, calculate_new_position, longest_raw_line_len, text_to_multiline
 
 
 class WindowContent:
@@ -44,7 +44,7 @@ class CharacterSheet(WindowContent):
     def data(self) -> str:
         content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length)]
         # TODO: Center the race lines, place them next to the stats. Use the adjusting methods from the multi-container!
-        race_desc = line_up(self.creature.species.description).split('\n')
+        race_desc = text_to_multiline(self.creature.species.description).split('\n')
         content += race_desc
         # TODO: Equalize stat widths, justify
         content += self._stats
@@ -234,7 +234,8 @@ class PagedList(WindowContent):
         super().__init__(game_object)
         self.sorted_item_list = self._get_items()
         self._item_descriptions = [f'{console.fg.yellow}#)'
-                                   f' {line_up(f"{item.name}: {item.description}")}'
+                                   f' {text_to_multiline(f"{item.name}: {item.description}")}'
+                                   .replace('\n', '\n   ')
                                    .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
                                    for number, item in enumerate(self.sorted_item_list)]
         description_lines = [len(desc.split('\n')) for desc in self._item_descriptions]

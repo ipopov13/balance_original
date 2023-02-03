@@ -110,7 +110,7 @@ def make_stats(default: int = 1, stats: dict[str, int] = None) -> dict[str, int]
     return stats
 
 
-def line_up(text: str, line_limit: int = config.max_text_line_length) -> str:
+def text_to_multiline(text: str, line_limit: int = config.max_text_line_length) -> str:
     """Turn the text into a multiline string"""
     lines = []
     text = text.strip()
@@ -119,7 +119,6 @@ def line_up(text: str, line_limit: int = config.max_text_line_length) -> str:
             a_line = text[:line_limit].rsplit(' ', 1)[0]
         else:
             a_line = text
-        padding = '' if not lines else '   '
-        lines.append(padding + a_line.strip())
+        lines.append(a_line.strip())
         text = text[len(a_line):].strip()
     return '\n'.join(lines)
