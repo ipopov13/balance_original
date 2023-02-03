@@ -44,8 +44,8 @@ class CharacterSheet(WindowContent):
     def data(self) -> str:
         content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length)]
         # TODO: Center the race lines, place them next to the stats. Use the adjusting methods from the multi-container!
-        race_desc = text_to_multiline(self.creature.species.description).split('\n')
-        content += race_desc
+        race_desc = text_to_multiline(self.creature.species.description)
+        content += center_ansi_multiline(race_desc.split('\n'), config.max_text_line_length)[0]
         # TODO: Equalize stat widths, justify
         content += self._stats
         # TODO: Make skills multi-column, justify, equalize widths
