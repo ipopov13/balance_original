@@ -1,7 +1,7 @@
 import commands
 import config
 import console
-from utils import horizontal_pad, calculate_new_position, longest_raw_line_len
+from utils import horizontal_pad, calculate_new_position, longest_raw_line_len, line_up
 
 
 class WindowContent:
@@ -42,8 +42,14 @@ class CharacterSheet(WindowContent):
         self._skills: list[str] = self.creature.get_skills_data()
 
     def data(self) -> str:
-        # TODO: Organize the content here
-        content = [f"{self.creature.name} the {self.creature.species.name}"]
+        content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length)]
+        # TODO: Center the race lines, place them next to the stats. Use the adjusting methods from the multi-container!
+        race_desc = line_up(self.creature.species.description).split('\n')
+        content += race_desc
+        # TODO: Equalize stat widths, justify
+        content += self._stats
+        # TODO: Make skills multi-column, justify, equalize widths
+        content += self._skills
         return '\n'.join(content)
 
 
@@ -227,7 +233,7 @@ class PagedList(WindowContent):
         super().__init__(game_object)
         self.sorted_item_list = self._get_items()
         self._item_descriptions = [f'{console.fg.yellow}#)'
-                                   f' {self._line_up(f"{item.name}: {item.description}")}'
+                                   f' {line_up(f"{item.name}: {item.description}")}'
                                    .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
                                    for number, item in enumerate(self.sorted_item_list)]
         description_lines = [len(desc.split('\n')) for desc in self._item_descriptions]
@@ -298,22 +304,6 @@ class PagedList(WindowContent):
             return len(self._current_page_content())
         else:
             return 0
-
-    @staticmethod
-    def _line_up(text: str) -> str:
-        """Turn the text into a multiline string"""
-        lines = []
-        text = text.strip()
-        line_limit = config.max_text_line_length
-        while text:
-            if len(text) > line_limit:
-                a_line = text[:line_limit].rsplit(' ', 1)[0]
-            else:
-                a_line = text
-            padding = '' if not lines else '   '
-            lines.append(padding + a_line.strip())
-            text = text[len(a_line):].strip()
-        return '\n'.join(lines)
 
 
 class SentientSpeciesList(PagedList):

@@ -720,7 +720,7 @@ human_race = HumanoidSpecies(name='Human',
 dwarf_race = HumanoidSpecies(name='Dwarf',
                              icon='D',
                              color=config.order_color,
-                             description='Masters of the forge, they are drawn down into the depths of the world by '
+                             description='Masters of the forge, dwarves are drawn down into the depths of the world by '
                                          'an ancient instinct that rivals the bravery of human explorers.',
                              sort_key=1,
                              base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier: 1.2})

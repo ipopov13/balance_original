@@ -2,7 +2,8 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
-    Implement character screen with stats and skills view
+    Organize character screen
+    Adjust skill gains (too fast right now, maybe 1/4 or 1/5? or exponential?)
     Add skill bonuses
 
 Usability
