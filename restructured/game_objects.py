@@ -653,6 +653,7 @@ class Species(GameObject):
                  active_effects: dict[str, int] = None,
                  consumable_types: list[Type[Item]] = None,
                  fist_weapon: Type[Item] = Fist,
+                 base_skills: dict[str, int] = None,
                  **kwargs):
         super().__init__(**kwargs)
         basic_ai = {config.indifferent_disposition: [config.random_behavior],
@@ -664,6 +665,7 @@ class Species(GameObject):
             basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
+        self.base_skills = base_skills or {}
         self.fist_weapon: Item = fist_weapon()
         self.base_effect_modifiers = base_effect_modifiers or {}
         self.active_effects = {config.non_rest_energy_regen_effect: 1}
@@ -887,6 +889,7 @@ class Creature(GameObject):
             self._description = self.species.description
         self._disposition = self.species.initial_disposition
         self._ai = self.species.ai
+        self._skills = self.species.base_skills.copy()
         self.stats = self.species.base_stats.copy()
         self._effect_modifiers = self.species.base_effect_modifiers
         self._active_effects: dict[str, int] = self.species.active_effects
@@ -1181,6 +1184,12 @@ class Creature(GameObject):
     def is_dead(self) -> bool:
         return self.hp <= 0
 
+    def get_stats_data(self) -> list[str]:
+        return [f"{stat} {value}" for stat, value in self.stats.items()]
+
+    def get_skills_data(self) -> list[str]:
+        return [f"{skill} {skill_value}" for skill, skill_value in self._skills.items()]
+
 
 class Animal(Creature):
     def __init__(self, species: AnimalSpecies, **kwargs):
@@ -1190,7 +1199,6 @@ class Animal(Creature):
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
         super().__init__(species, **kwargs)
-        self._skills = {}
 
     @property
     def description(self) -> str:
@@ -1413,6 +1421,8 @@ class Game:
                     commands.Shoot(): self._character_shoots,
                     commands.CharacterSheet(): self._open_character_sheet}
         elif self.state == Game.playing_state and self.substate == Game.map_substate:
+            return {commands.Close(): self._back_to_scene}
+        elif self.state == Game.playing_state and self.substate == Game.character_sheet_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state == Game.playing_state and self.substate == Game.inventory_substate:
             inventory_commands = {commands.Close(): self._back_to_scene}

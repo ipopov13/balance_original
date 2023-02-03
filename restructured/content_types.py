@@ -37,15 +37,14 @@ class WindowContent:
 class CharacterSheet(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
-        self._stats = None
-        self._race: dict[str, str] = {}
-        self.skills: list[str] = []
+        self.creature = self.game_object.character
+        self._stats: list[str] = self.creature.get_stats_data()
+        self._skills: list[str] = self.creature.get_skills_data()
 
     def data(self) -> str:
-        self._stats = self.game_object.get_stats_data()
-        self._race = self.game_object.get_race()
-        self._skills = self.game_object.get_skills_data()
-        return self._organize_content()
+        # TODO: Organize the content here
+        content = [f"{self.creature.name} the {self.creature.species.name}"]
+        return '\n'.join(content)
 
 
 class GameScene(WindowContent):

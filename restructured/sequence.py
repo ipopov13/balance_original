@@ -31,6 +31,6 @@ class GameSequence:
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.inventory_substate:
             return Window(ui=ui, content=ct.InventoryScreen(ui.game), border=True, title=f'Inventory')
         elif ui.game.state is Game.playing_state and ui.game.substate is Game.character_sheet_substate:
-            return Window(ui=ui, content=ct.CharacterSheet(ui.game.character), border=True, title=f'Character sheet')
+            return Window(ui=ui, content=ct.CharacterSheet(ui.game), border=True, title=f'Character sheet')
         else:
             raise ValueError(f'Unhandled state: {ui.game.state} / {ui.game.substate}')
