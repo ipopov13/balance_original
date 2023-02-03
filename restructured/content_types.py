@@ -34,6 +34,20 @@ class WindowContent:
         return object_commands
 
 
+class CharacterSheet(WindowContent):
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self._stats = None
+        self._race: dict[str, str] = {}
+        self.skills: list[str] = []
+
+    def data(self) -> str:
+        self._stats = self.game_object.get_stats_data()
+        self._race = self.game_object.get_race()
+        self._skills = self.game_object.get_skills_data()
+        return self._organize_content()
+
+
 class GameScene(WindowContent):
     def data(self) -> str:
         character_hud = self.game_object.get_character_hud()

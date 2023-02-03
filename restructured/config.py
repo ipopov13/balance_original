@@ -31,12 +31,20 @@ race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
 ground = 'Ground'
 equipment_title = 'Equipment'
 empty_string = '(empty)'
+# AI
 indifferent_disposition = 'indifferent'
 aggressive_disposition = 'aggressive'
 fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
+# Stats
+Str = "Strength"
+End = "Endurance"
+Dex = "Dexterity"
+Per = "Perception"
+Wil = "Willpower"
+stats_order = [Str, End, Dex, Per, Wil]
 # Applied effects
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'

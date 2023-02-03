@@ -1,5 +1,6 @@
 import re
 import console
+import config
 
 strip_sub = re.compile(r"""
     \x1b     # literal ESC
@@ -100,3 +101,10 @@ def direct_path(a: tuple[int, int], b: tuple[int, int]) -> list[tuple[int, int]]
         point[shorter] += int(round((x + 1) * floater)) * direction_steps[shorter]
         path.append(tuple(point))
     return path
+
+
+def make_stats(default: int = 1, stats: dict[str, int] = None) -> dict[str, int]:
+    if stats is None:
+        stats = {}
+    stats = {stat: stats.get(stat, default) for stat in config.stats_order}
+    return stats

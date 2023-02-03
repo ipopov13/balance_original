@@ -3,7 +3,7 @@ import random
 import commands
 import console
 import config
-from utils import calculate_new_position, coord_distance, direct_path, dim, raw_length
+from utils import calculate_new_position, coord_distance, direct_path, dim, raw_length, make_stats
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -441,7 +441,7 @@ class TrollFist(Tool):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, skill=config.skill_mining, work_stat='Str',
+                         work_exhaustion=2, skill=config.skill_mining, work_stat=config.Str,
                          damage=1, combat_exhaustion=1)
 
 
@@ -449,7 +449,7 @@ class Pickaxe(Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
-                         work_exhaustion=5, skill=config.skill_mining, work_stat='Str',
+                         work_exhaustion=5, skill=config.skill_mining, work_stat=config.Str,
                          damage=1, combat_exhaustion=5)
 
 
@@ -686,7 +686,7 @@ class Species(GameObject):
 class HumanoidSpecies(Species):
     @property
     def base_stats(self) -> dict[str, int]:
-        return {'Str': 5, 'End': 5, 'Will': 5, 'Dex': 5, 'Per': 5}
+        return make_stats(default=5)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -704,7 +704,7 @@ class AnimalSpecies(Species):
             kwargs['initial_disposition'] = config.fearful_disposition
         super().__init__(**kwargs)
         self.initial_equipment = equipment
-        self._base_stats = base_stats or {'Str': 1, 'End': 1, 'Will': 1, 'Dex': 1, 'Per': 5}
+        self._base_stats = base_stats or make_stats(default=1, stats={config.Per: 5})
         self._equipment_slots = base_animal_equipment_slots.copy()
 
 
@@ -816,37 +816,37 @@ fox_species = AnimalSpecies(name='fox', icon='f', color=console.fg.lightred,
                             equipment=[RawMeat, SmallTeeth, LightHide])
 jaguar_species = AnimalSpecies(name='jaguar', icon='j', color=console.fg.lightyellow,
                                description='A jaguar.',
-                               base_stats={'Str': 5, 'End': 6, 'Will': 1, 'Dex': 8, 'Per': 8},
+                               base_stats=make_stats(8, {config.Str: 5, config.End: 6, config.Wil: 1}),
                                equipment=[RawMeat, MediumTeeth, LightHide],
                                initial_disposition=config.aggressive_disposition)
 wolf_species = AnimalSpecies(name='wolf', icon='w', color=console.fg.lightblack,
                              description='A wolf.',
-                             base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
+                             base_stats=make_stats(4, {config.Dex: 7, config.Per: 8, config.Wil: 1}),
                              equipment=[RawMeat, MediumTeeth, LightHide],
                              initial_disposition=config.aggressive_disposition)
 winter_wolf_species = AnimalSpecies(name='winter wolf', icon='w', color=console.fg.white,
                                     description='A white wolf.',
-                                    base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 7, 'Per': 8},
+                                    base_stats=make_stats(4, {config.Dex: 7, config.Per: 8, config.Wil: 1}),
                                     equipment=[RawMeat, MediumTeeth, LightHide],
                                     initial_disposition=config.aggressive_disposition)
 ice_bear_species = AnimalSpecies(name='ice bear', icon='b', color=console.fg.lightblue,
                                  description='A polar bear!',
-                                 base_stats={'Str': 8, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
+                                 base_stats=make_stats(10, {config.Dex: 3, config.Per: 5, config.Wil: 1}),
                                  equipment=[RawMeat, LargeClaws, MediumHide],
                                  initial_disposition=config.aggressive_disposition)
 bear_species = AnimalSpecies(name='bear', icon='b', color=config.brown_fg_color,
                              description='A big bear!',
-                             base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 3, 'Per': 5},
+                             base_stats=make_stats(10, {config.Dex: 3, config.Per: 5, config.Wil: 1}),
                              equipment=[RawMeat, LargeClaws, MediumHide],
                              initial_disposition=config.aggressive_disposition)
 swamp_dragon_species = AnimalSpecies(name='swamp dragon', icon='d', color=console.fg.lightgreen,
                                      description='A swamp dragon!',
-                                     base_stats={'Str': 10, 'End': 10, 'Will': 1, 'Dex': 5, 'Per': 6},
+                                     base_stats=make_stats(10, {config.Dex: 5, config.Per: 6, config.Wil: 1}),
                                      equipment=[RawMeat, LargeTeeth, MediumScales],
                                      initial_disposition=config.aggressive_disposition)
 crocodile_species = AnimalSpecies(name='crocodile', icon='c', color=console.fg.lightgreen,
                                   description='A big crocodile!',
-                                  base_stats={'Str': 6, 'End': 6, 'Will': 1, 'Dex': 4, 'Per': 4},
+                                  base_stats=make_stats(6, {config.Dex: 4, config.Per: 4, config.Wil: 1}),
                                   equipment=[RawMeat, LargeTeeth, MediumScales],
                                   initial_disposition=config.aggressive_disposition)
 monkey_species = AnimalSpecies(name='monkey', icon='m', color=console.fg.lightred,
@@ -857,12 +857,13 @@ ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
                                 equipment=[RawMeat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               description='An eagle.',
-                              base_stats={'Str': 4, 'End': 4, 'Will': 1, 'Dex': 10, 'Per': 15},
+                              base_stats=make_stats(4, {config.Dex: 10, config.Per: 15, config.Wil: 1}),
                               equipment=[RawMeat, MediumClaws, Feathers],
                               initial_disposition=config.aggressive_disposition)
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
                               description='A giant hydra!',
-                              base_stats={'Str': 18, 'End': 14, 'Will': 1, 'Dex': 15, 'Per': 16},
+                              base_stats=make_stats(stats={config.Dex: 15, config.Per: 16, config.Wil: 15,
+                                                           config.Str: 18, config.End: 14}),
                               equipment=[RawMeat, HugeClaws, HeavyScales],
                               initial_disposition=config.aggressive_disposition)
 
@@ -909,7 +910,7 @@ class Creature(GameObject):
 
     @property
     def perception_radius(self) -> int:
-        return self.stats['Per']
+        return self.stats[config.Per]
 
     @property
     def load(self) -> int:
@@ -917,11 +918,11 @@ class Creature(GameObject):
 
     @property
     def damage(self) -> int:
-        return random.randint(1, max(self.stats['Str'] // 4, 1)) + self.weapon_damage()
+        return random.randint(1, max(self.stats[config.Str] // 4, 1)) + self.weapon_damage()
 
     @property
     def armor(self) -> int:
-        return random.randint(int(self.equipment_armor() * self.stats['Dex'] / config.max_stat_value),
+        return random.randint(int(self.equipment_armor() * self.stats[config.Dex] / config.max_stat_value),
                               self.equipment_armor())
 
     def equipment_armor(self) -> int:
@@ -1013,17 +1014,17 @@ class Creature(GameObject):
 
     @property
     def max_hp(self) -> int:
-        base_hp = self.stats['Str'] + 2 * self.stats['End']
+        base_hp = self.stats[config.Str] + 2 * self.stats[config.End]
         return int(base_hp * self._effect_modifiers.get(config.max_hp_modifier, 1))
 
     @property
     def max_mana(self) -> int:
-        base_mana = self.stats['Will'] * 10
+        base_mana = self.stats[config.Wil] * 10
         return int(base_mana * self._effect_modifiers.get(config.max_mana_modifier, 1))
 
     @property
     def max_energy(self) -> int:
-        return self.stats['End'] * 10
+        return self.stats[config.End] * 10
 
     @property
     def current_max_energy(self) -> int:
@@ -1055,13 +1056,13 @@ class Creature(GameObject):
         self._get_hungry(1)
         for effect, value in self._active_effects.items():
             if effect in [config.sick_effect, config.drunk_effect]:
-                if random.random() > value / (value + self.stats['End']):
+                if random.random() > value / (value + self.stats[config.End]):
                     self._active_effects[effect] -= 1
             elif effect == config.non_rest_energy_regen_effect:
-                if random.randint(0, config.max_stat_value) <= self.stats['End']:
+                if random.randint(0, config.max_stat_value) <= self.stats[config.End]:
                     self.energy += 1
             elif effect == config.non_rest_hp_regen_effect:
-                if random.randint(0, config.max_stat_value) <= self.stats['End'] / 2:
+                if random.randint(0, config.max_stat_value) <= self.stats[config.End] / 2:
                     self.hp += 1
             else:
                 raise ValueError(f"Unhandled effect '{effect}'!")
@@ -1107,7 +1108,7 @@ class Creature(GameObject):
 
     @property
     def max_load(self) -> int:
-        base_load = self.stats['Str'] * 5
+        base_load = self.stats[config.Str] * 5
         return int(base_load * self._effect_modifiers.get(config.max_load_modifier, 1))
 
     @property
@@ -1166,14 +1167,14 @@ class Creature(GameObject):
 
     def _receive_normal_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
-        dex_modifier = self.stats['Dex'] / config.max_stat_value
+        dex_modifier = self.stats[config.Dex] / config.max_stat_value
         dodge_chance = dex_modifier * load_modifier * self._exhaustion_modifier
         if random.random() > dodge_chance:
             self.hp -= max(0, damage - self.armor)
 
     def rest(self):
-        self.energy += random.randint(1, max(self.stats['End'] // 5, 1))
-        if random.random() < (self.stats['End'] / config.max_stat_value / 2) * (self.energy / self.max_energy):
+        self.energy += random.randint(1, max(self.stats[config.End] // 5, 1))
+        if random.random() < (self.stats[config.End] / config.max_stat_value / 2) * (self.energy / self.max_energy):
             self.hp += 1
 
     @property
@@ -1244,7 +1245,7 @@ class Humanoid(Creature):
             weapon_damage = ranged_weapon.ranged_damage
         else:
             weapon_damage = ranged_weapon.ranged_damage + ammo.ranged_damage
-        stats = (self.stats['Dex'] + self.stats['Per']) // 2
+        stats = (self.stats[config.Dex] + self.stats[config.Per]) // 2
         return random.randint(0, max(stats // 2, 1)) + weapon_damage
 
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
@@ -1323,6 +1324,7 @@ class Game:
     fill_container_substate = 'fill_container_substate'
     working_substate = 'working_substate'
     looking_substate = 'looking_substate'
+    character_sheet_substate = 'character_sheet_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
     races = sentient_races
@@ -1402,13 +1404,14 @@ class Game:
                     commands.Move(): self._move_observed_target,
                     commands.Target(): self._set_character_ranged_target}
         elif self.state == Game.playing_state and self.substate == Game.scene_substate:
-            return {commands.Move(): self._player_move,
+            return {commands.Move(): self._character_moves,
                     commands.Rest(): self._character_rests,
                     commands.Map(): self._open_map,
                     commands.Inventory(): self._open_inventory,
                     commands.Work(): self._go_to_work_mode,
                     commands.Look(): self._go_to_look_mode,
-                    commands.Shoot(): self._character_shoots}
+                    commands.Shoot(): self._character_shoots,
+                    commands.CharacterSheet(): self._open_character_sheet}
         elif self.state == Game.playing_state and self.substate == Game.map_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state == Game.playing_state and self.substate == Game.inventory_substate:
@@ -1463,6 +1466,10 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _open_character_sheet(self, _) -> bool:
+        self.substate = Game.character_sheet_substate
+        return True
 
     def _character_shoots(self, _) -> bool:
         ranged_response = self.character.can_shoot_or_throw()
@@ -1657,7 +1664,7 @@ class Game:
         self.substate = Game.map_substate
         return True
 
-    def _player_move(self, direction):
+    def _character_moves(self, direction):
         self._move_character(direction)
         self._living_world()
         return True

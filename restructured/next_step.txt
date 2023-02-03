@@ -2,8 +2,11 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
+    Implement character screen with stats and skills view
+    Add skill bonuses
 
 Usability
+    Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
 Interface
     Rename "pick up" to "take"
@@ -11,7 +14,6 @@ Interface
     Make the help overlay content format multi-lines properly
     Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Architecture
-    Move all stat names to the config
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Inventory
     Add item descriptions in details (line formatted)
@@ -50,14 +52,14 @@ Character
     Stats improvement
     Skills
     Skills improvement
-Creatures:
+AI
+    Make aggressive creatures keep their previous direction when the character is suddenly out of sight/behind
+     a corner, and change it only when they have reached the last character location or hit an obstacle
     Add creatures setting their ranged targets
     Add creatures shooting, e.g. a dragon breathing fire! (add the move/breathe dichotomy in the AI)
-    Only humanoids will need their own name generation
-    Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
     Build an AI library to choose from in species?
     How to combine this with Humanoids having different AIs based on the profession?
-    AI
+    Implementation
         The creature knows the GOALS it wants (e.g., @, grass, rocks, a rabbit)
         The creature has priorities: a list of GOALS from which the current ones are chosen
         The creature passes the current list of GOALS to the Game
@@ -73,6 +75,13 @@ Creatures:
             4) hideout (hide on the terrain tile that generated the creature
         A subset of the list is chosen by the creature when the situation changes
         The list can be reordered based on the situation
+Creatures:
+    Only humanoids will need their own name generation
+    Humanoids are visible by their race name until you talk to them (the Creature keeps that state)
+Spawns
+    Add creature profile to Locations (automatic from the terrains/Structures?)
+    Creature profile includes respawn times, location keeps track (the Creature sends a message to the
+        Location when it dies)
     Random: disappear when you leave the Location, rerolled every time. Terrains define the type,
       chance defines the strength/rarity. The rarer the creature is, the harder it is to catch or kill.
     Terrain creature profile: weak common, stronger rarer, the rarest champion creatures
@@ -96,9 +105,6 @@ Locations:
     Add location escaping, allow leaving a location and appearing on a tile that is not a direct neighbor
       of the last one
     Add Structure flavors from the excel
-    Add creature profile to Locations (automatic from the terrains/Structures?)
-    Creature profile includes respawn times, location keeps track (the Creature sends a message to the
-        Location when it dies)
 Modes:
     Trade with creatures
     Exploration: Masquerading terrains (ore veins, poisonous flowers, venom bushes)
