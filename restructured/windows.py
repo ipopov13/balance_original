@@ -3,7 +3,7 @@ from time import sleep
 
 from content_types import DescriptionList
 import commands
-from utils import strip_ansi_escape_sequences, horizontal_pad
+from utils import strip_ansi_escape_sequences, center_ansi_multiline
 import config
 
 
@@ -30,7 +30,7 @@ class Window(ABC):
     def get_display_data(self) -> tuple[dict, tuple[int, int]]:
         """Pad the content to size and position, apply borders and hints"""
         content_data = self._content.data().split('\n')
-        content_data, left_pad, min_right_pad = horizontal_pad(content_data, self.size[-1])
+        content_data, left_pad, min_right_pad = center_ansi_multiline(content_data, self.size[-1])
         # Vertical pad: center within window size
         top_pad = (self.size[0] - len(content_data)) // 2
         bottom_pad = self.size[0] - len(content_data) - top_pad

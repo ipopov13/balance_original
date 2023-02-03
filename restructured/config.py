@@ -38,6 +38,20 @@ fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
+# Races
+Human = "Human"
+Dwarf = "Dwarf"
+Elf = "Elf"
+Gnome = "Gnome"
+Orc = "Orc"
+Troll = "Troll"
+Kraken = "Kraken"
+Goblin = "Goblin"
+Imp = "Imp"
+Fae = "Fae"
+Dryad = "Dryad"
+Shifter = "Shifter"
+WaterElemental = "Water elemental"
 # Stats
 Str = "Strength"
 End = "Endurance"

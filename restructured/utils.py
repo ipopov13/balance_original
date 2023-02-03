@@ -28,7 +28,7 @@ def dim(a_string) -> str:
     return console.fx.dim + a_string + console.fx.end
 
 
-def horizontal_pad(content_data: list[str], max_width: int, pad_character: str = ' '):
+def center_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' '):
     """
     Center a multiline string using the longest content line
     """

@@ -1,7 +1,7 @@
 import commands
 import config
 import console
-from utils import horizontal_pad, calculate_new_position, longest_raw_line_len, line_up
+from utils import center_ansi_multiline, calculate_new_position, longest_raw_line_len, line_up
 
 
 class WindowContent:
@@ -49,6 +49,7 @@ class CharacterSheet(WindowContent):
         # TODO: Equalize stat widths, justify
         content += self._stats
         # TODO: Make skills multi-column, justify, equalize widths
+        # TODO: What if they are too many? Test with the full amount? Make an automatic test?
         content += self._skills
         return '\n'.join(content)
 
@@ -114,11 +115,11 @@ class MultiContainerScreen(WindowContent):
         longest_line = longest_raw_line_len(container_data)
         top_border_raw = name.center(max(longest_line + 2, len(name) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
-        padded_data, inner_left_pad, _ = horizontal_pad(container_data, len(top_border_raw))
+        padded_data, inner_left_pad, _ = center_ansi_multiline(container_data, len(top_border_raw))
         content_data = ([border_color + top_border_raw + console.fx.end]
                         + padded_data
                         + [border_color + bottom_border_raw + console.fx.end])
-        content_data, left_pad, _ = horizontal_pad(content_data, self._max_view_width)
+        content_data, left_pad, _ = center_ansi_multiline(content_data, self._max_view_width)
         self._extra_pads[container_index] = left_pad + inner_left_pad
         final_content = '\n'.join(content_data) + self._empty_row() + '\n'
         return final_content
@@ -135,7 +136,7 @@ class MultiContainerScreen(WindowContent):
 
     def data(self) -> str:
         pretty_content = [self._prettify_container(ci) for ci in range(len(self._names))]
-        details = [horizontal_pad(det, self._max_view_width)[0] for det in self._get_details()]
+        details = [center_ansi_multiline(det, self._max_view_width)[0] for det in self._get_details()]
         pretty_content = [c + '\n'.join(d) for c, d in zip(pretty_content, details)]
         equalized_content = self._equalize_rows(pretty_content)
         combined_content = [''.join(rows) for rows

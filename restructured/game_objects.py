@@ -4,6 +4,7 @@ import commands
 import console
 import config
 from utils import calculate_new_position, coord_distance, direct_path, dim, raw_length, make_stats
+from knowledge import knowledge
 
 # TODO: Split the objects in modules by level of abstraction:
 #  GameObject/Container <- HumanoidSpecies|Item|Creature|world|etc. <- Game
@@ -710,93 +711,78 @@ class AnimalSpecies(Species):
         self._equipment_slots = base_animal_equipment_slots.copy()
 
 
-human_race = HumanoidSpecies(name='Human',
+human_race = HumanoidSpecies(name=config.Human,
                              icon='H',
                              color=config.order_color,
-                             description='Explorers and treasure seekers, the human race combines the primal need '
-                                         'of discovery with the perseverance that gave birth to all great empires.',
+                             description=knowledge[config.Human][0],
                              sort_key=0,
                              base_effect_modifiers={config.travel_energy_loss_modifier: 0})
-dwarf_race = HumanoidSpecies(name='Dwarf',
+dwarf_race = HumanoidSpecies(name=config.Dwarf,
                              icon='D',
                              color=config.order_color,
-                             description='Masters of the forge, dwarves are drawn down into the depths of the world by '
-                                         'an ancient instinct that rivals the bravery of human explorers.',
+                             description=knowledge[config.Dwarf][0],
                              sort_key=1,
                              base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier: 1.2})
-gnome_race = HumanoidSpecies(name='Gnome',
+gnome_race = HumanoidSpecies(name=config.Gnome,
                              icon='G',
                              color=config.order_color,
-                             description='A friendly and easygoing people, gnomes are the only race '
-                                         'that views rocks as living things. Rocks adore them in return.',
+                             description=knowledge[config.Gnome][0],
                              sort_key=2)
-elf_race = HumanoidSpecies(name='Elf',
+elf_race = HumanoidSpecies(name=config.Elf,
                            icon='E',
                            color=config.order_color,
-                           description='Expert mages and librarians, the elves have given the world'
-                                       ' a lot of legendary heroes.',
+                           description=knowledge[config.Elf][0],
                            sort_key=3,
                            base_effect_modifiers={config.max_mana_modifier: 1.2})
-orc_race = HumanoidSpecies(name='Orc',
+orc_race = HumanoidSpecies(name=config.Orc,
                            icon='O',
                            color=config.chaos_color,
-                           description='The most aggressive of races, orcs crave combat above all else.'
-                                       ' They always keep a spare weapon around, just in case.',
+                           description=knowledge[config.Orc][0],
                            sort_key=4,
                            base_effect_modifiers={config.sick_effect: -20})
-troll_race = HumanoidSpecies(name='Troll',
+troll_race = HumanoidSpecies(name=config.Troll,
                              icon='T',
                              color=config.chaos_color,
-                             description="Finding a tasty rock to eat makes a troll's day. Having "
-                                         "someone to throw a rock at is a bonus that only a troll "
-                                         "can appreciate in full.",
+                             description=knowledge[config.Troll][0],
                              sort_key=5, consumable_types=[Rock],
                              base_effect_modifiers={config.max_hp_modifier: 1.2},
                              fist_weapon=TrollFist)
-goblin_race = HumanoidSpecies(name='Goblin',
+goblin_race = HumanoidSpecies(name=config.Goblin,
                               icon='G',
                               color=config.chaos_color,
-                              description="For a goblin, everything can come in handy one day. They are"
-                                          " legendary pilferers and pillagers, and leave no one, and nothing, behind.",
+                              description=knowledge[config.Goblin][0],
                               sort_key=6, base_effect_modifiers={config.max_load_modifier: 1.2})
-kraken_race = HumanoidSpecies(name='Kraken',
+kraken_race = HumanoidSpecies(name=config.Kraken,
                               icon='K',
                               color=config.chaos_color,
-                              description="Descendants of deep sea monsters, the kraken have learned to "
-                                          "reap even the most disgusting of water dwellers for useful substances.",
+                              description=knowledge[config.Kraken][0],
                               sort_key=7)
-imp_race = HumanoidSpecies(name='Imp',
+imp_race = HumanoidSpecies(name=config.Imp,
                            icon='I',
                            color=config.chaos_color,
-                           description="Fire burns in an imp's veins and dances over their fingers."
-                                       " To burn is to feel alive!",
+                           description=knowledge[config.Imp][0],
                            sort_key=8)
-dryad_race = HumanoidSpecies(name='Dryad',
+dryad_race = HumanoidSpecies(name=config.Dryad,
                              icon='D',
                              color=config.nature_color,
-                             description="The kin of plants, dryads are champions of the forest. They give"
-                                         " trees their all and received undying love in return.",
+                             description=knowledge[config.Dryad][0],
                              sort_key=9)
-shifter_race = HumanoidSpecies(name='Shifter',
+shifter_race = HumanoidSpecies(name=config.Shifter,
                                icon='S',
                                color=config.nature_color,
-                               description="A shifter can easily pass as a human if they cut their talon-like "
-                                           "fingernails and keep their totemic tattoos hidden. They rarely do.",
+                               description=knowledge[config.Shifter][0],
                                sort_key=10,
                                active_effects={config.non_rest_hp_regen_effect: 1})
-water_elemental_race = HumanoidSpecies(name='Water Elemental',
+water_elemental_race = HumanoidSpecies(name=config.WaterElemental,
                                        icon='W',
                                        color=config.nature_color,
-                                       description="To make other living beings see the beauty of water, elementals "
-                                                   "turn it into art, home, and sustenance.",
+                                       description=knowledge[config.WaterElemental][0],
                                        sort_key=11,
                                        base_effect_modifiers={config.hunger_water_effect: 20})
-fay_race = HumanoidSpecies(name='Fay',
+fae_race = HumanoidSpecies(name=config.Fae,
                            icon='F',
                            color=config.nature_color,
-                           description="The fay are born from the natural magic of the world, and "
-                                       "they have developed methods to manipulate it. Their ability to "
-                                       "trespass into the dreams of others is an insignificant side effect.",
+                           description=knowledge[config.Fae][0],
                            sort_key=12,
                            base_effect_modifiers={config.hunger_meat_effect: -20})
 field_mouse_species = AnimalSpecies(name='field mouse', icon='m', color=config.brown_fg_color,
