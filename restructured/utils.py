@@ -28,6 +28,15 @@ def dim(a_string) -> str:
     return console.fx.dim + a_string + console.fx.end
 
 
+def equalize_rows(contents: list[list[str]], fixed_width: int = None) -> list[list[str]]:
+    max_lines = max([len(content) for content in contents])
+    for content in contents:
+        line_width = fixed_width or max([raw_length(line) for line in content])
+        current_height = len(content)
+        content += [' ' * line_width] * max(0, max_lines - current_height)
+    return contents
+
+
 def left_justify_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') \
         -> tuple[list[str], int, int]:
     """

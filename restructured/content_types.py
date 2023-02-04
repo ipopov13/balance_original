@@ -107,7 +107,7 @@ class MultiContainerScreen(WindowContent):
             self._active_container_index = 0
         return True
 
-    def _prettify_container(self, container_index: int = None):
+    def _prettify_container(self, container_index: int = None) -> list[str]:
         container_data = self._data[container_index].split('\n')
         border_color = console.fg.default if container_index is self._active_container_index else console.fx.dim
         name = self._names[container_index]
@@ -120,26 +120,16 @@ class MultiContainerScreen(WindowContent):
                         + [border_color + bottom_border_raw + console.fx.end])
         content_data, left_pad, _ = utils.left_justify_ansi_multiline(content_data, self._max_view_width)
         self._extra_pads[container_index] = left_pad + inner_left_pad
-        final_content = '\n'.join(content_data) + self._empty_row() + '\n'
+        final_content = content_data + [' ' * self._max_view_width]
         return final_content
-
-    def _empty_row(self) -> str:
-        return '\n' + ' ' * self._max_view_width
-
-    def _equalize_rows(self, contents):
-        max_lines = max([len(content.split('\n')) for content in contents])
-        for c_i in range(len(contents)):
-            current_height = len(contents[c_i].split('\n'))
-            contents[c_i] += self._empty_row() * max(0, max_lines - current_height)
-        return contents
 
     def data(self) -> str:
         pretty_content = [self._prettify_container(ci) for ci in range(len(self._names))]
         details = [utils.left_justify_ansi_multiline(det, self._max_view_width)[0] for det in self._get_details()]
-        pretty_content = [c + '\n'.join(d) for c, d in zip(pretty_content, details)]
-        equalized_content = self._equalize_rows(pretty_content)
+        pretty_content = [c + d for c, d in zip(pretty_content, details)]
+        equalized_content = utils.equalize_rows(pretty_content, self._max_view_width)
         combined_content = [''.join(rows) for rows
-                            in zip(*[c.split('\n') for c in equalized_content])]
+                            in zip(*[c for c in equalized_content])]
         return '\n'.join(combined_content)
 
     def cursor_pos(self) -> tuple[int, int]:
