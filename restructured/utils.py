@@ -28,21 +28,21 @@ def dim(a_string) -> str:
     return console.fx.dim + a_string + console.fx.end
 
 
-def left_justify_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') -> list[str]:
+def left_justify_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') \
+        -> tuple[list[str], int, int]:
     """
     Left-justify a multiline string using the longest content line
     """
-    raw_content_data = [strip_ansi_escape_sequences(line) for line in content_data]
-    longest_line_len = max([len(line) for line in raw_content_data])
+    longest_line_len = max([raw_length(line) for line in content_data])
     left_pad = (max_width - longest_line_len) // 2
+    justified_content = []
     min_right_pad = max_width
-    for row_index in range(len(content_data)):
-        content_data[row_index] = (pad_character * left_pad) + content_data[row_index]
-    for row_index in range(len(content_data)):
-        right_pad = (max_width - len(raw_content_data[row_index]) - left_pad)
-        content_data[row_index] = content_data[row_index] + (pad_character * right_pad)
+    for line in content_data:
+        right_pad = max_width - raw_length(line) - left_pad
         min_right_pad = min(right_pad, min_right_pad)
-    return content_data, left_pad, min_right_pad
+        justified_line = (pad_character * left_pad) + line + (pad_character * right_pad)
+        justified_content.append(justified_line)
+    return justified_content, left_pad, min_right_pad
 
 
 def center_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') -> list[str]:
