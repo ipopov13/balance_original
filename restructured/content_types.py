@@ -39,14 +39,19 @@ class CharacterSheet(WindowContent):
         super().__init__(game_object)
         self.creature = self.game_object.character
         self._stats: dict[str, int] = self.creature.get_stats_data()
+        self._stats: dict[str, int] = self.creature.get_secondary_stats_data()
         self._skills: dict[str, int] = self.creature.get_skills_data()
 
     def data(self) -> str:
-        content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length)]
-        # TODO: place them next to the stats. Use the adjusting methods from the multi-container!
-        race_desc = utils.text_to_multiline(self.creature.species.description)
-        content += utils.left_justify_ansi_multiline(race_desc.split('\n'), config.max_text_line_length)[0]
-        content += utils.justify_ansi_int_dict(self._stats)
+        content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length),
+                   ' ' * config.max_text_line_length]
+        justified_stats = utils.justify_ansi_int_dict(self._stats)
+        stats_width = utils.raw_length(justified_stats[0])
+        race_desc = utils.text_to_multiline(self.creature.species.description,
+                                            line_limit=config.max_text_line_length - stats_width - 2).split('\n')
+        equalized_content = utils.equalize_rows([justified_stats, race_desc])
+        stats_and_race = ['  '.join(rows) for rows in zip(*[c for c in equalized_content])]
+        content += stats_and_race
         # TODO: Make skills multi-column
         # TODO: What if they are too many? Test with the full amount? Make an automatic test?
         content += utils.justify_ansi_int_dict(self._skills)
@@ -128,8 +133,7 @@ class MultiContainerScreen(WindowContent):
         details = [utils.left_justify_ansi_multiline(det, self._max_view_width)[0] for det in self._get_details()]
         pretty_content = [c + d for c, d in zip(pretty_content, details)]
         equalized_content = utils.equalize_rows(pretty_content, self._max_view_width)
-        combined_content = [''.join(rows) for rows
-                            in zip(*[c for c in equalized_content])]
+        combined_content = [''.join(rows) for rows in zip(*[c for c in equalized_content])]
         return '\n'.join(combined_content)
 
     def cursor_pos(self) -> tuple[int, int]:

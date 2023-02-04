@@ -1173,6 +1173,13 @@ class Creature(GameObject):
     def get_stats_data(self) -> dict[str, int]:
         return {stat: value for stat, value in self.stats.items()}
 
+    def get_secondary_stats_data(self) -> dict[str, str]:
+        return {'Hitpoints': f'{self.hp}/{self.max_hp}',
+                'Mana': f'{self.mana}/{self.max_mana}',
+                'Energy': f'{self.energy}/{self.max_energy}',
+                'Load': f'{self.load}/{self.max_load}'
+                }
+
     def get_skills_data(self) -> dict[str, int]:
         return {skill: skill_value for skill, skill_value in self._skills.items()}
 
