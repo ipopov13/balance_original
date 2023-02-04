@@ -73,10 +73,13 @@ def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
     if not data_dict:
         return []
     max_key_len = max([raw_length(key) for key in data_dict])
+    max_value_len = max([raw_length(str(value)) for value in data_dict.values()])
+    max_len = max_value_len + max_key_len + 1
     content = []
     for key, value in data_dict.items():
-        name = key.ljust(max_key_len)
-        content.append(f"{name} {value}")
+        current_len = raw_length(key) + raw_length(str(value))
+        padding = ' ' * (max_len - current_len)
+        content.append(f"{key}{padding}{value}")
     return content
 
 
