@@ -2,6 +2,9 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
+    Justify stats
+    Make stats floats
+    Add justification for floats
     Organize character screen
     Adjust skill gains (too fast right now, maybe 1/4 or 1/5? or exponential?)
     Add skill bonuses
@@ -106,7 +109,9 @@ Locations:
     Add location escaping, allow leaving a location and appearing on a tile that is not a direct neighbor
       of the last one
     Add Structure flavors from the excel
-Modes:
+Modes
+    When using Look mode with a racial/animal Tome of Knowledge equipped, it allows examination of creatures
+     of that race by opening a "character screen" with their stats and AI reactions
     Trade with creatures
     Exploration: Masquerading terrains (ore veins, poisonous flowers, venom bushes)
 Map screen:

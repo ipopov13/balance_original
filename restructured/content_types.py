@@ -1,7 +1,7 @@
 import commands
 import config
 import console
-from utils import center_ansi_multiline, calculate_new_position, longest_raw_line_len, text_to_multiline
+import utils
 
 
 class WindowContent:
@@ -38,19 +38,18 @@ class CharacterSheet(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
         self.creature = self.game_object.character
-        self._stats: list[str] = self.creature.get_stats_data()
-        self._skills: list[str] = self.creature.get_skills_data()
+        self._stats: dict[str, int] = self.creature.get_stats_data()
+        self._skills: dict[str, int] = self.creature.get_skills_data()
 
     def data(self) -> str:
         content = [f"{self.creature.name} the {self.creature.species.name}".center(config.max_text_line_length)]
-        # TODO: Center the race lines, place them next to the stats. Use the adjusting methods from the multi-container!
-        race_desc = text_to_multiline(self.creature.species.description)
-        content += center_ansi_multiline(race_desc.split('\n'), config.max_text_line_length)[0]
-        # TODO: Equalize stat widths, justify
-        content += self._stats
-        # TODO: Make skills multi-column, justify, equalize widths
+        # TODO: place them next to the stats. Use the adjusting methods from the multi-container!
+        race_desc = utils.text_to_multiline(self.creature.species.description)
+        content += utils.left_justify_ansi_multiline(race_desc.split('\n'), config.max_text_line_length)[0]
+        content += utils.justify_ansi_int_dict(self._stats)
+        # TODO: Make skills multi-column
         # TODO: What if they are too many? Test with the full amount? Make an automatic test?
-        content += self._skills
+        content += utils.justify_ansi_int_dict(self._skills)
         return '\n'.join(content)
 
 
@@ -96,8 +95,8 @@ class MultiContainerScreen(WindowContent):
         raise NotImplementedError(f'Class {self.__class__} must implement _get_details()!')
 
     def _move_item_focus(self, direction) -> bool:
-        new_selection = calculate_new_position(self._selected_pos[self._active_container_index], direction,
-                                               *self._container_sizes[self._active_container_index])
+        new_selection = utils.calculate_new_position(self._selected_pos[self._active_container_index], direction,
+                                                     *self._container_sizes[self._active_container_index])
         self._selected_pos[self._active_container_index] = new_selection
         self._get_container_data()
         return True
@@ -112,14 +111,14 @@ class MultiContainerScreen(WindowContent):
         container_data = self._data[container_index].split('\n')
         border_color = console.fg.default if container_index is self._active_container_index else console.fx.dim
         name = self._names[container_index]
-        longest_line = longest_raw_line_len(container_data)
+        longest_line = utils.longest_raw_line_len(container_data)
         top_border_raw = name.center(max(longest_line + 2, len(name) + 2), '-')
         bottom_border_raw = '-' * len(top_border_raw)
-        padded_data, inner_left_pad, _ = center_ansi_multiline(container_data, len(top_border_raw))
+        padded_data, inner_left_pad, _ = utils.left_justify_ansi_multiline(container_data, len(top_border_raw))
         content_data = ([border_color + top_border_raw + console.fx.end]
                         + padded_data
                         + [border_color + bottom_border_raw + console.fx.end])
-        content_data, left_pad, _ = center_ansi_multiline(content_data, self._max_view_width)
+        content_data, left_pad, _ = utils.left_justify_ansi_multiline(content_data, self._max_view_width)
         self._extra_pads[container_index] = left_pad + inner_left_pad
         final_content = '\n'.join(content_data) + self._empty_row() + '\n'
         return final_content
@@ -136,7 +135,7 @@ class MultiContainerScreen(WindowContent):
 
     def data(self) -> str:
         pretty_content = [self._prettify_container(ci) for ci in range(len(self._names))]
-        details = [center_ansi_multiline(det, self._max_view_width)[0] for det in self._get_details()]
+        details = [utils.left_justify_ansi_multiline(det, self._max_view_width)[0] for det in self._get_details()]
         pretty_content = [c + '\n'.join(d) for c, d in zip(pretty_content, details)]
         equalized_content = self._equalize_rows(pretty_content)
         combined_content = [''.join(rows) for rows
@@ -234,7 +233,7 @@ class PagedList(WindowContent):
         super().__init__(game_object)
         self.sorted_item_list = self._get_items()
         self._item_descriptions = [f'{console.fg.yellow}#)'
-                                   f' {text_to_multiline(f"{item.name}: {item.description}")}'
+                                   f' {utils.text_to_multiline(f"{item.name}: {item.description}")}'
                                    .replace('\n', '\n   ')
                                    .replace(f'{item.name}:', f'{item.color + item.name}:{console.fx.end}')
                                    for number, item in enumerate(self.sorted_item_list)]

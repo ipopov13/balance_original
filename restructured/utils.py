@@ -28,9 +28,9 @@ def dim(a_string) -> str:
     return console.fx.dim + a_string + console.fx.end
 
 
-def center_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' '):
+def left_justify_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') -> list[str]:
     """
-    Center a multiline string using the longest content line
+    Left-justify a multiline string using the longest content line
     """
     raw_content_data = [strip_ansi_escape_sequences(line) for line in content_data]
     longest_line_len = max([len(line) for line in raw_content_data])
@@ -43,6 +43,32 @@ def center_ansi_multiline(content_data: list[str], max_width: int, pad_character
         content_data[row_index] = content_data[row_index] + (pad_character * right_pad)
         min_right_pad = min(right_pad, min_right_pad)
     return content_data, left_pad, min_right_pad
+
+
+def center_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') -> list[str]:
+    """
+    Center a multiline string using the longest content line
+    """
+    centered_content = []
+    for line in content_data:
+        raw_len = raw_length(line)
+        left_pad = (max_width - raw_len) // 2
+        right_pad = max_width - raw_len - left_pad
+        if right_pad < 0:
+            raise ValueError(f"String is too long to center in {max_width} characters:\n{line}")
+        centered_content.append((pad_character * left_pad) + line + (pad_character * right_pad))
+    return centered_content
+
+
+def justify_ansi_int_dict(data_dict: dict[str, int]) -> list[str]:
+    if not data_dict:
+        return []
+    max_key_len = max([raw_length(key) for key in data_dict])
+    content = []
+    for key, value in data_dict.items():
+        name = key.ljust(max_key_len)
+        content.append(f"{name} {value}")
+    return content
 
 
 def calculate_new_position(old_pos: tuple[int, int], direction: str,

@@ -1170,11 +1170,11 @@ class Creature(GameObject):
     def is_dead(self) -> bool:
         return self.hp <= 0
 
-    def get_stats_data(self) -> list[str]:
-        return [f"{stat} {value}" for stat, value in self.stats.items()]
+    def get_stats_data(self) -> dict[str, int]:
+        return {stat: value for stat, value in self.stats.items()}
 
-    def get_skills_data(self) -> list[str]:
-        return [f"{skill} {skill_value}" for skill, skill_value in self._skills.items()]
+    def get_skills_data(self) -> dict[str, int]:
+        return {skill: skill_value for skill, skill_value in self._skills.items()}
 
 
 class Animal(Creature):
