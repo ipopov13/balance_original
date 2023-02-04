@@ -2,10 +2,11 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
-    Justify stats
     Make stats floats
     Add justification for floats
     Organize character screen
+        Skills title
+        Skill columns
     Adjust skill gains (too fast right now, maybe 1/4 or 1/5? or exponential?)
     Add skill bonuses
 
@@ -13,6 +14,7 @@ Usability
     Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
 Interface
+    Hide the blinking cursor on some screens
     Rename "pick up" to "take"
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly

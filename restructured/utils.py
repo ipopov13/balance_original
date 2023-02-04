@@ -69,7 +69,7 @@ def center_ansi_multiline(content_data: list[str], max_width: int, pad_character
     return centered_content
 
 
-def justify_ansi_int_dict(data_dict: dict[str, int]) -> list[str]:
+def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
     if not data_dict:
         return []
     max_key_len = max([raw_length(key) for key in data_dict])
