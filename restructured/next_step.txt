@@ -2,11 +2,14 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
-    Make stats floats
-    Add justification for floats
     Organize character screen
-        Skills title
         Skill columns
+        Add skill type tags (combat, extraction, etc.) in the names and strip them,
+            replacing with the respective coloring
+        Skill pagination (p/n)
+    Stats improvement
+    Skills
+    Skills improvement
     Adjust skill gains (too fast right now, maybe 1/4 or 1/5? or exponential?)
     Add skill bonuses
 
@@ -53,11 +56,6 @@ Combat
     Creature disposition
     Normal mode
     Item rarity (chance to drop to the ground inherent for the item)
-Character
-    Character screen
-    Stats improvement
-    Skills
-    Skills improvement
 AI
     Make aggressive creatures keep their previous direction when the character is suddenly out of sight/behind
      a corner, and change it only when they have reached the last character location or hit an obstacle
