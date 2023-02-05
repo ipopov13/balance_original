@@ -54,7 +54,8 @@ def left_justify_ansi_multiline(content_data: list[str], max_width: int, pad_cha
     return justified_content, left_pad, min_right_pad
 
 
-def center_ansi_multiline(content_data: list[str], max_width: int, pad_character: str = ' ') -> list[str]:
+def center_ansi_multiline(content_data: list[str], max_width: int = config.max_text_line_length,
+                          pad_character: str = ' ') -> list[str]:
     """
     Center a multiline string using the longest content line
     """
@@ -67,6 +68,24 @@ def center_ansi_multiline(content_data: list[str], max_width: int, pad_character
             raise ValueError(f"String is too long to center in {max_width} characters:\n{line}")
         centered_content.append((pad_character * left_pad) + line + (pad_character * right_pad))
     return centered_content
+
+
+def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_text_line_length) -> list[list[str]]:
+    dicts = [{k: data_dict[k] for k in list(data_dict.keys())[start:start + rows]}
+             for start in range(0, len(data_dict), rows)]
+    strips = [justify_ansi_dict(d) for d in dicts]
+    pages = []
+    while strips:
+        remaining_width = max_width
+        current_page = []
+        while remaining_width >= raw_length(strips[0][0]) and strips:
+            remaining_width -= raw_length(strips[0][0]) + 1
+            current_page.append(strips.pop(0))
+        pages.append(current_page)
+    pages = [equalize_rows(page) for page in pages]
+    # TODO: Zip the pages
+    # TODO: return all the pages
+    pass
 
 
 def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
@@ -160,3 +179,8 @@ def text_to_multiline(text: str, line_limit: int = config.max_text_line_length) 
         lines.append(a_line.strip())
         text = text[len(a_line):].strip()
     return '\n'.join(lines)
+
+
+if __name__ == "__main__":
+    a = {i: i+1 for i in range(13)}
+    print(columnize(a, 5))

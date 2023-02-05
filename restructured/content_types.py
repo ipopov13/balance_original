@@ -43,8 +43,7 @@ class CharacterSheet(WindowContent):
         self._skills: dict[str, int] = self.creature.get_skills_data()
 
     def data(self) -> str:
-        character_name = utils.center_ansi_multiline([f"{self.creature.name} the {self.creature.species.name}"],
-                                                     config.max_text_line_length)
+        character_name = utils.center_ansi_multiline([f"{self.creature.name} the {self.creature.species.name}"])
         content = character_name + [' ' * config.max_text_line_length]
         justified_stats = utils.justify_ansi_dict(self._stats)
         justified_secondary_stats = utils.justify_ansi_dict(self._secondary_stats)
@@ -54,14 +53,14 @@ class CharacterSheet(WindowContent):
         equalized_content = utils.equalize_rows([justified_stats, justified_secondary_stats, race_desc])
         stats_and_race = ['  '.join(rows) for rows in zip(*[c for c in equalized_content])]
         content += stats_and_race
-        skills_title = utils.center_ansi_multiline(["Skills"], config.max_text_line_length)
+        skills_title = utils.center_ansi_multiline(["Skills"])
         content += [' ' * config.max_text_line_length] + skills_title + [' ' * config.max_text_line_length]
         # TODO: Make skills multi-column
         if self._skills:
-            content += utils.justify_ansi_dict(self._skills)
+            available_rows = config.max_text_lines_on_page - len(content)
+            content += utils.columnize(self._skills, rows=available_rows)
         else:
-            content += utils.center_ansi_multiline(["You don't have any discernible skills yet."],
-                                                   config.max_text_line_length)
+            content += utils.center_ansi_multiline(["You don't have any discernible skills yet."])
         return '\n'.join(content)
 
 
