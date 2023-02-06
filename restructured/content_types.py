@@ -55,10 +55,10 @@ class CharacterSheet(WindowContent):
         content += stats_and_race
         skills_title = utils.center_ansi_multiline(["Skills"])
         content += [' ' * config.max_text_line_length] + skills_title + [' ' * config.max_text_line_length]
-        # TODO: Make skills multi-column
+        # TODO: Make skills paginated
         if self._skills:
             available_rows = config.max_text_lines_on_page - len(content)
-            content += utils.columnize(self._skills, rows=available_rows)
+            content += utils.columnize(self._skills, rows=available_rows)[0]
         else:
             content += utils.center_ansi_multiline(["You don't have any discernible skills yet."])
         return '\n'.join(content)

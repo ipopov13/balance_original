@@ -716,7 +716,8 @@ human_race = HumanoidSpecies(name=config.Human,
                              color=config.order_color,
                              description=knowledge[config.Human][0],
                              sort_key=0,
-                             base_effect_modifiers={config.travel_energy_loss_modifier: 0})
+                             base_effect_modifiers={config.travel_energy_loss_modifier: 0},
+                             base_skills={f'crafting_skill {i}': i for i in range(1, 400)})
 dwarf_race = HumanoidSpecies(name=config.Dwarf,
                              icon='D',
                              color=config.order_color,

@@ -3,7 +3,6 @@ Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
     Organize character screen
-        Skill columns
         Add skill type tags (combat, extraction, etc.) in the names and strip them,
             replacing with the respective coloring
         Skill pagination (p/n)

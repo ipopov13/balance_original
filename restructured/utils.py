@@ -78,14 +78,13 @@ def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_
     while strips:
         remaining_width = max_width
         current_page = []
-        while remaining_width >= raw_length(strips[0][0]) and strips:
+        while strips and remaining_width >= raw_length(strips[0][0]):
             remaining_width -= raw_length(strips[0][0]) + 1
             current_page.append(strips.pop(0))
         pages.append(current_page)
     pages = [equalize_rows(page) for page in pages]
-    # TODO: Zip the pages
-    # TODO: return all the pages
-    pass
+    combined_pages = [['|'.join(rows) for rows in zip(*[c for c in page])] for page in pages]
+    return combined_pages
 
 
 def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
@@ -182,5 +181,5 @@ def text_to_multiline(text: str, line_limit: int = config.max_text_line_length) 
 
 
 if __name__ == "__main__":
-    a = {i: i+1 for i in range(13)}
-    print(columnize(a, 5))
+    test = {i: i+1 for i in range(13)}
+    print(columnize(test, 5))

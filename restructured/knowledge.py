@@ -10,7 +10,7 @@ knowledge = {
         " your main if you want to hit anything smaller than a mountain."
     ],
     config.Human: [
-        'Explorers and treasure seekers, the human race combines the primal need '
+        'Explorers and treasure-seekers, the human race combines the primal need '
         'of discovery with the perseverance that gave birth to all great empires.',
         "The thrill of discovery drives humans forward, making them immune to the draining"
         " effects of long travel and silent nights around the camp fire."
