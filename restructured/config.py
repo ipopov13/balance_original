@@ -80,8 +80,6 @@ max_hp_modifier = 'max_hp_modifier'
 max_load_modifier = 'max_load_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
-# Tools
-skill_mining = 'Mining'
 # Equipment slots
 main_hand_slot = 'Main hand'
 offhand_slot = 'Offhand'
@@ -92,13 +90,25 @@ boots_slot = 'Boots'
 animal_weapon_slot = 'AnimalWeapon'
 animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
-# Ranged weapon types
+# Skills
+skill_delimiter = "_"
+combat_prefix = "combat"
+crafting_prefix = "crafting"
+extraction_prefix = "extracting"
+social_prefix = "social"
+utility_prefix = "utility"
+skill_colors = {combat_prefix: console.fg.lightred,
+                crafting_prefix: console.fg.lightblue,
+                extraction_prefix: console.fg.lightgreen,
+                social_prefix: console.fg.yellow,
+                utility_prefix: console.fg.purple}
 thrown_weapon_type = 'Thrown weapons'
-gun_skill = "Guns"
-throwing_knife_skill = "Throwing knives"
+gun_skill = combat_prefix + skill_delimiter + "Guns"
+throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
 acorn_gun_type = 'acorn_gun_type'
+mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 
-random_creatures_respawn_period = 1  # 500
+random_creatures_respawn_period = 500
 creature_rarity_scale = [1, 1/2, 1/9]
 
 max_stat_value = 20

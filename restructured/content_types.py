@@ -40,7 +40,19 @@ class CharacterSheet(WindowContent):
         self.creature = self.game_object.character
         self._stats: dict[str, int] = self.creature.get_stats_data()
         self._secondary_stats: dict[str, int] = self.creature.get_secondary_stats_data()
-        self._skills: dict[str, int] = self.creature.get_skills_data()
+        self._skills: dict[str, int] = self._format_creature_skills()
+
+    def _format_creature_skills(self) -> dict[str, int]:
+        raw_skills = self.creature.get_skills_data()
+        colored_skills = {}
+        for skill, value in raw_skills.items():
+            try:
+                skill_type, skill_name = skill.split(config.skill_delimiter)
+            except ValueError:
+                raise ValueError(f"Skill name {skill} does not have the prefix+delimiter+name structure!")
+            color = config.skill_colors.get(skill_type, console.fg.default)
+            colored_skills[color + skill_name + console.fx.end] = value
+        return colored_skills
 
     def data(self) -> str:
         character_name = utils.center_ansi_multiline([f"{self.creature.name} the {self.creature.species.name}"])

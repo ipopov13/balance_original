@@ -442,7 +442,7 @@ class TrollFist(Tool):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, skill=config.skill_mining, work_stat=config.Str,
+                         work_exhaustion=2, skill=config.mining_skill, work_stat=config.Str,
                          damage=1, combat_exhaustion=1)
 
 
@@ -450,7 +450,7 @@ class Pickaxe(Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
-                         work_exhaustion=5, skill=config.skill_mining, work_stat=config.Str,
+                         work_exhaustion=5, skill=config.mining_skill, work_stat=config.Str,
                          damage=1, combat_exhaustion=5)
 
 
@@ -717,7 +717,7 @@ human_race = HumanoidSpecies(name=config.Human,
                              description=knowledge[config.Human][0],
                              sort_key=0,
                              base_effect_modifiers={config.travel_energy_loss_modifier: 0},
-                             base_skills={f'crafting_skill {i}': i for i in range(1, 400)})
+                             base_skills={f'crafting_skill {i}': i for i in range(1, 4)})
 dwarf_race = HumanoidSpecies(name=config.Dwarf,
                              icon='D',
                              color=config.order_color,
@@ -2167,25 +2167,25 @@ well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description
                                                    liquid=water_liquid)])
 
 terrain_transformations = {
-    rocks: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+    rocks: {config.mining_skill: {'new_terrain': dirt, 'number_of_drops': 10,
                                   'drop_types': [Rock], 'drop_weights': [100],
                                   'message': 'You turn the boulder into rubble!'}},
-    iron_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+    iron_vein: {config.mining_skill: {'new_terrain': dirt, 'number_of_drops': 10,
                                       'drop_types': [Rock, IronOre],
                                       'drop_weights': [75, 25],
                                       'message': 'You turn the boulder into rubble!'}},
-    gold_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+    gold_vein: {config.mining_skill: {'new_terrain': dirt, 'number_of_drops': 10,
                                       'drop_types': [Rock, GoldOre],
                                       'drop_weights': [75, 25],
                                       'message': 'You turn the boulder into rubble!'}},
-    silver_vein: {config.skill_mining: {'new_terrain': dirt, 'number_of_drops': 10,
+    silver_vein: {config.mining_skill: {'new_terrain': dirt, 'number_of_drops': 10,
                                         'drop_types': [Rock, SilverOre],
                                         'drop_weights': [75, 25],
                                         'message': 'You turn the boulder into rubble!'}},
-    ice_block: {config.skill_mining: {'new_terrain': ice, 'number_of_drops': 10,
+    ice_block: {config.mining_skill: {'new_terrain': ice, 'number_of_drops': 10,
                                       'drop_types': [IceShard], 'drop_weights': [100],
                                       'message': 'The ice breaks into razor-sharp pieces!'}},
-    stilled_water: {config.skill_mining: {'new_terrain': water, 'number_of_drops': 10,
+    stilled_water: {config.mining_skill: {'new_terrain': water, 'number_of_drops': 10,
                                           'drop_types': [StilledWaterShard], 'drop_weights': [100],
                                           'message': 'The translucent column breaks apart!'}},
 }
