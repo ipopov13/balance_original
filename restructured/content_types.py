@@ -41,6 +41,10 @@ class CharacterSheet(WindowContent):
         self._stats: dict[str, int] = self.creature.get_stats_data()
         self._secondary_stats: dict[str, int] = self.creature.get_secondary_stats_data()
         self._skills: dict[str, int] = self._format_creature_skills()
+        self._content: list[str] = []
+        self._skill_pages: list[list[str]] = []
+        self._current_page = 0
+        self._prepare_data()
 
     def _format_creature_skills(self) -> dict[str, int]:
         raw_skills = self.creature.get_skills_data()
@@ -54,9 +58,22 @@ class CharacterSheet(WindowContent):
             colored_skills[color + skill_name + console.fx.end] = value
         return colored_skills
 
-    def data(self) -> str:
+    @property
+    def _own_commands(self) -> dict:
+        if len(self._skill_pages) > 1:
+            return {commands.NextPage(): self._next_page,
+                    commands.PreviousPage(): self._previous_page}
+        return {}
+
+    def _next_page(self, _):
+        self._current_page = min(self._current_page + 1, len(self._skill_pages) - 1)
+
+    def _previous_page(self, _):
+        self._current_page = max(self._current_page - 1, 0)
+
+    def _prepare_data(self) -> None:
         character_name = utils.center_ansi_multiline([f"{self.creature.name} the {self.creature.species.name}"])
-        content = character_name + [' ' * config.max_text_line_length]
+        self._content = character_name + [' ' * config.max_text_line_length]
         justified_stats = utils.justify_ansi_dict(self._stats)
         justified_secondary_stats = utils.justify_ansi_dict(self._secondary_stats)
         stats_width = utils.raw_length(justified_stats[0]) + utils.raw_length(justified_secondary_stats[0])
@@ -64,16 +81,18 @@ class CharacterSheet(WindowContent):
                                             line_limit=config.max_text_line_length - stats_width - 2).split('\n')
         equalized_content = utils.equalize_rows([justified_stats, justified_secondary_stats, race_desc])
         stats_and_race = ['  '.join(rows) for rows in zip(*[c for c in equalized_content])]
-        content += stats_and_race
+        self._content += stats_and_race
         skills_title = utils.center_ansi_multiline(["Skills"])
-        content += [' ' * config.max_text_line_length] + skills_title + [' ' * config.max_text_line_length]
-        # TODO: Make skills paginated
+        self._content += [' ' * config.max_text_line_length] + skills_title + [' ' * config.max_text_line_length]
+        available_rows = config.max_text_lines_on_page - len(self._content)
+        self._skill_pages = utils.columnize(self._skills, rows=available_rows, fill_all_rows=True)
+
+    def data(self) -> str:
         if self._skills:
-            available_rows = config.max_text_lines_on_page - len(content)
-            content += utils.columnize(self._skills, rows=available_rows)[0]
+            final_content = self._content + self._skill_pages[self._current_page]
         else:
-            content += utils.center_ansi_multiline(["You don't have any discernible skills yet."])
-        return '\n'.join(content)
+            final_content = self._content + utils.center_ansi_multiline(["You don't have any discernible skills yet."])
+        return '\n'.join(final_content)
 
 
 class GameScene(WindowContent):

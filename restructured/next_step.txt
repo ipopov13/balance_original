@@ -2,8 +2,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
-    Organize character screen
-        Skill pagination (p/n)
     Stats improvement
     Skills
     Skills improvement

@@ -70,10 +70,11 @@ def center_ansi_multiline(content_data: list[str], max_width: int = config.max_t
     return centered_content
 
 
-def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_text_line_length) -> list[list[str]]:
+def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_text_line_length,
+              fill_all_rows: bool = False) -> list[list[str]]:
     dicts = [{k: data_dict[k] for k in list(data_dict.keys())[start:start + rows]}
              for start in range(0, len(data_dict), rows)]
-    strips = [justify_ansi_dict(d) for d in dicts]
+    strips = [justify_ansi_dict(d, rows_needed=rows if fill_all_rows else None) for d in dicts]
     pages = []
     while strips:
         remaining_width = max_width
@@ -87,7 +88,7 @@ def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_
     return combined_pages
 
 
-def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
+def justify_ansi_dict(data_dict: dict[str, int], rows_needed: int = None) -> list[str]:
     if not data_dict:
         return []
     max_key_len = max([raw_length(key) for key in data_dict])
@@ -98,6 +99,9 @@ def justify_ansi_dict(data_dict: dict[str, int]) -> list[str]:
         current_len = raw_length(key) + raw_length(str(value))
         padding = ' ' * (max_len - current_len)
         content.append(f"{key}{padding}{value}")
+    if rows_needed is not None and len(content) < rows_needed:
+        extra_rows = [' ' * max_len] * (rows_needed - len(content))
+        content += extra_rows
     return content
 
 
