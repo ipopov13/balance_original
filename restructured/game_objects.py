@@ -1172,11 +1172,14 @@ class Creature(GameObject):
     def get_drops(self):
         return [item for item in self.equipped_items.values() if item is not empty_space]
 
+    def melee_with(self, enemy: 'Creature') -> None:
+        self.energy -= self._combat_exhaustion
+        hit_effects = {config.normal_damage_effect: self.melee_damage}
+        enemy.apply_effects(hit_effects)
+
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
-            self.energy -= self._combat_exhaustion
-            hit_effects = {config.normal_damage_effect: self.melee_damage}
-            other_creature.apply_effects(hit_effects)
+            self.melee_with(other_creature)
 
     def _receive_normal_damage(self, damage: int) -> None:
         load_modifier = (self.max_load - self.load) / self.max_load
@@ -1235,6 +1238,14 @@ class Humanoid(Creature):
         if effective_items[config.main_hand_slot] is empty_space:
             effective_items[config.main_hand_slot] = self.species.fist_weapon
         return effective_items
+
+    def _get_main_hand(self) -> MainHand:
+        return self.effective_equipment[config.main_hand_slot]
+
+    def melee_with(self, enemy: 'Creature') -> None:
+        super().melee_with(enemy)
+        weapon = self._get_main_hand()
+        self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
 
     def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
