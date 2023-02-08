@@ -1299,6 +1299,10 @@ class Humanoid(Creature):
             if self.stats[stat_name] > config.max_stat_value:
                 self.stats[stat_name] = config.max_stat_value
 
+    def _improve(self, skill_name: str, stat_name: str) -> None:
+        self._increase_skill(skill_name)
+        self._increase_stat(stat_name)
+
     def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
         for slot in [config.main_hand_slot]:
             item = self.effective_equipment[slot]
@@ -1308,8 +1312,7 @@ class Humanoid(Creature):
                 current_skill = self._effective_skill(item.skill)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
-                self._increase_skill(item.skill)
-                self._increase_stat(item.work_stat)
+                self._improve(item.skill, item.work_stat)
                 result = tile.apply_skill(item.skill, strength=skill_strength)
                 return result
         else:
