@@ -1,12 +1,11 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves, gnomes, orcs, trolls
+    Done: dwarves, elves, gnomes, orcs, trolls
 Goblins: scavenging bonus
-    Stats improvement
-    Skills
-    Skills improvement
-    Adjust skill gains (too fast right now, maybe 1/4 or 1/5? or exponential?)
-    Add skill bonuses
+    Implement scavenging skill (bone piles, junk piles, monster dens)
+Humans: travelling bonus
+    Implement travelling skill
+Implement combat skills (armor, 1h swords, daggers)
 
 Usability
     Add the Highscore screen and cycle to the beginning when the character dies

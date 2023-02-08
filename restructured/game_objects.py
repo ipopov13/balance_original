@@ -488,8 +488,8 @@ class ThrowingKnife(ThrownWeapon):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
                          damage=1, ranged_damage=3, combat_exhaustion=1,
-                         ranged_weapon_type=config.thrown_weapon_type, max_distance=7,
-                         ranged_ammo_type=config.thrown_weapon_type, skill=config.throwing_knife_skill)
+                         ranged_weapon_type=config.throwing_knife_skill, max_distance=7,
+                         ranged_ammo_type=config.throwing_knife_skill, skill=config.throwing_knife_skill)
 
 
 class AnimalWeapon(Item):
@@ -751,7 +751,8 @@ goblin_race = HumanoidSpecies(name=config.Goblin,
                               icon='G',
                               color=config.chaos_color,
                               description=knowledge[config.Goblin][0],
-                              sort_key=6, base_effect_modifiers={config.max_load_modifier: 1.2})
+                              sort_key=6, base_effect_modifiers={config.max_load_modifier: 1.2,
+                                                                 config.scavenging_skill: 1.3})
 kraken_race = HumanoidSpecies(name=config.Kraken,
                               icon='K',
                               color=config.chaos_color,
@@ -906,7 +907,7 @@ class Creature(GameObject):
         return sum([item.weight for item in self.equipped_items.values()])
 
     @property
-    def damage(self) -> int:
+    def melee_damage(self) -> int:
         return random.randint(1, max(self.stats[config.Str] // 4, 1)) + self.weapon_damage()
 
     @property
@@ -1063,14 +1064,16 @@ class Creature(GameObject):
         return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
     def apply_effects(self, effects: dict[str, int]) -> None:
+        """
+        Personalized effect values are created through the _effect_modifiers dictionary that
+        depends on the race and the actions of the character.
+        """
         for name, effect in effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
     def _apply_effect(self, name: str, effect_size: int) -> None:
         """
-        Effects are treated in groups based on the name prefix. Personalized
-        effect values are created through the _effect_modifiers dictionary that
-        depends on the race and the actions of the character.
+        Effects are treated in groups based on the name prefix.
         """
         if effect_size <= 0:
             return
@@ -1151,7 +1154,7 @@ class Creature(GameObject):
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
             self.energy -= self._combat_exhaustion
-            hit_effects = {config.normal_damage_effect: self.damage}
+            hit_effects = {config.normal_damage_effect: self.melee_damage}
             other_creature.apply_effects(hit_effects)
 
     def _receive_normal_damage(self, damage: int) -> None:
@@ -1180,8 +1183,13 @@ class Creature(GameObject):
                 'Load': f'{self.load}/{self.max_load}'
                 }
 
+    def _effective_skill(self, skill_name: str) -> int:
+        raw_skill = self._skills.get(skill_name, 0)
+        modifier = self._effect_modifiers.get(skill_name, 1)
+        return int(raw_skill * modifier)
+
     def get_skills_data(self) -> dict[str, int]:
-        return {skill: skill_value for skill, skill_value in self._skills.items()}
+        return {skill: self._effective_skill(skill) for skill in self._skills}
 
 
 class Animal(Creature):
@@ -1253,7 +1261,7 @@ class Humanoid(Creature):
         weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
         effects = {config.normal_damage_effect: self._ranged_damage}
-        current_skill = self._skills.get(weapon.skill, 0)
+        current_skill = self._effective_skill(weapon.skill)
         self._increase_skill(weapon.skill)
         for slot, item in self.equipped_items.items():
             if item is ammo:
@@ -1268,7 +1276,7 @@ class Humanoid(Creature):
 
     def _increase_skill(self, skill_name: str) -> None:
         current_skill = self._skills.get(skill_name, 0)
-        if random.random() > current_skill / 100:
+        if not random.randint(0, 3) and random.random() > current_skill / 100:
             self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
 
     def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
@@ -1277,7 +1285,7 @@ class Humanoid(Creature):
             if isinstance(item, Tool) and item.skill in tile.applicable_skills:
                 if item.work_exhaustion > self.energy:
                     return [], "You are too tired to work!"
-                current_skill = self._skills.get(item.skill, 0)
+                current_skill = self._effective_skill(item.skill)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
                 self._increase_skill(item.skill)
@@ -1492,7 +1500,8 @@ class Game:
                     self._add_message("The target is beyond your weapon's range!")
                 else:
                     projectile, skill, effects = self.character.shoot()
-                    max_deviation = int((max_distance/5) * ((100-skill)/100) * ((max_distance-distance)/max_distance))
+                    max_deviation = int(
+                        (max_distance / 5) * ((100 - skill) / 100) * ((max_distance - distance) / max_distance))
                     max_deviation = max(max_deviation, 1)
                     x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
                     y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
@@ -2187,6 +2196,9 @@ terrain_transformations = {
     stilled_water: {config.mining_skill: {'new_terrain': water, 'number_of_drops': 10,
                                           'drop_types': [StilledWaterShard], 'drop_weights': [100],
                                           'message': 'The translucent column breaks apart!'}},
+    bones: {config.scavenging_skill: {'new_terrain': bones, 'number_of_drops': 3,
+                                      'drop_types': [None, JunkItem], 'drop_weights': [80, 20],
+                                      'message': 'You sift through the pile of bones.'}},
 }
 
 

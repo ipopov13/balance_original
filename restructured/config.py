@@ -90,7 +90,7 @@ boots_slot = 'Boots'
 animal_weapon_slot = 'AnimalWeapon'
 animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
-# Skills
+# Skills and prefixes for coloring
 skill_delimiter = "_"
 combat_prefix = "combat"
 crafting_prefix = "crafting"
@@ -102,11 +102,12 @@ skill_colors = {combat_prefix: console.fg.lightred,
                 extraction_prefix: console.fg.lightgreen,
                 social_prefix: console.fg.yellow,
                 utility_prefix: console.fg.purple}
-thrown_weapon_type = 'Thrown weapons'
 gun_skill = combat_prefix + skill_delimiter + "Guns"
 throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
-acorn_gun_type = 'acorn_gun_type'
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
+scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
+# Ranged weapon/ammo types
+acorn_gun_type = 'acorn_gun_type'
 
 random_creatures_respawn_period = 500
 creature_rarity_scale = [1, 1/2, 1/9]
