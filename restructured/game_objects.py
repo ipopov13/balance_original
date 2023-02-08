@@ -911,7 +911,7 @@ class Creature(GameObject):
 
     @property
     def perception_radius(self) -> int:
-        return self.stats[config.Per]
+        return int(self.stats[config.Per])
 
     @property
     def load(self) -> int:
@@ -919,7 +919,7 @@ class Creature(GameObject):
 
     @property
     def melee_damage(self) -> int:
-        return random.randint(1, max(self.stats[config.Str] // 4, 1)) + self.weapon_damage()
+        return random.randint(1, max(int(self.stats[config.Str]/4), 1)) + self.weapon_damage()
 
     @property
     def armor(self) -> int:
@@ -1025,7 +1025,7 @@ class Creature(GameObject):
 
     @property
     def max_energy(self) -> int:
-        return self.stats[config.End] * 10
+        return int(self.stats[config.End] * 10)
 
     @property
     def current_max_energy(self) -> int:
@@ -1176,7 +1176,7 @@ class Creature(GameObject):
             self.hp -= max(0, damage - self.armor)
 
     def rest(self):
-        self.energy += random.randint(1, max(self.stats[config.End] // 5, 1))
+        self.energy += random.randint(1, max(int(self.stats[config.End]/5), 1))
         if random.random() < (self.stats[config.End] / config.max_stat_value / 2) * (self.energy / self.max_energy):
             self.hp += 1
 
@@ -1265,8 +1265,8 @@ class Humanoid(Creature):
             weapon_damage = ranged_weapon.ranged_damage
         else:
             weapon_damage = ranged_weapon.ranged_damage + ammo.ranged_damage
-        stats = (self.stats[config.Dex] + self.stats[config.Per]) // 2
-        return random.randint(0, max(stats // 2, 1)) + weapon_damage
+        stats = int((self.stats[config.Dex] + self.stats[config.Per])/4)
+        return random.randint(0, max(stats, 1)) + weapon_damage
 
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
         weapon = self._get_ranged_weapon()

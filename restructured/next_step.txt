@@ -1,7 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
-Secure all stat usages (float to int)
 Make all skill improvements go through self._improve()
 Implement stat increases
 Humans: travelling bonus
