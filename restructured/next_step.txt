@@ -2,7 +2,8 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
 Implement combat skill improvements
-    Make melee skills matter for damage
+    Make effects dodge-able base on incoming skill
+    Current dodge chance is too high at max Dex and min load, make this use the evasion/light armor skill!
     Implement armor skills and make them matter
 Humans: travelling bonus
     Implement travelling skill

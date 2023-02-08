@@ -1250,14 +1250,14 @@ class Humanoid(Creature):
 
     @property
     def melee_damage(self) -> int:
-        weapon_damage = 0
-        for item in self.effective_equipment.values():
-            try:
-                weapon_damage += item.melee_damage
-            except AttributeError:
-                pass
-        weapon_damage = int(weapon_damage * self._exhaustion_modifier)
-        return random.randint(1, max(int(self.stats[config.Str]/4), 1)) + weapon_damage
+        weapon = self._get_main_hand()
+        skill = self._skills.get(weapon.melee_weapon_skill, 0)
+        min_damage = 1 if weapon.melee_damage > 0 else 0
+        weapon_damage = random.randint(min_damage,
+                                       max(min_damage, int(weapon.melee_damage * skill / config.max_skill_value)))
+        stat_damage = random.randint(1, max(1, int(self.stats[weapon.melee_weapon_stat]/4)))
+        final_damage = int((weapon_damage + stat_damage) * self._exhaustion_modifier)
+        return final_damage
 
     def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
