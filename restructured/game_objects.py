@@ -523,42 +523,42 @@ class SmallTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
                          description='The teeth of a small animal')
-        self.damage = 1
+        self.melee_damage = 1
 
 
 class MediumTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
                          description='The teeth of an animal')
-        self.damage = 3
+        self.melee_damage = 3
 
 
 class MediumClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='claws', weight=1, icon=',', color=console.fg.lightyellow,
                          description='The claws of an animal')
-        self.damage = 3
+        self.melee_damage = 3
 
 
 class LargeClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='large claws', weight=2, icon=',', color=console.fg.lightyellow,
                          description='The claws of a large animal')
-        self.damage = 5
+        self.melee_damage = 5
 
 
 class HugeClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='huge claws', weight=5, icon=',', color=console.fg.lightyellow,
                          description='The claws of a monstrous animal')
-        self.damage = 10
+        self.melee_damage = 10
 
 
 class LargeTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='large teeth', weight=2, icon=',', color=console.fg.lightyellow,
                          description='The teeth of a large animal')
-        self.damage = 5
+        self.melee_damage = 5
 
 
 class AnimalArmor(Item):
@@ -929,7 +929,7 @@ class Creature(GameObject):
 
     @property
     def melee_damage(self) -> int:
-        return random.randint(1, max(int(self.stats[config.Str]/4), 1)) + self.weapon_damage()
+        raise NotImplementedError(f"Class {self.__class__} must implement melee_damage!")
 
     @property
     def armor(self) -> int:
@@ -944,16 +944,6 @@ class Creature(GameObject):
             except AttributeError:
                 pass
         return int(armor * self._effect_modifiers.get(config.armor_modifier, 1))
-
-    def weapon_damage(self) -> int:
-        dmg = 0
-        for item in self.effective_equipment.values():
-            try:
-                dmg += item.damage
-            except AttributeError:
-                pass
-        dmg = int(dmg * self._exhaustion_modifier)
-        return dmg
 
     @property
     def _combat_exhaustion(self) -> int:
@@ -1220,6 +1210,17 @@ class Animal(Creature):
     def __init__(self, species: AnimalSpecies, **kwargs):
         super().__init__(species, **kwargs)
 
+    @property
+    def melee_damage(self) -> int:
+        weapon_damage = 0
+        for item in self.effective_equipment.values():
+            try:
+                weapon_damage += item.melee_damage
+            except AttributeError:
+                pass
+        weapon_damage = int(weapon_damage * self._exhaustion_modifier)
+        return random.randint(1, max(int(self.stats[config.Str] / 4), 1)) + weapon_damage
+
 
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
@@ -1246,6 +1247,17 @@ class Humanoid(Creature):
         super().melee_with(enemy)
         weapon = self._get_main_hand()
         self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
+
+    @property
+    def melee_damage(self) -> int:
+        weapon_damage = 0
+        for item in self.effective_equipment.values():
+            try:
+                weapon_damage += item.melee_damage
+            except AttributeError:
+                pass
+        weapon_damage = int(weapon_damage * self._exhaustion_modifier)
+        return random.randint(1, max(int(self.stats[config.Str]/4), 1)) + weapon_damage
 
     def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
