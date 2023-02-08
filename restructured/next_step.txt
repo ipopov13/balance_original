@@ -1,12 +1,9 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
-Clean up weapon/tool/ranged weapon skills and stats
-Make all skill improvements go through self._improve()
-Implement stat increases
+Implement combat skill improvements (armor, 1h swords, daggers)
 Humans: travelling bonus
     Implement travelling skill
-Implement combat skills (armor, 1h swords, daggers)
 
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!

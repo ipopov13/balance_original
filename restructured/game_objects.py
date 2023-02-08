@@ -432,9 +432,9 @@ class RangedWeapon(MainHand):
 
 
 class Tool(MainHand):
-    def __init__(self, skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
+    def __init__(self, work_skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
-        self.skill = skill
+        self.work_skill = work_skill
         self.work_exhaustion = work_exhaustion or self.weight
         self.work_stat = work_stat
 
@@ -452,7 +452,7 @@ class Fist(Tool):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, skill=config.scavenging_skill, work_stat=config.Per,
+                         work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
                          melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
 
 
@@ -460,7 +460,7 @@ class TrollFist(Tool):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, skill=config.mining_skill, work_stat=config.Str,
+                         work_exhaustion=2, work_skill=config.mining_skill, work_stat=config.Str,
                          melee_damage=1, melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
 
 
@@ -468,7 +468,7 @@ class Pickaxe(Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
-                         work_exhaustion=5, skill=config.mining_skill, work_stat=config.Str,
+                         work_exhaustion=5, work_skill=config.mining_skill, work_stat=config.Str,
                          melee_damage=1, melee_weapon_skill=config.twohanded_axes_skill,
                          combat_exhaustion=5)
 
@@ -1316,14 +1316,14 @@ class Humanoid(Creature):
     def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
         for slot in [config.main_hand_slot]:
             item = self.effective_equipment[slot]
-            if isinstance(item, Tool) and item.skill in tile.applicable_skills:
+            if isinstance(item, Tool) and item.work_skill in tile.applicable_skills:
                 if item.work_exhaustion > self.energy:
                     return [], "You are too tired to work!"
-                current_skill = self._effective_skill(item.skill)
+                current_skill = self._effective_skill(item.work_skill)
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
-                self._improve(item.skill, item.work_stat)
-                result = tile.apply_skill(item.skill, strength=skill_strength)
+                self._improve(item.work_skill, item.work_stat)
+                result = tile.apply_skill(item.work_skill, strength=skill_strength)
                 return result
         else:
             return [], "You don't have the right tools."
