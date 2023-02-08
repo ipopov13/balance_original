@@ -1,12 +1,13 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: dwarves, elves, gnomes, orcs, trolls
-Goblins: scavenging bonus
-    Implement scavenging skill (bone piles, junk piles, monster dens)
+    Done: dwarves, elves, gnomes, orcs, trolls, goblins
+Implement stat increases in the increase_skill method
 Humans: travelling bonus
     Implement travelling skill
 Implement combat skills (armor, 1h swords, daggers)
 
+Skills
+    Implement scavenging skill (monster dens, monster spawns)
 Usability
     Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
@@ -44,7 +45,7 @@ Crafting
      ingredients and waits to execute
     Use the MultiContainerScreen with the recipe list replacing the equipment one
 Combat
-    Bumping with a ranged weapon should not give weapon skill, unless the weapon
+    Bumping with a ranged weapon should only give weapon skill if the weapon
      has a melee skill tag and non-0 melee damage properties
     Attacked creatures should go into aggressive mode
     Creature disposition

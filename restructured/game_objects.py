@@ -171,6 +171,16 @@ class ItemStack(Item):
         return len(self.items) * self.items[0].weight
 
 
+class JunkItem(Item):
+    def __init__(self):
+        name = 'some junk'
+        weight = random.randint(1, 4)
+        icon = random.choice('*{}()[]|,')
+        description = 'an unidentifiable piece of junk'
+        color = random.choice([console.fg.purple, console.fg.red, console.fg.yellow, console.fg.blue])
+        super().__init__(name=name, weight=weight, icon=icon, description=description, color=color)
+
+
 empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
 
 
@@ -431,10 +441,11 @@ class AcornGun(RangedWeapon):
                          skill=config.gun_skill, max_distance=15)
 
 
-class Fist(MainHand):
+class Fist(Tool):
     def __init__(self):
-        super().__init__(name="Your fist", description="When you don't have a sword at hand.",
+        super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
+                         work_exhaustion=2, skill=config.scavenging_skill, work_stat=config.Per,
                          damage=0, combat_exhaustion=1)
 
 
@@ -2199,6 +2210,9 @@ terrain_transformations = {
     bones: {config.scavenging_skill: {'new_terrain': bones, 'number_of_drops': 3,
                                       'drop_types': [None, JunkItem], 'drop_weights': [80, 20],
                                       'message': 'You sift through the pile of bones.'}},
+    junk_pile: {config.scavenging_skill: {'new_terrain': junk_pile, 'number_of_drops': 3,
+                                          'drop_types': [None, JunkItem], 'drop_weights': [40, 60],
+                                          'message': 'You sift through the pile of bones.'}}
 }
 
 
@@ -2303,7 +2317,8 @@ class Tile(PhysicalContainer):
         for x in range(transformation_result['number_of_drops']):
             item_type = random.choices(transformation_result['drop_types'],
                                        transformation_result['drop_weights'])[0]
-            drops.append(item_type())
+            if item_type is not None:
+                drops.append(item_type())
         self._transformations = {}
         return drops, transformation_result['message']
 

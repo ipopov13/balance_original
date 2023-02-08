@@ -7,7 +7,13 @@ knowledge = {
         " pleasant experience.",
         "Some advice for beginner archers: always wield your bow in your strong hand. A"
         " knife thrower might be able to throw with both hands, but you are limited to"
-        " your main if you want to hit anything smaller than a mountain."
+        " your main if you want to hit anything smaller than a mountain.",
+        "Hunting animals or monsters might provide meat, but sometimes you can find yourself"
+        " in dire need of food while out of arrows or with a broken weapon. At that point it"
+        " is great to recognize the useful types of fruit and berries that a forest can provide"
+        " to a traveller. Simply sheath your weapon and go to work on the bushes and trees"
+        " around you. If you have nimble fingers (and you're not a troll), you will soon find"
+        " what you're looking for."
     ],
     config.Human: [
         'Explorers and treasure-seekers, the human race combines the primal need '
@@ -60,7 +66,11 @@ knowledge = {
         " This also makes them natural miners",
         "Due to the silicate diet and body structure, a troll needs only a handful of stones"
         " to feel sated. They do not have the need for both food and drink, unlike most"
-        " other races."
+        " other races.",
+        "The unique properties of troll hands make them unsuitable for more delicate activities."
+        " While they can hold a sword or plow without any trouble, their two-fingered hands do not"
+        " allow sorting through a pile of items, rendering a troll unable to scavenge or forage."
+        " Fortunately for the trolls, berries have never held a spot of significance in their culture."
     ],
     config.Imp: [
         "Fire burns in an imp's veins and dances over their fingers. To burn is to feel alive!"
@@ -71,7 +81,12 @@ knowledge = {
     ],
     config.Goblin: [
         "For a goblin, everything can come in handy one day. They are legendary pilferers and"
-        " pillagers, and leave no one, and nothing, behind."
+        " pillagers, and leave no one, and nothing, behind.",
+        "At first assumed to be a special type of carrion lizard, the green-skinned goblins have"
+        " a great propensity for finding 'useful' things in unlikely locations. No other race can"
+        " rival the skill and ingenuity of goblins when faced with a pile of junk and an empty stomach."
+        " Their skills extend naturally to scavenging in old battlefields and foraging for berries and"
+        " fruit."
     ],
     config.Dryad: [
         "The kin of plants, dryads are champions of the forest. They give trees their all and"
