@@ -406,19 +406,25 @@ class Boots(Item):
 
 
 class MainHand(Item):
-    def __init__(self, damage: int = 0, combat_exhaustion: int = None, **kwargs):
+    def __init__(self, melee_damage: int = 0, melee_weapon_skill: str = config.improvised_combat_skill,
+                 melee_weapon_stat: str = config.Str,
+                 combat_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
-        self.damage = damage
+        self.melee_damage = melee_damage
+        self.melee_weapon_skill = melee_weapon_skill
+        self.melee_weapon_stat = melee_weapon_stat
         self.combat_exhaustion = combat_exhaustion or self.weight
 
 
 class RangedWeapon(MainHand):
-    def __init__(self, ranged_weapon_type: str, skill: str, max_distance: int,
+    def __init__(self, ranged_weapon_type: str, ranged_weapon_skill: str,
+                 ranged_weapon_stat: str, max_distance: int,
                  ranged_damage: int, **kwargs):
         super().__init__(**kwargs)
         self.ranged_weapon_type = ranged_weapon_type
         self.max_distance = max_distance
-        self.skill = skill
+        self.ranged_weapon_skill = ranged_weapon_skill
+        self.ranged_weapon_stat = ranged_weapon_stat
         self.ranged_damage = ranged_damage
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
@@ -438,7 +444,8 @@ class AcornGun(RangedWeapon):
         super().__init__(name='acorn gun', weight=4, icon='{', color=color,
                          description='A gun of dryadic design.',
                          ranged_damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
-                         skill=config.gun_skill, max_distance=15)
+                         ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
+                         max_distance=15)
 
 
 class Fist(Tool):
@@ -446,7 +453,7 @@ class Fist(Tool):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, skill=config.scavenging_skill, work_stat=config.Per,
-                         damage=0, combat_exhaustion=1)
+                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
 
 
 class TrollFist(Tool):
@@ -454,7 +461,7 @@ class TrollFist(Tool):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, skill=config.mining_skill, work_stat=config.Str,
-                         damage=1, combat_exhaustion=1)
+                         melee_damage=1, melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
 
 
 class Pickaxe(Tool):
@@ -462,14 +469,15 @@ class Pickaxe(Tool):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
                          work_exhaustion=5, skill=config.mining_skill, work_stat=config.Str,
-                         damage=1, combat_exhaustion=5)
+                         melee_damage=1, melee_weapon_skill=config.twohanded_axes_skill,
+                         combat_exhaustion=5)
 
 
 class ShortSword(MainHand):
     def __init__(self, color=console.fg.default):
         super().__init__(name='short sword', weight=3, icon='|', color=color,
                          description='Made for stabbing.',
-                         damage=3, combat_exhaustion=3)
+                         melee_damage=3, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=3)
 
 
 class Offhand(Item):
@@ -498,9 +506,11 @@ class ThrowingKnife(ThrownWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
-                         damage=1, ranged_damage=3, combat_exhaustion=1,
+                         melee_damage=1, melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex,
+                         ranged_damage=3, combat_exhaustion=1,
                          ranged_weapon_type=config.throwing_knife_skill, max_distance=7,
-                         ranged_ammo_type=config.throwing_knife_skill, skill=config.throwing_knife_skill)
+                         ranged_ammo_type=config.throwing_knife_skill, ranged_weapon_skill=config.throwing_knife_skill,
+                         ranged_weapon_stat=config.Dex)
 
 
 class AnimalWeapon(Item):
@@ -1272,8 +1282,8 @@ class Humanoid(Creature):
         weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
         effects = {config.normal_damage_effect: self._ranged_damage}
-        current_skill = self._effective_skill(weapon.skill)
-        self._increase_skill(weapon.skill)
+        current_skill = self._effective_skill(weapon.ranged_weapon_skill)
+        self._improve(weapon.ranged_weapon_skill, weapon.ranged_weapon_stat)
         for slot, item in self.equipped_items.items():
             if item is ammo:
                 if isinstance(item, ItemStack):
