@@ -113,6 +113,7 @@ random_creatures_respawn_period = 500
 creature_rarity_scale = [1, 1/2, 1/9]
 
 max_stat_value = 20
+max_skill_value = 100
 
 if __name__ == '__main__':
     print(len(str(race_selection_title)))

@@ -1,12 +1,16 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
-Implement stat increases in the increase_skill method
+Make stats floats
+Secure all stat usages (float to int)
+Implement stat increases
 Humans: travelling bonus
     Implement travelling skill
 Implement combat skills (armor, 1h swords, daggers)
 
 Skills
+    Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
+        Some transforms are faster/easier than others
     Implement scavenging skill (monster dens, monster spawns)
 Usability
     Add the Highscore screen and cycle to the beginning when the character dies

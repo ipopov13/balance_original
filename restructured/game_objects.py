@@ -1287,8 +1287,11 @@ class Humanoid(Creature):
 
     def _increase_skill(self, skill_name: str) -> None:
         current_skill = self._skills.get(skill_name, 0)
-        if not random.randint(0, 3) and random.random() > current_skill / 100:
+        if not random.randint(0, 3) and random.random() > current_skill / config.max_skill_value:
             self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
+
+    def _increase_stat(self, stat_name: str) -> None:
+
 
     def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
         for slot in [config.main_hand_slot]:
@@ -1300,6 +1303,7 @@ class Humanoid(Creature):
                 skill_strength = int(self.stats[item.work_stat] + current_skill / 10)
                 self.energy -= item.work_exhaustion
                 self._increase_skill(item.skill)
+                self._increase_stat(item.work_stat)
                 result = tile.apply_skill(item.skill, strength=skill_strength)
                 return result
         else:
@@ -1512,7 +1516,9 @@ class Game:
                 else:
                     projectile, skill, effects = self.character.shoot()
                     max_deviation = int(
-                        (max_distance / 5) * ((100 - skill) / 100) * ((max_distance - distance) / max_distance))
+                        (max_distance / 5)
+                        * ((config.max_skill_value - skill) / config.max_skill_value)
+                        * ((max_distance - distance) / max_distance))
                     max_deviation = max(max_deviation, 1)
                     x_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
                     y_deviation = random.randint(0, max_deviation) * random.choice([-1, 1])
