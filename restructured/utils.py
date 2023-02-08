@@ -1,4 +1,6 @@
 import re
+from typing import Union
+
 import console
 import config
 
@@ -88,7 +90,7 @@ def columnize(data_dict: dict[str, int], rows: int, max_width: int = config.max_
     return combined_pages
 
 
-def justify_ansi_dict(data_dict: dict[str, int], rows_needed: int = None) -> list[str]:
+def justify_ansi_dict(data_dict: dict[str, Union[int, str]], rows_needed: int = None) -> list[str]:
     if not data_dict:
         return []
     max_key_len = max([raw_length(key) for key in data_dict])

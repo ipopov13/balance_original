@@ -1184,8 +1184,8 @@ class Creature(GameObject):
     def is_dead(self) -> bool:
         return self.hp <= 0
 
-    def get_stats_data(self) -> dict[str, int]:
-        return {stat: value for stat, value in self.stats.items()}
+    def get_stats_data(self) -> dict[str, str]:
+        return {stat: f'{value:.2f}' for stat, value in self.stats.items()}
 
     def get_secondary_stats_data(self) -> dict[str, str]:
         return {'Hitpoints': f'{self.hp}/{self.max_hp}',
@@ -1289,9 +1289,15 @@ class Humanoid(Creature):
         current_skill = self._skills.get(skill_name, 0)
         if not random.randint(0, 3) and random.random() > current_skill / config.max_skill_value:
             self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
+            if self._skills[skill_name] > config.max_skill_value:
+                self._skills[skill_name] = config.max_skill_value
 
     def _increase_stat(self, stat_name: str) -> None:
-
+        current_stat = self.stats[stat_name]
+        if not random.randint(0, 3) and current_stat < config.max_stat_value:
+            self.stats[stat_name] += 0.01
+            if self.stats[stat_name] > config.max_stat_value:
+                self.stats[stat_name] = config.max_stat_value
 
     def work_on(self, tile: 'Tile') -> tuple[list[Item], str]:
         for slot in [config.main_hand_slot]:

@@ -38,7 +38,7 @@ class CharacterSheet(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)
         self.creature = self.game_object.character
-        self._stats: dict[str, int] = self.creature.get_stats_data()
+        self._stats: dict[str, str] = self.creature.get_stats_data()
         self._secondary_stats: dict[str, int] = self.creature.get_secondary_stats_data()
         self._skills: dict[str, int] = self._format_creature_skills()
         self._content: list[str] = []
