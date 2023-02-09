@@ -1,12 +1,13 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: dwarves, elves, gnomes, orcs, trolls, goblins
+    Done: elves, gnomes, orcs, trolls, goblins
 Implement combat skills
-    Implement armor skills and make them matter
-        Armor skill lowers the exhaustion from armor items from 100%@0 to 25%@100
+    Add shields
+    Add shield skill
     Shield skill in the same way as armors (both armor and exhaustion)
-    Make the dwarven armor bonus a heavy armor and shield skills bonus
     Two-handed weapons equipping? Or just make them so heavy it doesn't matter?
+Dwarves: armored force
+    Add a heavy armor and shield skills bonus
 Humans: travelling bonus
     Implement travelling skill
 
@@ -18,6 +19,7 @@ Usability
     Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
 Interface
+    Visual bug for the hunger/thirst in energy bar when the max energy is 51 (empty space appears)
     Hide the blinking cursor on some screens
     Rename "pick up" to "take"
     Make the help overlay have dynamic top_left (must become a property in Window)

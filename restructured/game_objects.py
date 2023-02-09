@@ -738,7 +738,7 @@ dwarf_race = HumanoidSpecies(name=config.Dwarf,
                              color=config.order_color,
                              description=knowledge[config.Dwarf][0],
                              sort_key=1,
-                             base_effect_modifiers={config.drunk_effect: -20})
+                             base_effect_modifiers={config.drunk_effect: -20, config.heavy_armor_skill: 1.5})
 gnome_race = HumanoidSpecies(name=config.Gnome,
                              icon='G',
                              color=config.order_color,
@@ -1266,6 +1266,18 @@ class Humanoid(Creature):
             effective_items[config.main_hand_slot] = self.species.fist_weapon
         return effective_items
 
+    @property
+    def _combat_exhaustion(self) -> int:
+        exhaustion = 0
+        for item in self.effective_equipment.values():
+            if hasattr(item, 'combat_exhaustion'):
+                if isinstance(item, Armor):
+                    skill_mod = self._effective_skill(item.armor_skill) / config.max_skill_value
+                    exhaustion += item.combat_exhaustion * (1 - 0.5 * skill_mod)
+                else:
+                    exhaustion += item.combat_exhaustion
+        return int(exhaustion)
+
     def _get_main_hand(self) -> MainHand:
         return self.effective_equipment[config.main_hand_slot]
 
@@ -1297,11 +1309,9 @@ class Humanoid(Creature):
     def melee_damage(self) -> int:
         weapon = self._get_main_hand()
         skill = self._effective_skill(weapon.melee_weapon_skill) / config.max_skill_value
-        effective_weapon_damage = int(weapon.melee_damage * (0.75 + 0.75 * skill))
-        weapon_damage = random.randint(1, max(1, effective_weapon_damage))
-        stat_damage = random.randint(1, max(1, int(self.stats[weapon.melee_weapon_stat]/4)))
-        final_damage = int((weapon_damage + stat_damage) * self._exhaustion_modifier)
-        return final_damage
+        effective_weapon_damage = (weapon.melee_damage * (0.75 + 0.75 * skill)
+                                   + self.stats[weapon.melee_weapon_stat]/4) * self._exhaustion_modifier
+        return int(effective_weapon_damage)
 
     def _receive_normal_damage(self, damage: int) -> None:
         super()._receive_normal_damage(damage)
