@@ -3,12 +3,9 @@ Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
 Implement combat skills
     Implement armor skills and make them matter
-        Armor skill improves the amount of damage resisted, 50%@0 to 100%@100 for Humanoids
         Armor skill lowers the exhaustion from armor items from 100%@0 to 25%@100
     Shield skill in the same way as armors (both armor and exhaustion)
     Make the dwarven armor bonus a heavy armor and shield skills bonus
-    Animal armor is always applied uniformly (so must be lower in comparison, only bosses should be
-     plate armor equivalent)
     Two-handed weapons equipping? Or just make them so heavy it doesn't matter?
 Humans: travelling bonus
     Implement travelling skill

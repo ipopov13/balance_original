@@ -76,7 +76,6 @@ sick_effect = 'Sick'
 drunk_effect = 'Drunk'
 non_rest_energy_regen_effect = 'non_rest_energy_regen'
 non_rest_hp_regen_effect = 'non_rest_hp_regen_effect'
-armor_modifier = 'armor_modifier'
 travel_energy_loss_modifier = 'travel_energy_loss_modifier'
 max_mana_modifier = 'max_mana_modifier'
 max_hp_modifier = 'max_hp_modifier'
@@ -112,6 +111,8 @@ twohanded_axes_skill = combat_prefix + skill_delimiter + "2h axes"
 unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
 improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
 throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
+light_armor_skill = combat_prefix + skill_delimiter + "Light armor"
+heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
 # Ranged weapon/ammo types

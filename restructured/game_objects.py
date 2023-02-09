@@ -363,31 +363,34 @@ class Helmet(Item):
 
 
 class Armor(Item):
-    pass
+    def __init__(self, armor: int, armor_skill: str, armor_stat: str, combat_exhaustion: int, **kwargs):
+        super().__init__(**kwargs)
+        self.armor = armor
+        self.armor_skill = armor_skill
+        self.armor_stat = armor_stat
+        self.combat_exhaustion = combat_exhaustion
 
 
 class HideArmor(Armor):
     def __init__(self):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
-                         description='Armor made from light hide')
-        self.armor = 1
-        self.combat_exhaustion = 1
+                         description='Armor made from light hide',
+                         armor=1, armor_skill=config.light_armor_skill, armor_stat=config.Dex,
+                         combat_exhaustion=1)
 
 
 class LeatherArmor(Armor):
     def __init__(self):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
-                         description='Armor made from leather')
-        self.armor = 3
-        self.combat_exhaustion = 1
+                         description='Armor made from leather',
+                         armor=3, armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
 
 
 class PlateArmor(Armor):
     def __init__(self):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
-                         description='Armor made from metal plates')
-        self.armor = 5
-        self.combat_exhaustion = 5
+                         description='Armor made from metal plates',
+                         armor=7, armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=5)
 
 
 class Back(PhysicalContainer):
@@ -514,90 +517,82 @@ class ThrowingKnife(ThrownWeapon):
 
 
 class AnimalWeapon(Item):
-    def __init__(self, **kwargs):
+    def __init__(self, melee_damage: int, **kwargs):
         super().__init__(**kwargs)
         self.combat_exhaustion = 1
+        self.melee_damage = melee_damage
 
 
 class SmallTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
-                         description='The teeth of a small animal')
-        self.melee_damage = 1
+                         description='The teeth of a small animal', melee_damage=1)
 
 
 class MediumTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='teeth', weight=1, icon=',', color=console.fg.default,
-                         description='The teeth of an animal')
-        self.melee_damage = 3
+                         description='The teeth of an animal', melee_damage=3)
 
 
 class MediumClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='claws', weight=1, icon=',', color=console.fg.lightyellow,
-                         description='The claws of an animal')
-        self.melee_damage = 3
+                         description='The claws of an animal', melee_damage=3)
 
 
 class LargeClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='large claws', weight=2, icon=',', color=console.fg.lightyellow,
-                         description='The claws of a large animal')
-        self.melee_damage = 5
+                         description='The claws of a large animal', melee_damage=5)
 
 
 class HugeClaws(AnimalWeapon):
     def __init__(self):
         super().__init__(name='huge claws', weight=5, icon=',', color=console.fg.lightyellow,
-                         description='The claws of a monstrous animal')
-        self.melee_damage = 10
+                         description='The claws of a monstrous animal', melee_damage=10)
 
 
 class LargeTeeth(AnimalWeapon):
     def __init__(self):
         super().__init__(name='large teeth', weight=2, icon=',', color=console.fg.lightyellow,
-                         description='The teeth of a large animal')
-        self.melee_damage = 5
+                         description='The teeth of a large animal', melee_damage=5)
 
 
 class AnimalArmor(Item):
-    pass
+    def __init__(self, armor: int, **kwargs):
+        super().__init__(**kwargs)
+        self.armor = armor
 
 
 class LightHide(AnimalArmor):
     def __init__(self):
         super().__init__(name='light hide', weight=5, icon='(', color=config.brown_fg_color,
-                         description='The light hide of an animal')
-        self.armor = 1
+                         description='The light hide of an animal', armor=1)
 
 
 class MediumHide(AnimalArmor):
     def __init__(self):
         super().__init__(name='medium hide', weight=10, icon='(', color=config.brown_fg_color,
-                         description='The thick hide of an animal')
-        self.armor = 3
+                         description='The thick hide of an animal', armor=2)
 
 
 class MediumScales(AnimalArmor):
     def __init__(self):
         super().__init__(name='medium scaly hide', weight=10, icon='(', color=console.fg.lightgreen,
-                         description='The scaly hide of a lizard')
-        self.armor = 3
+                         description='The scaly hide of a lizard', armor=2)
 
 
 class HeavyScales(AnimalArmor):
     def __init__(self):
         super().__init__(name='heavy scaled hide', weight=20, icon='(', color=console.fg.lightgreen,
-                         description='The scaly hide of a monstrous lizard')
-        self.armor = 8
+                         description='The scaly hide of a monstrous lizard', armor=5)
 
 
 class Feathers(AnimalArmor):
     def __init__(self):
         super().__init__(name='feathers', weight=3, icon=',', color=console.fg.lightblack,
-                         description='The feathers of a bird')
-        self.armor = 1
+                         description='The feathers of a bird', armor=1)
 
 
 class RawMeat(Item):
@@ -743,7 +738,7 @@ dwarf_race = HumanoidSpecies(name=config.Dwarf,
                              color=config.order_color,
                              description=knowledge[config.Dwarf][0],
                              sort_key=1,
-                             base_effect_modifiers={config.drunk_effect: -20, config.armor_modifier: 1.2})
+                             base_effect_modifiers={config.drunk_effect: -20})
 gnome_race = HumanoidSpecies(name=config.Gnome,
                              icon='G',
                              color=config.order_color,
@@ -933,8 +928,13 @@ class Creature(GameObject):
 
     @property
     def armor(self) -> int:
-        return random.randint(int(self.equipment_armor() * self.stats[config.Dex] / config.max_stat_value),
-                              self.equipment_armor())
+        skill = self._armor_skill / config.max_skill_value
+        effective_armor = int(self.equipment_armor() * (0.5 + 0.5 * skill))
+        return random.randint(0, effective_armor)
+
+    @property
+    def _armor_skill(self) -> int:
+        raise NotImplementedError(f"Class {self.__class__} must implement _armor_skill!")
 
     def equipment_armor(self) -> int:
         armor = 0
@@ -943,7 +943,7 @@ class Creature(GameObject):
                 armor += item.armor
             except AttributeError:
                 pass
-        return int(armor * self._effect_modifiers.get(config.armor_modifier, 1))
+        return armor
 
     @property
     def _combat_exhaustion(self) -> int:
@@ -1243,6 +1243,10 @@ class Animal(Creature):
     def _evasion_ability(self) -> float:
         return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
+    @property
+    def _armor_skill(self) -> int:
+        return 100
+
 
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
@@ -1265,6 +1269,9 @@ class Humanoid(Creature):
     def _get_main_hand(self) -> MainHand:
         return self.effective_equipment[config.main_hand_slot]
 
+    def _get_armor(self) -> Armor:
+        return self.effective_equipment[config.armor_slot]
+
     def melee_with(self, enemy: 'Creature') -> None:
         super().melee_with(enemy)
         weapon = self._get_main_hand()
@@ -1276,6 +1283,11 @@ class Humanoid(Creature):
         return self._effective_skill(weapon.melee_weapon_skill)
 
     @property
+    def _armor_skill(self) -> int:
+        armor = self._get_armor()
+        return self._effective_skill(armor.armor_skill)
+
+    @property
     def _evasion_ability(self) -> float:
         load_modifier = (self.max_load - self.load) / self.max_load
         dex_modifier = self.stats[config.Dex] / config.max_stat_value
@@ -1284,11 +1296,17 @@ class Humanoid(Creature):
     @property
     def melee_damage(self) -> int:
         weapon = self._get_main_hand()
-        skill = self._effective_skill(weapon.melee_weapon_skill)
-        weapon_damage = random.randint(1, max(1, int(weapon.melee_damage * skill / config.max_skill_value)))
+        skill = self._effective_skill(weapon.melee_weapon_skill) / config.max_skill_value
+        effective_weapon_damage = int(weapon.melee_damage * (0.75 + 0.75 * skill))
+        weapon_damage = random.randint(1, max(1, effective_weapon_damage))
         stat_damage = random.randint(1, max(1, int(self.stats[weapon.melee_weapon_stat]/4)))
         final_damage = int((weapon_damage + stat_damage) * self._exhaustion_modifier)
         return final_damage
+
+    def _receive_normal_damage(self, damage: int) -> None:
+        super()._receive_normal_damage(damage)
+        armor = self._get_armor()
+        self._improve(armor.armor_skill, armor.armor_stat)
 
     def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
