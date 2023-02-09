@@ -2,8 +2,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: dwarves, elves, gnomes, orcs, trolls, goblins
 Implement combat skills
-    Make effects dodge-able base on incoming skill versus the creature's dodge chance (Dex+load for Humanoids,
-     Dex for animals, scaled from 0% to 80%)
     Implement armor skills and make them matter
         Armor skill improves the amount of damage resisted, 50%@0 to 100%@100 for Humanoids
         Armor skill lowers the exhaustion from armor items from 100%@0 to 25%@100

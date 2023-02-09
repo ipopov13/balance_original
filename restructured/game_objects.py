@@ -1074,11 +1074,22 @@ class Creature(GameObject):
     def can_consume(self, item: Item) -> bool:
         return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
+    @property
+    def _evasion_ability(self) -> float:
+        raise NotImplementedError(f"Class {self.__class__} must implement _evasion_ability!")
+
     def apply_effects(self, effects: dict[str, int]) -> None:
         """
         Personalized effect values are created through the _effect_modifiers dictionary that
         depends on the race and the actions of the character.
         """
+        if config.dodge_difficulty in effects:
+            dodge = self._evasion_ability
+            difficulty = effects[config.dodge_difficulty]
+            if random.random() < dodge / (dodge + difficulty) * config.max_dodge_chance:
+                return
+            else:
+                effects.pop(config.dodge_difficulty)
         for name, effect in effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
@@ -1164,7 +1175,7 @@ class Creature(GameObject):
 
     def melee_with(self, enemy: 'Creature') -> None:
         self.energy -= self._combat_exhaustion
-        hit_effects = {config.dodge_chance: self._melee_skill,
+        hit_effects = {config.dodge_difficulty: self._melee_skill,
                        config.normal_damage_effect: self.melee_damage}
         enemy.apply_effects(hit_effects)
 
@@ -1177,11 +1188,7 @@ class Creature(GameObject):
             self.melee_with(other_creature)
 
     def _receive_normal_damage(self, damage: int) -> None:
-        load_modifier = (self.max_load - self.load) / self.max_load
-        dex_modifier = self.stats[config.Dex] / config.max_stat_value
-        dodge_chance = dex_modifier * load_modifier * self._exhaustion_modifier
-        if random.random() > dodge_chance:
-            self.hp -= max(0, damage - self.armor)
+        self.hp -= max(0, damage - self.armor)
 
     def rest(self):
         self.energy += random.randint(1, max(int(self.stats[config.End]/5), 1))
@@ -1228,7 +1235,13 @@ class Animal(Creature):
 
     @property
     def _melee_skill(self) -> int:
-        return 100
+        return int((self.stats[config.Dex] / config.max_stat_value)
+                   * config.max_skill_value
+                   * self._exhaustion_modifier)
+
+    @property
+    def _evasion_ability(self) -> float:
+        return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
 
 class Humanoid(Creature):
@@ -1263,12 +1276,16 @@ class Humanoid(Creature):
         return self._effective_skill(weapon.melee_weapon_skill)
 
     @property
+    def _evasion_ability(self) -> float:
+        load_modifier = (self.max_load - self.load) / self.max_load
+        dex_modifier = self.stats[config.Dex] / config.max_stat_value
+        return dex_modifier * load_modifier * self._exhaustion_modifier
+
+    @property
     def melee_damage(self) -> int:
         weapon = self._get_main_hand()
         skill = self._effective_skill(weapon.melee_weapon_skill)
-        min_damage = 1 if weapon.melee_damage > 0 else 0
-        weapon_damage = random.randint(min_damage,
-                                       max(min_damage, int(weapon.melee_damage * skill / config.max_skill_value)))
+        weapon_damage = random.randint(1, max(1, int(weapon.melee_damage * skill / config.max_skill_value)))
         stat_damage = random.randint(1, max(1, int(self.stats[weapon.melee_weapon_stat]/4)))
         final_damage = int((weapon_damage + stat_damage) * self._exhaustion_modifier)
         return final_damage
