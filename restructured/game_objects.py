@@ -1164,8 +1164,13 @@ class Creature(GameObject):
 
     def melee_with(self, enemy: 'Creature') -> None:
         self.energy -= self._combat_exhaustion
-        hit_effects = {config.normal_damage_effect: self.melee_damage}
+        hit_effects = {config.dodge_chance: self._melee_skill,
+                       config.normal_damage_effect: self.melee_damage}
         enemy.apply_effects(hit_effects)
+
+    @property
+    def _melee_skill(self) -> int:
+        raise NotImplementedError(f"Class {self.__class__} must implement _melee_skill!")
 
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
@@ -1221,6 +1226,10 @@ class Animal(Creature):
         weapon_damage = int(weapon_damage * self._exhaustion_modifier)
         return random.randint(1, max(int(self.stats[config.Str] / 4), 1)) + weapon_damage
 
+    @property
+    def _melee_skill(self) -> int:
+        return 100
+
 
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
@@ -1249,9 +1258,14 @@ class Humanoid(Creature):
         self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
 
     @property
+    def _melee_skill(self) -> int:
+        weapon = self._get_main_hand()
+        return self._effective_skill(weapon.melee_weapon_skill)
+
+    @property
     def melee_damage(self) -> int:
         weapon = self._get_main_hand()
-        skill = self._skills.get(weapon.melee_weapon_skill, 0)
+        skill = self._effective_skill(weapon.melee_weapon_skill)
         min_damage = 1 if weapon.melee_damage > 0 else 0
         weapon_damage = random.randint(min_damage,
                                        max(min_damage, int(weapon.melee_damage * skill / config.max_skill_value)))
@@ -1321,7 +1335,7 @@ class Humanoid(Creature):
     def _increase_skill(self, skill_name: str) -> None:
         current_skill = self._skills.get(skill_name, 0)
         if not random.randint(0, 3) and random.random() > current_skill / config.max_skill_value:
-            self._skills[skill_name] = self._skills.get(skill_name, 0) + 1
+            self._skills[skill_name] = current_skill + 1
             if self._skills[skill_name] > config.max_skill_value:
                 self._skills[skill_name] = config.max_skill_value
 

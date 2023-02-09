@@ -68,6 +68,7 @@ thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 thirst_rock_effect = thirst_effect_prefix + 'rock'
 normal_damage_effect = 'normal_damage_effect'
+dodge_chance = 'dodge_chance'
 # Active character effects
 sick_effect = 'Sick'
 drunk_effect = 'Drunk'
