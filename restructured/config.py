@@ -113,6 +113,7 @@ improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
 throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
 light_armor_skill = combat_prefix + skill_delimiter + "Light armor"
 heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
+shield_skill = combat_prefix + skill_delimiter + "Shields"
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
 # Ranged weapon/ammo types

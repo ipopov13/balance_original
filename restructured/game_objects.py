@@ -487,6 +487,20 @@ class Offhand(Item):
     pass
 
 
+class Shield(Offhand):
+    def __init__(self, evasion_modifier: float, combat_exhaustion: int, **kwargs):
+        super().__init__(**kwargs)
+        self.combat_exhaustion = combat_exhaustion
+        self.evasion_modifier = evasion_modifier
+
+
+class Buckler(Shield):
+    def __init__(self):
+        super().__init__(name='buckler', weight=3, icon=']', color=console.fg.lightblack,
+                         description='A small, round shield made of iron.',
+                         evasion_modifier=1.3, combat_exhaustion=1)
+
+
 class RangedAmmo(Offhand):
     def __init__(self, ranged_ammo_type: str, ranged_damage: int = 0, **kwargs):
         super().__init__(**kwargs)
@@ -1495,7 +1509,7 @@ class Game:
 
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(ThrowingKnife(), character_coords)
+        self._current_location.put_item(Buckler(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
         for i in range(10):
             self._current_location.put_item(Acorn(), character_coords)

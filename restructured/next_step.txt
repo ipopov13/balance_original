@@ -2,9 +2,8 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: elves, gnomes, orcs, trolls, goblins
 Implement combat skills
-    Add shields
-    Add shield skill
-    Shield skill in the same way as armors (both armor and exhaustion)
+    Shield skill increases the chance to apply an evasion modifier to the ability of the Humanoid
+    The actual modifier is defined by the shield
     Two-handed weapons equipping? Or just make them so heavy it doesn't matter?
 Dwarves: armored force
     Add a heavy armor and shield skills bonus
