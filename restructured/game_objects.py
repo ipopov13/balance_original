@@ -363,11 +363,13 @@ class Helmet(Item):
 
 
 class Armor(Item):
-    def __init__(self, armor: int, armor_skill: str, armor_stat: str, combat_exhaustion: int, **kwargs):
+    def __init__(self, armor: int, armor_skill: str, armor_stat: str,
+                 evasion_modifier: float, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
         self.armor = armor
         self.armor_skill = armor_skill
         self.armor_stat = armor_stat
+        self.evasion_modifier = evasion_modifier
         self.combat_exhaustion = combat_exhaustion
 
 
@@ -376,7 +378,7 @@ class Clothes(Armor):
         super().__init__(name='simple clothes', weight=0, icon='.', color=console.fg.lightblack,
                          description="Commoner's shirt and pants.",
                          armor=0, armor_skill=config.evasion_skill, armor_stat=config.Dex,
-                         combat_exhaustion=0)
+                         evasion_modifier=1, combat_exhaustion=0)
 
 
 class HideArmor(Armor):
@@ -384,21 +386,23 @@ class HideArmor(Armor):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
                          description='Armor made from light hide',
                          armor=1, armor_skill=config.light_armor_skill, armor_stat=config.Dex,
-                         combat_exhaustion=1)
+                         evasion_modifier=0.9, combat_exhaustion=1)
 
 
 class LeatherArmor(Armor):
     def __init__(self):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
                          description='Armor made from leather',
-                         armor=3, armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
+                         armor=3, armor_skill=config.light_armor_skill, armor_stat=config.Dex,
+                         evasion_modifier=0.85, combat_exhaustion=1)
 
 
 class PlateArmor(Armor):
     def __init__(self):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates',
-                         armor=7, armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=5)
+                         armor=7, armor_skill=config.heavy_armor_skill, armor_stat=config.End,
+                         evasion_modifier=0.5, combat_exhaustion=5)
 
 
 class Back(PhysicalContainer):
@@ -952,7 +956,7 @@ class Creature(GameObject):
     def armor(self) -> int:
         skill = self._armor_skill / config.max_skill_value
         effective_armor = int(self.equipment_armor() * (0.5 + 0.5 * skill))
-        return random.randint(0, effective_armor)
+        return effective_armor
 
     @property
     def _armor_skill(self) -> int:
@@ -1252,8 +1256,8 @@ class Animal(Creature):
                 weapon_damage += item.melee_damage
             except AttributeError:
                 pass
-        weapon_damage = int(weapon_damage * self._exhaustion_modifier)
-        return random.randint(1, max(int(self.stats[config.Str] / 4), 1)) + weapon_damage
+        stat_damage = int(random.randint(1, max(int(self.stats[config.Str] / 4), 1)) * self._exhaustion_modifier)
+        return stat_damage + weapon_damage
 
     @property
     def _melee_skill(self) -> int:
@@ -1267,7 +1271,7 @@ class Animal(Creature):
 
     @property
     def _armor_skill(self) -> int:
-        return 100
+        return int(self._evasion_ability)
 
 
 class Humanoid(Creature):
@@ -1322,8 +1326,6 @@ class Humanoid(Creature):
     @property
     def _armor_skill(self) -> int:
         armor = self._get_armor()
-        if armor is empty_space:
-            return 100
         return self._effective_skill(armor.armor_skill)
 
     @property
@@ -1337,7 +1339,7 @@ class Humanoid(Creature):
         weapon = self._get_main_hand()
         skill = self._effective_skill(weapon.melee_weapon_skill) / config.max_skill_value
         effective_weapon_damage = (weapon.melee_damage * (0.75 + 0.75 * skill)
-                                   + self.stats[weapon.melee_weapon_stat]/4) * self._exhaustion_modifier
+                                   + self.stats[weapon.melee_weapon_stat]/4 * self._exhaustion_modifier)
         return int(effective_weapon_damage)
 
     def _receive_normal_damage(self, damage: int) -> None:

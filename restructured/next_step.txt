@@ -3,9 +3,7 @@ Adding the racial passives and documenting them in knowledge
     Done: elves, gnomes, orcs, trolls, goblins
 Implement combat skills
     Armor is a balance between evasion (100% of skill at no armor/basic clothes) and resistance
-        Armor gives resistance, but has an evasion mod < 1
-        Armor skill gives a flat armor increase as before
-        No randomness
+        Apply evasion mod
     Shield skill increases the evasion modifier applied to the skill of the Humanoid
     The max modifier is defined by the shield
     Two-handed weapons equipping? Or just make them so heavy it doesn't matter?
