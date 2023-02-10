@@ -502,6 +502,8 @@ class Offhand(Item):
 class Shield(Offhand):
     def __init__(self, evasion_modifier: float, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
+        self.shield_skill = config.shield_skill
+        self.shield_stat = config.End
         self.combat_exhaustion = combat_exhaustion
         self.evasion_modifier = evasion_modifier
 
@@ -1104,6 +1106,9 @@ class Creature(GameObject):
     def _evasion_ability(self) -> float:
         raise NotImplementedError(f"Class {self.__class__} must implement _evasion_ability!")
 
+    def _effects_at_dodge_attempt(self) -> None:
+        raise NotImplementedError(f"Class {self.__class__} must implement _effects_at_dodge_attempt!")
+
     def apply_effects(self, effects: dict[str, int]) -> None:
         """
         Personalized effect values are created through the _effect_modifiers dictionary that
@@ -1112,6 +1117,7 @@ class Creature(GameObject):
         if config.dodge_difficulty in effects:
             dodge = self._evasion_ability
             difficulty = effects[config.dodge_difficulty]
+            self._effects_at_dodge_attempt()
             if random.random() < dodge / (dodge + difficulty) * config.max_dodge_chance:
                 return
             else:
@@ -1269,9 +1275,13 @@ class Animal(Creature):
     def _evasion_ability(self) -> float:
         return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
+    @staticmethod
+    def _effects_at_dodge_attempt() -> None:
+        return
+
     @property
     def _armor_skill(self) -> int:
-        return int(self._evasion_ability)
+        return 100
 
 
 class Humanoid(Creature):
@@ -1313,6 +1323,12 @@ class Humanoid(Creature):
     def _get_armor(self) -> Armor:
         return self.effective_equipment[config.armor_slot]
 
+    def _get_shield(self) -> Optional[Shield]:
+        offhand = self.effective_equipment[config.offhand_slot]
+        if isinstance(offhand, Shield):
+            return offhand
+        return
+
     def melee_with(self, enemy: 'Creature') -> None:
         super().melee_with(enemy)
         weapon = self._get_main_hand()
@@ -1330,9 +1346,14 @@ class Humanoid(Creature):
 
     @property
     def _evasion_ability(self) -> float:
-        load_modifier = (self.max_load - self.load) / self.max_load
-        dex_modifier = self.stats[config.Dex] / config.max_stat_value
-        return dex_modifier * load_modifier * self._exhaustion_modifier
+        evasion_skill = self._effective_skill(config.evasion_skill)
+        for item in self.effective_equipment.values():
+            if hasattr(item, 'evasion_modifier'):
+                evasion_skill *= item.evasion_modifier
+        return evasion_skill
+
+    def _effects_at_dodge_attempt(self) -> None:
+        self._improve(config.evasion_skill, config.Dex)
 
     @property
     def melee_damage(self) -> int:
@@ -1346,6 +1367,9 @@ class Humanoid(Creature):
         super()._receive_normal_damage(damage)
         armor = self._get_armor()
         self._improve(armor.armor_skill, armor.armor_stat)
+        shield = self._get_shield()
+        if shield is not None:
+            self._improve(shield.shield_skill, shield.shield_stat)
 
     def _get_ranged_weapon(self) -> Optional[RangedWeapon]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
