@@ -1235,7 +1235,7 @@ class Creature(GameObject):
         return {stat: f'{value:.2f}' for stat, value in self.stats.items()}
 
     def get_secondary_stats_data(self) -> dict[str, str]:
-        return {'Hitpoints': f'{self.hp}/{self.max_hp}',
+        return {'Hp': f'{self.hp}/{self.max_hp}',
                 'Mana': f'{self.mana}/{self.max_mana}',
                 'Energy': f'{self.energy}/{self.max_energy}',
                 'Load': f'{self.load}/{self.max_load}'
@@ -1275,8 +1275,7 @@ class Animal(Creature):
     def _evasion_ability(self) -> float:
         return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
-    @staticmethod
-    def _effects_at_dodge_attempt() -> None:
+    def _effects_at_dodge_attempt(self) -> None:
         return
 
     @property
@@ -1347,10 +1346,13 @@ class Humanoid(Creature):
     @property
     def _evasion_ability(self) -> float:
         evasion_skill = self._effective_skill(config.evasion_skill)
-        for item in self.effective_equipment.values():
-            if hasattr(item, 'evasion_modifier'):
-                evasion_skill *= item.evasion_modifier
-        return evasion_skill
+        armor = self._get_armor()
+        shield = self._get_shield()
+        shield_modifier = 1
+        if shield is not None:
+            shield_skill = self._effective_skill(config.shield_skill) / config.max_skill_value
+            shield_modifier = 1 + (shield.evasion_modifier - 1) * (0.5 + 0.5 * shield_skill)
+        return evasion_skill * armor.evasion_modifier * shield_modifier
 
     def _effects_at_dodge_attempt(self) -> None:
         self._improve(config.evasion_skill, config.Dex)
