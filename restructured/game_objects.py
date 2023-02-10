@@ -371,6 +371,14 @@ class Armor(Item):
         self.combat_exhaustion = combat_exhaustion
 
 
+class Clothes(Armor):
+    def __init__(self):
+        super().__init__(name='simple clothes', weight=0, icon='.', color=console.fg.lightblack,
+                         description="Commoner's shirt and pants.",
+                         armor=0, armor_skill=config.evasion_skill, armor_stat=config.Dex,
+                         combat_exhaustion=0)
+
+
 class HideArmor(Armor):
     def __init__(self):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
@@ -683,7 +691,6 @@ class Species(GameObject):
                  base_effect_modifiers: dict[str, int] = None,
                  active_effects: dict[str, int] = None,
                  consumable_types: list[Type[Item]] = None,
-                 fist_weapon: Type[Item] = Fist,
                  base_skills: dict[str, int] = None,
                  **kwargs):
         super().__init__(**kwargs)
@@ -697,7 +704,6 @@ class Species(GameObject):
         self.initial_disposition = initial_disposition
         self.ai = basic_ai
         self.base_skills = base_skills or {}
-        self.fist_weapon: Item = fist_weapon()
         self.base_effect_modifiers = base_effect_modifiers or {}
         self.active_effects = {config.non_rest_energy_regen_effect: 1}
         if active_effects is not None:
@@ -721,8 +727,10 @@ class HumanoidSpecies(Species):
     def base_stats(self) -> dict[str, int]:
         return make_stats(default=5)
 
-    def __init__(self, **kwargs):
+    def __init__(self, fist_weapon: Type[Item] = Fist, clothes: Type[Item] = Clothes, **kwargs):
         super().__init__(**kwargs)
+        self.fist_weapon: Item = fist_weapon()
+        self.clothes: Item = clothes()
         sentient_races.append(self)
         self._equipment_slots = base_sentient_equipment_slots.copy()
 
@@ -876,7 +884,7 @@ ice_fox_species = AnimalSpecies(name='ice fox', icon='f', color=console.fg.blue,
                                 equipment=[RawMeat, SmallTeeth, LightHide])
 eagle_species = AnimalSpecies(name='eagle', icon='e', color=config.brown_fg_color,
                               description='An eagle.',
-                              base_stats=make_stats(4, {config.Dex: 10, config.Per: 15, config.Wil: 1}),
+                              base_stats=make_stats(4, {config.Dex: 3, config.Per: 15, config.Wil: 1}),
                               equipment=[RawMeat, MediumClaws, Feathers],
                               initial_disposition=config.aggressive_disposition)
 hydra_species = AnimalSpecies(name='hydra', icon='H', color=console.fg.lightgreen,
@@ -1265,6 +1273,7 @@ class Animal(Creature):
 class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
         super().__init__(species, **kwargs)
+        self.species = species
 
     @property
     def description(self) -> str:
@@ -1278,6 +1287,8 @@ class Humanoid(Creature):
         effective_items = {**self.equipped_items}
         if effective_items[config.main_hand_slot] is empty_space:
             effective_items[config.main_hand_slot] = self.species.fist_weapon
+        if effective_items[config.armor_slot] is empty_space:
+            effective_items[config.armor_slot] = self.species.clothes
         return effective_items
 
     @property
@@ -1311,6 +1322,8 @@ class Humanoid(Creature):
     @property
     def _armor_skill(self) -> int:
         armor = self._get_armor()
+        if armor is empty_space:
+            return 100
         return self._effective_skill(armor.armor_skill)
 
     @property
