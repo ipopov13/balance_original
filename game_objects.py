@@ -395,6 +395,10 @@ class ThrownWeapon(RangedWeapon, RangedAmmo):
     pass
 
 
+class SmallWeapon(MainHand, Offhand):
+    pass
+
+
 class TwoHandedWeapon(MainHand):
     pass
 

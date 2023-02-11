@@ -103,11 +103,68 @@ class Pickaxe(go.Tool):
                          combat_exhaustion=5)
 
 
-class ShortSword(go.MainHand):
+class ShortSword(go.SmallWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='short sword', weight=3, icon='|', color=color,
                          description='Made for stabbing.',
                          melee_damage=3, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=3)
+
+
+class LongSword(go.MainHand):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='long sword', weight=5, icon='|', color=color,
+                         description="The soldier's weapon of choice.",
+                         melee_damage=5, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=4)
+
+
+class Hatchet(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='hatchet', weight=2, icon='|', color=color,
+                         description="Cut wood or chop limbs, it's your choice.",
+                         melee_damage=2, melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=2)
+
+
+class BattleAxe(go.MainHand):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='battle axe', weight=5, icon='|', color=color,
+                         description='Often considered barbaric, but also very effective.',
+                         melee_damage=6, melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=5)
+
+
+class Mace(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='mace', weight=4, icon='|', color=color,
+                         description='A wooden handle with a metal ball on one end.',
+                         melee_damage=4, melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=4)
+
+
+class Morningstar(go.MainHand):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='morningstar', weight=6, icon='|', color=color,
+                         description='Metal handle and a wicked-looking ball with spikes.',
+                         melee_damage=6, melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=6)
+
+
+class Spear(go.MainHand):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='spear', weight=5, icon='|', color=color,
+                         description='A long pole with a sharp metal head.',
+                         melee_damage=4, melee_weapon_skill=config.spear_skill, combat_exhaustion=4)
+
+
+class PunchKnife(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='punch knife', weight=1, icon='|', color=color,
+                         description='A blade with a cross handle, made for punching through armor.',
+                         melee_damage=2, melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=2)
+
+
+class Claws(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='claws', weight=1, icon='|', color=color,
+                         description='Metal claws that can be gripped in a fist.',
+                         melee_damage=2, melee_weapon_skill=config.unarmed_combat_skill,
+                         melee_weapon_stat=config.Dex, combat_exhaustion=4)
 
 
 class Buckler(go.Shield):
@@ -115,6 +172,20 @@ class Buckler(go.Shield):
         super().__init__(name='buckler', weight=3, icon=']', color=console.fg.lightblack,
                          description='A small, round shield made of iron.',
                          evasion_modifier=1.3, combat_exhaustion=1)
+
+
+class RoundShield(go.Shield):
+    def __init__(self):
+        super().__init__(name='round shield', weight=4, icon=']', color=config.brown_fg_color,
+                         description='A round, wooden shield. Can carry a coat of arms.',
+                         evasion_modifier=1.6, combat_exhaustion=2)
+
+
+class TowerShield(go.Shield):
+    def __init__(self):
+        super().__init__(name='tower shield', weight=7, icon=']', color=console.fg.lightblack,
+                         description='A tall, rectangular metal shield.',
+                         evasion_modifier=2.1, combat_exhaustion=4)
 
 
 class Acorn(go.RangedAmmo):
@@ -146,11 +217,57 @@ class ThrowingKnife(go.ThrownWeapon):
                          ranged_weapon_stat=config.Dex)
 
 
+class HuntingSpear(go.ThrownWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='hunting spear', weight=2, icon='}', color=color,
+                         description='A light spear, perfect for hunting animals.',
+                         melee_damage=2, melee_weapon_skill=config.spear_skill, melee_weapon_stat=config.Dex,
+                         ranged_damage=5, combat_exhaustion=3,
+                         ranged_weapon_type=config.throwing_spear_skill, max_distance=10,
+                         ranged_ammo_type=config.throwing_spear_skill, ranged_weapon_skill=config.throwing_spear_skill,
+                         ranged_weapon_stat=config.Str)
+
+
 class GreatSword(go.TwoHandedWeapon):
     def __init__(self, color=console.fg.default):
-        super().__init__(name='great sword', weight=8, icon='|', color=color,
+        super().__init__(name='great sword', weight=8, icon='/', color=color,
                          description='Cutting beasts in half is easy with this one.',
-                         melee_damage=7, melee_weapon_skill=config.twohanded_swords_skill, combat_exhaustion=7)
+                         melee_damage=8, melee_weapon_skill=config.twohanded_swords_skill, combat_exhaustion=7)
+
+
+class Staff(go.TwoHandedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='staff', weight=4, icon='/', color=color,
+                         description='A long stick is better than nothing.',
+                         melee_damage=3, melee_weapon_skill=config.staves_skill, combat_exhaustion=2)
+
+
+class BattleStaff(go.TwoHandedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='battle staff', weight=7, icon='/', color=color,
+                         description='The ends are capped with metal.',
+                         melee_damage=6, melee_weapon_skill=config.staves_skill, combat_exhaustion=5)
+
+
+class TravellerStaff(go.TwoHandedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name="traveller's staff", weight=2, icon='/', color=color,
+                         description='A stick to make walking easier.',
+                         melee_damage=1, melee_weapon_skill=config.staves_skill, combat_exhaustion=1)
+
+
+class GiantAxe(go.TwoHandedWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name="giant axe", weight=10, icon='/', color=color,
+                         description='A huge axe with twin crescent blades.',
+                         melee_damage=10, melee_weapon_skill=config.twohanded_axes_skill, combat_exhaustion=12)
+
+
+class WarHammer(go.TwoHandedWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name="war hammer", weight=11, icon='/', color=color,
+                         description='The head has a claw on one side and a plate on the other.',
+                         melee_damage=12, melee_weapon_skill=config.twohanded_hammers_skill, combat_exhaustion=14)
 
 
 class SmallTeeth(go.AnimalWeapon):
