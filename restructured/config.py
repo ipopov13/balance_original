@@ -105,17 +105,26 @@ skill_colors = {combat_prefix: console.fg.lightred,
                 social_prefix: console.fg.yellow,
                 utility_prefix: console.fg.purple}
 gun_skill = combat_prefix + skill_delimiter + "Guns"
+bow_skill = combat_prefix + skill_delimiter + "Bows"
+crossbow_skill = combat_prefix + skill_delimiter + "Crossbows"
+sling_skill = combat_prefix + skill_delimiter + "Slings"
 daggers_skill = combat_prefix + skill_delimiter + "Daggers"
-onehanded_swords_skill = combat_prefix + skill_delimiter + "1h swords"
-twohanded_swords_skill = combat_prefix + skill_delimiter + "2h swords"
-twohanded_axes_skill = combat_prefix + skill_delimiter + "2h axes"
-unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
-improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
+onehanded_swords_skill = combat_prefix + skill_delimiter + "Swords"
+onehanded_axes_skill = combat_prefix + skill_delimiter + "Axes"
+onehanded_hammers_skill = combat_prefix + skill_delimiter + "Hammers"
+twohanded_swords_skill = combat_prefix + skill_delimiter + "Great swords"
+twohanded_axes_skill = combat_prefix + skill_delimiter + "Great axes"
+twohanded_hammers_skill = combat_prefix + skill_delimiter + "Great hammers"
+staves_skill = combat_prefix + skill_delimiter + "Staves"
+spear_skill = combat_prefix + skill_delimiter + "Spears"
 throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
+throwing_spear_skill = combat_prefix + skill_delimiter + "Throwing spears"
+improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
+unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
+shield_skill = combat_prefix + skill_delimiter + "Shields"
 evasion_skill = combat_prefix + skill_delimiter + "Evasion"
 light_armor_skill = combat_prefix + skill_delimiter + "Light armor"
 heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
-shield_skill = combat_prefix + skill_delimiter + "Shields"
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
 # Ranged weapon/ammo types

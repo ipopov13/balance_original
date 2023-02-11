@@ -2,7 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins
 Implement combat skills
-    Add all basic weapons and skills and add them to the items table
+    Add all basic weapons and add them to the items table
 
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
