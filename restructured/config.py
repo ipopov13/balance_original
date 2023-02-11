@@ -107,6 +107,7 @@ skill_colors = {combat_prefix: console.fg.lightred,
 gun_skill = combat_prefix + skill_delimiter + "Guns"
 daggers_skill = combat_prefix + skill_delimiter + "Daggers"
 onehanded_swords_skill = combat_prefix + skill_delimiter + "1h swords"
+twohanded_swords_skill = combat_prefix + skill_delimiter + "2h swords"
 twohanded_axes_skill = combat_prefix + skill_delimiter + "2h axes"
 unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
 improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"

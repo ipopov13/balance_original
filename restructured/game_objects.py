@@ -544,6 +544,17 @@ class ThrowingKnife(ThrownWeapon):
                          ranged_weapon_stat=config.Dex)
 
 
+class TwoHandedWeapon(MainHand):
+    pass
+
+
+class GreatSword(TwoHandedWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='great sword', weight=8, icon='|', color=color,
+                         description='Cutting beasts in half is easy with this one.',
+                         melee_damage=7, melee_weapon_skill=config.twohanded_swords_skill, combat_exhaustion=7)
+
+
 class AnimalWeapon(Item):
     def __init__(self, melee_damage: int, **kwargs):
         super().__init__(**kwargs)
@@ -966,7 +977,7 @@ class Creature(GameObject):
 
     def equipment_armor(self) -> int:
         armor = 0
-        for item in self.effective_equipment.values():
+        for item in set(self.effective_equipment.values()):
             try:
                 armor += item.armor
             except AttributeError:
@@ -976,7 +987,7 @@ class Creature(GameObject):
     @property
     def _combat_exhaustion(self) -> int:
         exhaustion = 0
-        for item in self.effective_equipment.values():
+        for item in set(self.effective_equipment.values()):
             if hasattr(item, 'combat_exhaustion'):
                 exhaustion += item.combat_exhaustion
         return exhaustion
@@ -1183,21 +1194,40 @@ class Creature(GameObject):
             if isinstance(item, slot_type):
                 available_load = self.max_load - self.load
                 load_difference = item.weight - self.equipped_items[slot].weight
+                if isinstance(item, TwoHandedWeapon):
+                    load_difference -= self.equipped_items[config.offhand_slot].weight
+                elif isinstance(item, Offhand) \
+                        and isinstance(self.equipped_items[config.main_hand_slot], TwoHandedWeapon):
+                    load_difference -= self.equipped_items[config.main_hand_slot].weight
                 return available_load >= load_difference
         return False
 
     def weight_gained_by_swapping_equipment(self, item: Item) -> int:
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
-                return self.equipped_items[slot].weight
+                weight_gained = self.equipped_items[slot].weight
+                if isinstance(item, TwoHandedWeapon):
+                    weight_gained += self.equipped_items[config.offhand_slot].weight
+                elif isinstance(item, Offhand) \
+                        and isinstance(self.equipped_items[config.main_hand_slot], TwoHandedWeapon):
+                    weight_gained += self.equipped_items[config.main_hand_slot].weight
+                return weight_gained
         raise TypeError(f"Item {item.name} cannot be equipped in any slot!")
 
-    def swap_equipment(self, item: Item) -> Item:
+    def swap_equipment(self, item: Item) -> list[Item]:
+        removed_items = []
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
-                old_item = self.equipped_items[slot]
+                removed_items.append(self.equipped_items[slot])
                 self.equipped_items[slot] = item
-                return old_item
+                if isinstance(item, TwoHandedWeapon):
+                    removed_items.append(self.equipped_items[config.offhand_slot])
+                    self.equipped_items[config.offhand_slot] = empty_space
+                elif isinstance(item, Offhand) \
+                        and isinstance(self.equipped_items[config.main_hand_slot], TwoHandedWeapon):
+                    removed_items.append(self.equipped_items[config.main_hand_slot])
+                    self.equipped_items[config.main_hand_slot] = empty_space
+                return removed_items
 
     def get_goals(self) -> list[str]:
         return self._ai[self._disposition]
@@ -1223,7 +1253,7 @@ class Creature(GameObject):
         self.hp -= max(0, damage - self.armor)
 
     def rest(self):
-        self.energy += random.randint(1, max(int(self.stats[config.End]/5), 1))
+        self.energy += random.randint(1, max(int(self.stats[config.End] / 5), 1))
         if random.random() < (self.stats[config.End] / config.max_stat_value / 2) * (self.energy / self.max_energy):
             self.hp += 1
 
@@ -1257,7 +1287,7 @@ class Animal(Creature):
     @property
     def melee_damage(self) -> int:
         weapon_damage = 0
-        for item in self.effective_equipment.values():
+        for item in set(self.effective_equipment.values()):
             try:
                 weapon_damage += item.melee_damage
             except AttributeError:
@@ -1300,14 +1330,23 @@ class Humanoid(Creature):
         effective_items = {**self.equipped_items}
         if effective_items[config.main_hand_slot] is empty_space:
             effective_items[config.main_hand_slot] = self.species.fist_weapon
+        elif isinstance(effective_items[config.main_hand_slot], TwoHandedWeapon):
+            effective_items[config.offhand_slot] = effective_items[config.main_hand_slot]
         if effective_items[config.armor_slot] is empty_space:
             effective_items[config.armor_slot] = self.species.clothes
         return effective_items
 
     @property
+    def effective_equipped_items(self) -> dict:
+        effective_items = {**self.equipped_items}
+        if isinstance(effective_items[config.main_hand_slot], TwoHandedWeapon):
+            effective_items[config.offhand_slot] = effective_items[config.main_hand_slot]
+        return effective_items
+
+    @property
     def _combat_exhaustion(self) -> int:
         exhaustion = 0
-        for item in self.effective_equipment.values():
+        for item in set(self.effective_equipment.values()):
             if hasattr(item, 'combat_exhaustion'):
                 if isinstance(item, Armor):
                     skill_mod = self._effective_skill(item.armor_skill) / config.max_skill_value
@@ -1362,7 +1401,7 @@ class Humanoid(Creature):
         weapon = self._get_main_hand()
         skill = self._effective_skill(weapon.melee_weapon_skill) / config.max_skill_value
         effective_weapon_damage = (weapon.melee_damage * (0.75 + 0.75 * skill)
-                                   + self.stats[weapon.melee_weapon_stat]/4 * self._exhaustion_modifier)
+                                   + self.stats[weapon.melee_weapon_stat] / 4 * self._exhaustion_modifier)
         return int(effective_weapon_damage)
 
     def _receive_normal_damage(self, damage: int) -> None:
@@ -1412,7 +1451,7 @@ class Humanoid(Creature):
             weapon_damage = ranged_weapon.ranged_damage
         else:
             weapon_damage = ranged_weapon.ranged_damage + ammo.ranged_damage
-        stats = int((self.stats[config.Dex] + self.stats[config.Per])/4)
+        stats = int((self.stats[config.Dex] + self.stats[config.Per]) / 4)
         return random.randint(0, max(stats, 1)) + weapon_damage
 
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
@@ -1533,7 +1572,7 @@ class Game:
 
     @property
     def _selected_equipped_item(self):
-        return list(self.character.equipped_items.values())[self.selected_equipped_item_index]
+        return list(self.character.effective_equipped_items.values())[self.selected_equipped_item_index]
 
     def start_game(self, character_race) -> None:
         if character_race is None:
@@ -1550,6 +1589,7 @@ class Game:
 
         self._current_location.put_item(Bag(), character_coords)
         self._current_location.put_item(ShortSword(color=console.fg.red), character_coords)
+        self._current_location.put_item(GreatSword(), character_coords)
         self._current_location.put_item(Buckler(), character_coords)
         self._current_location.put_item(AcornGun(), character_coords)
         for i in range(10):
@@ -1802,9 +1842,13 @@ class Game:
 
     def _equip_from_bag_in_inventory_screen(self, _) -> bool:
         self.character.bag.remove_item(self._selected_bag_item)
-        unequipped_item = self.character.swap_equipment(self._selected_bag_item)
-        if unequipped_item is not empty_space:
-            self.character.bag.add_item(unequipped_item)
+        unequipped_items = self.character.swap_equipment(self._selected_bag_item)
+        for unequipped_item in unequipped_items:
+            if unequipped_item is not empty_space and self.character.bag.has_space():
+                self.character.bag.add_item(unequipped_item)
+            elif unequipped_item is not empty_space:
+                self._current_location.put_item(unequipped_item,
+                                                self._get_coords_of_creature(self.character))
         return True
 
     def _equip_from_ground_in_inventory_screen(self, _) -> bool:
@@ -1812,9 +1856,10 @@ class Game:
         available_load = self.character.max_load - self.character.load + extra_load
         item_to_equip = self._ground_container.provide_item(available_load,
                                                             self._selected_ground_item)
-        dropped_item = self.character.swap_equipment(item_to_equip)
-        if dropped_item is not empty_space:
-            self._ground_container.add_item(dropped_item)
+        dropped_items = self.character.swap_equipment(item_to_equip)
+        for dropped_item in dropped_items:
+            if dropped_item is not empty_space:
+                self._ground_container.add_item(dropped_item)
         return True
 
     def _stack_equip_from_bag_in_inventory_screen(self, _) -> bool:
@@ -2024,6 +2069,9 @@ class Game:
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
         filtered_items = [item for item in allowed_ground_items + bag_items if isinstance(item, item_type)]
+        if self._equipping_slot == config.main_hand_slot \
+                and self.character.equipped_items[config.offhand_slot] is not empty_space:
+            filtered_items = [item for item in filtered_items if not isinstance(item, TwoHandedWeapon)]
         return filtered_items
 
     def equip_item_from_selection_screen(self, item: Optional[Item]) -> None:
