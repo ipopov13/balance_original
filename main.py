@@ -1,6 +1,6 @@
 from userinterface import UserInterface
 from sequence import GameSequence
-from game_objects import Game
+from game import Game
 
 game = Game()
 sequence = GameSequence()

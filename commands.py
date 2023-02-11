@@ -227,14 +227,3 @@ class LoadGame(Command):
     hint = '(l)oad'
     description = 'Load a saved game'
     changes_window = True
-
-
-if __name__ == '__main__':
-    back = Back()
-    command_dict = {back: 'back'}
-    assert back == 'b'
-    assert command_dict.get(back) == 'back'
-    assert command_dict.get('b') == 'back'
-    dict1 = {GetHelp(): '1', NewGame(): '3'}
-    dict2 = {GetHelp(): '2'}
-    assert len(set(dict1) & set(dict2)) == 1

@@ -1,6 +1,6 @@
 from windows import Window, InputWindow, SelectionWindow
 import content_types as ct
-from game_objects import Game
+from game import Game
 import config
 
 
