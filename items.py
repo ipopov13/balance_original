@@ -47,12 +47,20 @@ class LeatherArmor(go.Armor):
                          evasion_modifier=0.85, combat_exhaustion=1)
 
 
+class ChainMail(go.Armor):
+    def __init__(self):
+        super().__init__(name='chain mail', weight=9, icon='[', color=console.fg.lightblack,
+                         description='A shirt of woven iron links.',
+                         armor=5, armor_skill=config.heavy_armor_skill, armor_stat=config.End,
+                         evasion_modifier=0.6, combat_exhaustion=3)
+
+
 class PlateArmor(go.Armor):
     def __init__(self):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates',
                          armor=7, armor_skill=config.heavy_armor_skill, armor_stat=config.End,
-                         evasion_modifier=0.5, combat_exhaustion=5)
+                         evasion_modifier=0.3, combat_exhaustion=5)
 
 
 class Bag(go.Back):
@@ -116,8 +124,19 @@ class Acorn(go.RangedAmmo):
                          ranged_damage=1, ranged_ammo_type=config.acorn_gun_type)
 
 
-class ThrowingKnife(go.ThrownWeapon):
+class Dagger(go.ThrownWeapon):
     def __init__(self, color=console.fg.default):
+        super().__init__(name='dagger', weight=2, icon='}', color=color,
+                         description='A sharp blade for stabbing or throwing.',
+                         melee_damage=2, melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex,
+                         ranged_damage=2, combat_exhaustion=1,
+                         ranged_weapon_type=config.throwing_knife_skill, max_distance=5,
+                         ranged_ammo_type=config.throwing_knife_skill, ranged_weapon_skill=config.throwing_knife_skill,
+                         ranged_weapon_stat=config.Dex)
+
+
+class ThrowingKnife(go.ThrownWeapon):
+    def __init__(self, color=console.fg.white):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
                          melee_damage=1, melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex,
