@@ -11,9 +11,6 @@ max_text_line_length: int = 65
 
 frame_viewing_time: float = 0.07
 
-order_color = console.fg.lightblue
-nature_color = console.fg.lightgreen
-chaos_color = console.fg.red
 hp_color = console.bg.red
 mana_color = console.bg.blue
 energy_color = console.bg.lightgreen
@@ -21,6 +18,24 @@ famine_color = console.bg.lightred
 load_color = console.bg.white + console.fg.lightblack
 brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
+
+# Forces and climate
+order_color = console.fg.lightblue
+nature_color = console.fg.lightgreen
+chaos_color = console.fg.red
+NATURE_FORCE = 'Nature'
+CHAOS_FORCE = 'Chaos'
+ORDER_FORCE = 'Order'
+force_colors = {NATURE_FORCE: nature_color,
+                CHAOS_FORCE: chaos_color,
+                ORDER_FORCE: order_color}
+COLD_CLIMATE = 'Cold'
+TEMPERATE_CLIMATE = 'Temperate'
+HOT_CLIMATE = 'Hot'
+ALL_CLIMATES = [COLD_CLIMATE, HOT_CLIMATE, TEMPERATE_CLIMATE]
+climate_colors = {COLD_CLIMATE: console.fg.lightblue,
+                  TEMPERATE_CLIMATE: console.fg.lightgreen,
+                  HOT_CLIMATE: console.fg.lightred}
 
 multiple_items_icon = '?'
 target_cross_icon = console.fg.lightred + 'X' + console.fx.end
