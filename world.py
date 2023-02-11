@@ -141,6 +141,8 @@ terrain_transformations = {
                                           'drop_types': [None, items.JunkItem], 'drop_weights': [40, 60],
                                           'message': 'You sift through the pile of bones.'}}
 }
+for terrain_type in terrain_transformations:
+    terrain_type.transformations = terrain_transformations[terrain_type]
 
 
 class Well(FlavorTerrain):
