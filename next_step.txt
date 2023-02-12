@@ -1,6 +1,25 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins
+Kraken:
+    creature harvesting skill bonus (x2-3?)
+    energy bonus
+Imp:
+    fire damage on fist
+    fist is a fire-making tool
+Dryad:
+    pass through all plants
+    plant terrains don't tire them (bushes/jungle)
+Shaper
+    Animals don't attack (in the selection of targets?)
+Water Elemental
+    water as food
+    water/snow/ice doesn't tire them
+    regular equipment lowers their energy (penalty based on weight)
+    still water equipment works fine
+Fae
+    doesn't wake sleeping creatures
+    can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
 Combat effects
     Move the melee/ranged damage into the effect dictionaries
     Merge the dictionaries of the weapon and ammo/main&offhand when fighting, then send the effects over
@@ -37,14 +56,17 @@ Interface
     Rename "pick up" to "take"
     Make the help overlay have dynamic top_left (must become a property in Window)
     Make the help overlay content format multi-lines properly
-    Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Architecture
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
+Character screen
+    Add the effect modifiers, make the config names sensible and display them
+    Add the active effects?
 Inventory
     Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
     ? Open inner container on ground
     ? Open inner container in bag
+    Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Crafting
     Add "properties" to crafting ingredients: what the ingredient contains
     Different crafts act on different properties
