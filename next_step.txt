@@ -1,9 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins
-Kraken:
-    creature harvesting skill bonus (x2-3?)
-    energy bonus
+    Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Imp:
     fire damage on fist
     fist is a fire-making tool

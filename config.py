@@ -95,6 +95,7 @@ travel_energy_loss_modifier = 'travel_energy_loss_modifier'
 max_mana_modifier = 'max_mana_modifier'
 max_hp_modifier = 'max_hp_modifier'
 max_load_modifier = 'max_load_modifier'
+max_energy_modifier = 'max_energy_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
 # Equipment slots
@@ -143,6 +144,7 @@ light_armor_skill = combat_prefix + skill_delimiter + "Light armor"
 heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
+monster_harvesting_skill = extraction_prefix + skill_delimiter + 'Monster harvesting'
 # Ranged weapon/ammo types
 hand_thrown_type = 'hand_thrown_type'
 acorn_gun_type = 'acorn_gun_type'

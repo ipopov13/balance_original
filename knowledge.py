@@ -15,7 +15,10 @@ knowledge = {
         " around you. If you have nimble fingers (and you're not a troll), you will soon find"
         " what you're looking for.",
         "The rock is the most basic of weapons, used by countless generations of monkeys, vandals,"
-        " and other government-unhappy individuals for smashing things at a distance."
+        " and other government-unhappy individuals for smashing things at a distance.",
+        "Harvesting the useful parts of monsters is an integral part of the current economy. From steel-like"
+        " tendons to lava-resistant skin, the most useful and rare components of many crafting professions come"
+        " from harvesting."
     ],
     config.Human: [
         'Explorers and treasure-seekers, the human race combines the primal need '
@@ -85,8 +88,15 @@ knowledge = {
         "Fire burns in an imp's veins and dances over their fingers. To burn is to feel alive!"
     ],
     config.Kraken: [
-        "Descendants of deep sea monsters, the kraken have learned to reap even the most disgusting"
-        " of water dwellers for useful substances."
+        "Descendants of deep-sea monsters, the kraken have learned to reap even the most disgusting"
+        " of water dwellers for useful substances.",
+        "Kraken have never shied away from grizzly activities, whether it was shoveling through the refuse"
+        " of a giant sea squid or digging out the three gizzards of a swamp dragon. Even goblins, the masters"
+        " of scavenging and junk-sorting, cannot rival the enthusiasm and dedication that kraken put into such"
+        " gut-wrenching projects."
+        "While kraken are no longer the sea monsters that they were ages ago, some of their heritage still"
+        " remains in their bodies. They show greater stamina compared to other races, which makes them master"
+        " explorers when it comes to difficult terrain or the depths of the sea."
     ],
     config.Goblin: [
         "For a goblin, everything can come in handy one day. They are legendary pilferers and"

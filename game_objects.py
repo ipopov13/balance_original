@@ -641,7 +641,8 @@ class Creature(GameObject):
 
     @property
     def max_energy(self) -> int:
-        return int(self.stats[config.End] * 10)
+        base_energy = int(self.stats[config.End] * 10)
+        return int(base_energy * self._effect_modifiers.get(config.max_energy_modifier, 1))
 
     @property
     def current_max_energy(self) -> int:
