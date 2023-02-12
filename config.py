@@ -133,6 +133,7 @@ twohanded_hammers_skill = combat_prefix + skill_delimiter + "Great hammers"
 staves_skill = combat_prefix + skill_delimiter + "Staves"
 spear_skill = combat_prefix + skill_delimiter + "Spears"
 throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
+grenades_skill = combat_prefix + skill_delimiter + "Grenades"
 throwing_spear_skill = combat_prefix + skill_delimiter + "Throwing spears"
 improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
 unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
@@ -143,7 +144,13 @@ heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
 mining_skill = extraction_prefix + skill_delimiter + 'Mining'
 scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
 # Ranged weapon/ammo types
+hand_thrown_type = 'hand_thrown_type'
 acorn_gun_type = 'acorn_gun_type'
+gun_type = 'gun_type'
+bow_type = 'bow_type'
+crossbow_type = 'crossbow_type'
+ballista_type = 'ballista_type'
+sling_type = 'sling_type'
 
 random_creatures_respawn_period = 500
 creature_rarity_scale = [1, 1/2, 1/9]

@@ -69,29 +69,24 @@ class Bag(go.Back):
                          color=console.fg.default, description='A very small bag')
 
 
-class AcornGun(go.RangedWeapon):
-    def __init__(self, color=config.brown_fg_color):
-        super().__init__(name='acorn gun', weight=4, icon='{', color=color,
-                         description='A gun of dryadic design.',
-                         ranged_damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
-                         ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
-                         max_distance=15)
-
-
-class Fist(go.Tool):
+class Fist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
-                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
+                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         ranged_damage=1, ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
+                         ranged_weapon_type=config.hand_thrown_type, max_distance=5)
 
 
-class TrollFist(go.Tool):
+class TrollFist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, work_skill=config.mining_skill, work_stat=config.Str,
-                         melee_damage=1, melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1)
+                         melee_damage=1, melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         ranged_damage=4, ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
+                         ranged_weapon_type=config.hand_thrown_type, max_distance=8)
 
 
 class Pickaxe(go.Tool):
@@ -103,13 +98,6 @@ class Pickaxe(go.Tool):
                          combat_exhaustion=5)
 
 
-class ShortSword(go.SmallWeapon):
-    def __init__(self, color=console.fg.default):
-        super().__init__(name='short sword', weight=3, icon='|', color=color,
-                         description='Made for stabbing.',
-                         melee_damage=3, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=3)
-
-
 class LongSword(go.MainHand):
     def __init__(self, color=console.fg.default):
         super().__init__(name='long sword', weight=5, icon='|', color=color,
@@ -117,25 +105,11 @@ class LongSword(go.MainHand):
                          melee_damage=5, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=4)
 
 
-class Hatchet(go.SmallWeapon):
-    def __init__(self, color=console.fg.default):
-        super().__init__(name='hatchet', weight=2, icon='|', color=color,
-                         description="Cut wood or chop limbs, it's your choice.",
-                         melee_damage=2, melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=2)
-
-
 class BattleAxe(go.MainHand):
     def __init__(self, color=console.fg.default):
         super().__init__(name='battle axe', weight=5, icon='|', color=color,
                          description='Often considered barbaric, but also very effective.',
                          melee_damage=6, melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=5)
-
-
-class Mace(go.SmallWeapon):
-    def __init__(self, color=console.fg.default):
-        super().__init__(name='mace', weight=4, icon='|', color=color,
-                         description='A wooden handle with a metal ball on one end.',
-                         melee_damage=4, melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=4)
 
 
 class Morningstar(go.MainHand):
@@ -150,6 +124,27 @@ class Spear(go.MainHand):
         super().__init__(name='spear', weight=5, icon='|', color=color,
                          description='A long pole with a sharp metal head.',
                          melee_damage=4, melee_weapon_skill=config.spear_skill, combat_exhaustion=4)
+
+
+class ShortSword(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='short sword', weight=3, icon='|', color=color,
+                         description='Made for stabbing.',
+                         melee_damage=3, melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=3)
+
+
+class Hatchet(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='hatchet', weight=2, icon='|', color=color,
+                         description="Cut wood or chop limbs, it's your choice.",
+                         melee_damage=2, melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=2)
+
+
+class Mace(go.SmallWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='mace', weight=4, icon='|', color=color,
+                         description='A wooden handle with a metal ball on one end.',
+                         melee_damage=4, melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=4)
 
 
 class PunchKnife(go.SmallWeapon):
@@ -188,11 +183,118 @@ class TowerShield(go.Shield):
                          evasion_modifier=2.1, combat_exhaustion=4)
 
 
+class AcornGun(go.RangedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='acorn gun', weight=4, icon='{', color=color,
+                         description='A gun of dryadic design.',
+                         ranged_damage=3, combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
+                         ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
+                         max_distance=15)
+
+
 class Acorn(go.RangedAmmo):
     def __init__(self):
         super().__init__(name='acorn', weight=1, icon='*', color=config.brown_fg_color,
                          is_stackable=True, description='The seed of an oak tree.',
                          ranged_damage=1, ranged_ammo_type=config.acorn_gun_type)
+
+
+class ShortBow(go.RangedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='short bow', weight=2, icon='{', color=color,
+                         description='A wooden bow stringed with tendon.',
+                         ranged_damage=1, combat_exhaustion=3, ranged_weapon_type=config.bow_type,
+                         ranged_weapon_skill=config.bow_skill, ranged_weapon_stat=config.Dex,
+                         max_distance=10)
+
+
+class LongBow(go.RangedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='long bow', weight=4, icon='{', color=color,
+                         description='A combat-ready bow.',
+                         ranged_damage=3, combat_exhaustion=4, ranged_weapon_type=config.bow_type,
+                         ranged_weapon_skill=config.bow_skill, ranged_weapon_stat=config.Dex,
+                         max_distance=20)
+
+
+class Arrow(go.RangedAmmo):
+    def __init__(self):
+        super().__init__(name='arrow', weight=1, icon='-', color=config.brown_fg_color,
+                         is_stackable=True, description='Tipped with iron and stabilized with bird feathers.',
+                         ranged_damage=2, ranged_ammo_type=config.bow_type)
+
+
+class Handgun(go.RangedWeapon):
+    def __init__(self, color=console.fg.lightblack):
+        super().__init__(name='hand gun', weight=3, icon='{', color=color,
+                         description='A mechanical contraption that fires combustible ammunition.',
+                         ranged_damage=2, combat_exhaustion=1, ranged_weapon_type=config.gun_type,
+                         ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
+                         max_distance=10)
+
+
+class Rifle(go.RangedWeapon):
+    def __init__(self, color=console.fg.lightblack):
+        super().__init__(name='rifle', weight=6, icon='{', color=color,
+                         description='A gun with a long barrel. Hunters and assassins love them.',
+                         ranged_damage=4, combat_exhaustion=1, ranged_weapon_type=config.gun_type,
+                         ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
+                         max_distance=25)
+
+
+class GunRound(go.RangedAmmo):
+    def __init__(self):
+        super().__init__(name='gun round', weight=1, icon='*', color=console.fg.lightblack,
+                         is_stackable=True, ranged_damage=3, ranged_ammo_type=config.gun_type,
+                         description='A metal casing with alchemical powders inside. Keep away from fire!')
+
+
+class CrossBow(go.RangedWeapon):
+    def __init__(self, color=config.brown_fg_color):
+        super().__init__(name='crossbow', weight=4, icon='{', color=color,
+                         description='A wood and metal contraption made to fire short bolts.',
+                         ranged_damage=2, combat_exhaustion=1, ranged_weapon_type=config.crossbow_type,
+                         ranged_weapon_skill=config.crossbow_skill, ranged_weapon_stat=config.Per,
+                         max_distance=14)
+
+
+class Bolt(go.RangedAmmo):
+    def __init__(self):
+        super().__init__(name='bolt', weight=1, icon='-', color=console.fg.default,
+                         is_stackable=True, description='An iron crossbow bolt.',
+                         ranged_damage=2, ranged_ammo_type=config.crossbow_type)
+
+
+class Ballista(go.RangedWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='ballista', weight=9, icon='{', color=color,
+                         description='A small siege engine. Some mercenaries lug these around.',
+                         ranged_damage=6, combat_exhaustion=12, ranged_weapon_type=config.ballista_type,
+                         ranged_weapon_skill=config.crossbow_skill, ranged_weapon_stat=config.Str,
+                         max_distance=25)
+
+
+class BallistaBolt(go.RangedAmmo):
+    def __init__(self):
+        super().__init__(name='large bolt', weight=2, icon='|', color=config.brown_fg_color,
+                         is_stackable=True, description='Two-fingers thick, and long as your arm.',
+                         ranged_damage=4, ranged_ammo_type=config.ballista_type)
+
+
+class Sling(go.RangedWeapon):
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='sling', weight=1, icon='{', color=color,
+                         description='A couple of straps with a leather piece in the middle.',
+                         ranged_damage=1, combat_exhaustion=2, ranged_weapon_type=config.sling_type,
+                         ranged_weapon_skill=config.sling_skill, ranged_weapon_stat=config.Dex,
+                         max_distance=8)
+
+
+class SlingBullet(go.RangedAmmo):
+    def __init__(self):
+        super().__init__(name='sling bullet', weight=1, icon='*', color=console.fg.lightblack,
+                         description="A metal or rock piece inscribed with the word 'Catch!'.",
+                         is_stackable=True, ranged_damage=3, ranged_ammo_type=config.sling_type)
 
 
 class Dagger(go.ThrownWeapon):
@@ -344,13 +446,13 @@ class RawMeat(go.EdibleAnimalPart):
                                   config.hunger_meat_effect: 5})
 
 
-class Rock(go.Item):
+class Rock(go.RangedAmmo):
     def __init__(self):
         super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightblack,
                          description='Building material and throwing weapon',
                          effects={config.hunger_rock_effect: 10,
                                   config.thirst_rock_effect: 10},
-                         is_stackable=True)
+                         is_stackable=True, ranged_damage=1, ranged_ammo_type=config.hand_thrown_type)
 
 
 class IronOre(go.Item):

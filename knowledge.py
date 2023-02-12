@@ -13,7 +13,9 @@ knowledge = {
         " is great to recognize the useful types of fruit and berries that a forest can provide"
         " to a traveller. Simply sheath your weapon and go to work on the bushes and trees"
         " around you. If you have nimble fingers (and you're not a troll), you will soon find"
-        " what you're looking for."
+        " what you're looking for.",
+        "The rock is the most basic of weapons, used by countless generations of monkeys, vandals,"
+        " and other government-unhappy individuals for smashing things at a distance."
     ],
     config.Human: [
         'Explorers and treasure-seekers, the human race combines the primal need '
@@ -70,7 +72,14 @@ knowledge = {
         "The unique properties of troll hands make them unsuitable for more delicate activities."
         " While they can hold a sword or plow without any trouble, their two-fingered hands do not"
         " allow sorting through a pile of items, rendering a troll unable to scavenge or forage."
-        " Fortunately for the trolls, berries have never held a spot of significance in their culture."
+        " Fortunately for the trolls, berries have never held a spot of significance in their culture.",
+        "A race centered around a single object, trolls have used the simple rock in a variety of ways."
+        " While the eating part is known to most anyone who've clapped eyes on a troll, there is another"
+        " use of rocks that the 'stone people' are famous for. The strength with which they throw a rock"
+        " rivals a shot from a firearm, turning the rock into a true weapon for them. Needless to say,"
+        " even if you dodged the projectile, you must also keep in mind the hungry troll who will come after it.",
+        "Cat puller: trollish name for a rock thrower. Etymology: Trolls are not big on spelling, so when"
+        " a dwarf likened their rock hurlers to a siege engine, they came up with a name that made everyone else laugh."
     ],
     config.Imp: [
         "Fire burns in an imp's veins and dances over their fingers. To burn is to feel alive!"

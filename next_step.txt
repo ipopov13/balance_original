@@ -1,10 +1,11 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins
-Implement combat skills
-    Add all basic weapons and add them to the items table
+Combat effects
+    Move the melee/ranged damage into the effect dictionaries
+    Merge the dictionaries of the weapon and ammo/main&offhand when fighting, then send the effects over
+    Filter the effects by a 'combat' prefix (e.g., rock's hunger effects shouldn't be applied in combat)
 Make offhand weapons add damage or trigger more attacks
-Make the raw icons part of the item types?
 
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
@@ -13,6 +14,7 @@ Skills
 Usability
     Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
+    Add automatic collection of ammo items if there is a stack in the offhand, or there is a suitable weapon equipped
 Interface
     0 = black (#000000)
     1 = tumno(mrachno) sinio (#0000a8)
@@ -64,8 +66,8 @@ Crafting
      ingredients and waits to execute
     Use the MultiContainerScreen with the recipe list replacing the equipment one
 Combat
-    Bumping with a ranged weapon should only give weapon skill if the weapon
-     has a melee skill tag and non-0 melee damage properties
+    Some ranged ammo should not be retrievable (e.g. rounds that smash/break)
+    Make projectiles stop at unpassable terrain if there is no living target visible
     Attacked creatures should go into aggressive mode
     Creature disposition
     Normal mode

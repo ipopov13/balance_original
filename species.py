@@ -58,7 +58,10 @@ troll_race = go.HumanoidSpecies(name=config.Troll,
                                 color=config.chaos_color,
                                 description=knowledge[config.Troll][0],
                                 sort_key=5, consumable_types=[items.Rock],
-                                base_effect_modifiers={config.max_hp_modifier: 1.2},
+                                base_effect_modifiers={config.max_hp_modifier: 1.2,
+                                                       config.hunger_rock_effect: 10,
+                                                       config.thirst_rock_effect: 10
+                                                       },
                                 fist_weapon=items.TrollFist,
                                 clothes=items.Clothes)
 goblin_race = go.HumanoidSpecies(name=config.Goblin,
