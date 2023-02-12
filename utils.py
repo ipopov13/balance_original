@@ -186,6 +186,13 @@ def text_to_multiline(text: str, line_limit: int = config.max_text_line_length) 
     return '\n'.join(lines)
 
 
+def add_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict:
+    new_dict = dict1.copy()
+    for key, value in dict2.items():
+        new_dict[key] = new_dict.get(key, 0) + value
+    return new_dict
+
+
 if __name__ == "__main__":
     test = {i: i+1 for i in range(13)}
     print(columnize(test, 5))

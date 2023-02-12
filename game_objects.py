@@ -2,7 +2,7 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
-from utils import make_stats
+from utils import make_stats, add_dicts
 
 
 class GameObject:
@@ -79,7 +79,7 @@ class Container(GameObject):
 
 
 class Item(GameObject):
-    def __init__(self, weight: int = 0, effects: dict[str, int] = None,
+    def __init__(self, weight: int = 0, effects: dict = None,
                  is_stackable: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._own_weight = weight
@@ -94,7 +94,7 @@ class Item(GameObject):
         return self._own_weight
 
     @property
-    def effects(self) -> dict[str, int]:
+    def effects(self) -> dict:
         return self._effects
 
 
@@ -337,33 +337,42 @@ class Boots(Item):
     pass
 
 
-class MainHand(Item):
-    def __init__(self, melee_damage: int = 0, melee_weapon_skill: str = config.improvised_combat_skill,
+class MainHand:
+    pass
+
+
+class Weapon(Item):
+    def __init__(self, melee_weapon_skill: str = config.improvised_combat_skill,
                  melee_weapon_stat: str = config.Str,
                  combat_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
-        self.melee_damage = melee_damage
         self.melee_weapon_skill = melee_weapon_skill
         self.melee_weapon_stat = melee_weapon_stat
         self.combat_exhaustion = combat_exhaustion or self.weight
+        if config.melee_combat not in self.effects.get(config.combat_effects, {}):
+            raise ValueError(f"Item {self.name} must have a combat/melee effect dictionary!")
 
 
-class RangedWeapon(MainHand):
+class LargeWeapon(Weapon, MainHand):
+    pass
+
+
+class RangedWeapon(Weapon, MainHand):
     def __init__(self, ranged_weapon_type: str, ranged_weapon_skill: str,
-                 ranged_weapon_stat: str, max_distance: int,
-                 ranged_damage: int, **kwargs):
+                 ranged_weapon_stat: str, max_distance: int, **kwargs):
         super().__init__(**kwargs)
         self.ranged_weapon_type = ranged_weapon_type
         self.max_distance = max_distance
         self.ranged_weapon_skill = ranged_weapon_skill
         self.ranged_weapon_stat = ranged_weapon_stat
-        self.ranged_damage = ranged_damage
+        if config.ranged_combat not in self.effects.get(config.combat_effects, {}):
+            raise ValueError(f"Item {self.name} must have a combat/ranged effect dictionary!")
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
         return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
 
 
-class Tool(MainHand):
+class Tool(Weapon, MainHand):
     def __init__(self, work_skill: str, work_stat: str, work_exhaustion: int = None, **kwargs):
         super().__init__(**kwargs)
         self.work_skill = work_skill
@@ -371,11 +380,11 @@ class Tool(MainHand):
         self.work_stat = work_stat
 
 
-class Offhand(Item):
+class Offhand:
     pass
 
 
-class Shield(Offhand):
+class Shield(Item, Offhand):
     def __init__(self, evasion_modifier: float, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
         self.shield_skill = config.shield_skill
@@ -384,30 +393,32 @@ class Shield(Offhand):
         self.evasion_modifier = evasion_modifier
 
 
-class RangedAmmo(Offhand):
-    def __init__(self, ranged_ammo_type: str, ranged_damage: int = 0, **kwargs):
+class RangedAmmo(Item, Offhand):
+    def __init__(self, ranged_ammo_type: str, **kwargs):
         super().__init__(**kwargs)
         self.ranged_ammo_type = ranged_ammo_type
-        self.ranged_damage = ranged_damage
+        if config.ranged_combat not in self.effects.get(config.combat_effects, {}):
+            raise ValueError(f"Item {self.name} must have a combat/ranged effect dictionary!")
 
 
 class ThrownWeapon(RangedWeapon, RangedAmmo):
     pass
 
 
-class SmallWeapon(MainHand, Offhand):
+class SmallWeapon(Weapon, MainHand, Offhand):
     pass
 
 
-class TwoHandedWeapon(MainHand):
+class TwoHandedWeapon(Weapon, MainHand):
     pass
 
 
-class AnimalWeapon(Item):
-    def __init__(self, melee_damage: int, **kwargs):
+class AnimalWeapon(Weapon):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.combat_exhaustion = 1
-        self.melee_damage = melee_damage
+        self.melee_weapon_skill = config.animal_innate_weapon_skill
+        self.melee_weapon_stat = config.Str
 
 
 class AnimalArmor(Item):
@@ -491,6 +502,9 @@ class AnimalSpecies(Species):
         self.initial_equipment = equipment
         self._base_stats = base_stats or make_stats(default=1, stats={config.Per: 5})
         self.equipment_slots = base_animal_equipment_slots.copy()
+        self.base_skills[config.animal_innate_weapon_skill] = int(self._base_stats[config.Dex]
+                                                                  / config.max_stat_value
+                                                                  * config.max_skill_value)
         
 
 class Creature(GameObject):
@@ -537,10 +551,6 @@ class Creature(GameObject):
     @property
     def load(self) -> int:
         return sum([item.weight for item in self.equipped_items.values()])
-
-    @property
-    def melee_damage(self) -> int:
-        raise NotImplementedError(f"Class {self.__class__} must implement melee_damage!")
 
     @property
     def armor(self) -> int:
@@ -698,6 +708,9 @@ class Creature(GameObject):
     def _effects_at_dodge_attempt(self) -> None:
         raise NotImplementedError(f"Class {self.__class__} must implement _effects_at_dodge_attempt!")
 
+    def _react_to_hit(self) -> None:
+        raise NotImplementedError(f"Class {self.__class__} must implement _react_to_hit!")
+
     def apply_effects(self, effects: dict[str, int]) -> None:
         """
         Personalized effect values are created through the _effect_modifiers dictionary that
@@ -711,6 +724,7 @@ class Creature(GameObject):
                 return
             else:
                 effects.pop(config.dodge_difficulty)
+                self._react_to_hit()
         for name, effect in effects.items():
             self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
 
@@ -724,8 +738,8 @@ class Creature(GameObject):
             self.hunger -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
         elif name.startswith(config.thirst_effect_prefix):
             self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
-        elif name == config.normal_damage_effect:
-            self._receive_normal_damage(effect_size)
+        elif name.startswith(config.damage_effect_prefix):
+            self.hp -= max(0, effect_size - self.armor)
         else:
             self._active_effects[name] = \
                 self._active_effects.get(name, 0) + effect_size
@@ -813,22 +827,31 @@ class Creature(GameObject):
     def get_drops(self):
         return [item for item in self.equipped_items.values() if item is not empty_space]
 
-    def melee_with(self, enemy: 'Creature') -> None:
-        self.energy -= self._combat_exhaustion
-        hit_effects = {config.dodge_difficulty: self._melee_skill,
-                       config.normal_damage_effect: self.melee_damage}
+    def melee_with(self, enemy: 'Creature', weapon: Weapon) -> None:
+        skill = self._effective_skill(weapon.melee_weapon_skill)
+        hit_effects = {config.dodge_difficulty: skill}
+        skill_ratio = skill / config.max_skill_value
+        for effect, effect_size in weapon.effects[config.combat_effects][config.melee_combat].items():
+            if effect == config.physical_damage:
+                effective_damage = int(effect_size * (0.75 + 0.75 * skill_ratio)
+                                       + self.stats[weapon.melee_weapon_stat] / 4 * self._exhaustion_modifier)
+                hit_effects[effect] = effective_damage
+            else:
+                hit_effects[effect] = effect_size
         enemy.apply_effects(hit_effects)
 
-    @property
-    def _melee_skill(self) -> int:
-        raise NotImplementedError(f"Class {self.__class__} must implement _melee_skill!")
+    def _post_melee_effects(self, weapon: Weapon) -> None:
+        raise NotImplementedError(f"Class {self.__class__} must implement _post_melee_effects!")
+
+    def _get_weapons(self) -> list[Weapon]:
+        raise NotImplementedError(f"Class {self.__class__} must implement _get_weapons!")
 
     def bump_with(self, other_creature: 'Creature') -> None:
         if self._disposition == config.aggressive_disposition or self.raw_icon == '@':
-            self.melee_with(other_creature)
-
-    def _receive_normal_damage(self, damage: int) -> None:
-        self.hp -= max(0, damage - self.armor)
+            for weapon in self._get_weapons():
+                self.melee_with(other_creature, weapon)
+                self._post_melee_effects(weapon)
+            self.energy -= self._combat_exhaustion
 
     def rest(self):
         self.energy += random.randint(1, max(int(self.stats[config.End] / 5), 1))
@@ -863,32 +886,24 @@ class Animal(Creature):
         super().__init__(species, **kwargs)
 
     @property
-    def melee_damage(self) -> int:
-        weapon_damage = 0
-        for item in set(self.effective_equipment.values()):
-            try:
-                weapon_damage += item.melee_damage
-            except AttributeError:
-                pass
-        stat_damage = int(random.randint(1, max(int(self.stats[config.Str] / 4), 1)) * self._exhaustion_modifier)
-        return stat_damage + weapon_damage
-
-    @property
-    def _melee_skill(self) -> int:
-        return int((self.stats[config.Dex] / config.max_stat_value)
-                   * config.max_skill_value
-                   * self._exhaustion_modifier)
-
-    @property
     def _evasion_ability(self) -> float:
         return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
     def _effects_at_dodge_attempt(self) -> None:
         return
 
+    def _react_to_hit(self) -> None:
+        return
+
+    def _post_melee_effects(self, weapon: Weapon) -> None:
+        return
+
     @property
     def _armor_skill(self) -> int:
         return 100
+
+    def _get_weapons(self) -> list[Weapon]:
+        return [self.equipped_items[config.animal_weapon_slot]]
 
 
 class Humanoid(Creature):
@@ -933,8 +948,12 @@ class Humanoid(Creature):
                     exhaustion += item.combat_exhaustion
         return int(exhaustion)
 
-    def _get_main_hand(self) -> MainHand:
-        return self.effective_equipment[config.main_hand_slot]
+    def _get_weapons(self) -> list[Weapon]:
+        used_weapons = [self.effective_equipment[config.main_hand_slot]]
+        if isinstance(self.effective_equipment[config.offhand_slot], Weapon) \
+                and random.random() < self.stats[config.Dex] / config.max_stat_value:
+            used_weapons.append(self.effective_equipment[config.offhand_slot])
+        return used_weapons
 
     def _get_armor(self) -> Armor:
         return self.effective_equipment[config.armor_slot]
@@ -945,15 +964,8 @@ class Humanoid(Creature):
             return offhand
         return
 
-    def melee_with(self, enemy: 'Creature') -> None:
-        super().melee_with(enemy)
-        weapon = self._get_main_hand()
+    def _post_melee_effects(self, weapon: Weapon) -> None:
         self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
-
-    @property
-    def _melee_skill(self) -> int:
-        weapon = self._get_main_hand()
-        return self._effective_skill(weapon.melee_weapon_skill)
 
     @property
     def _armor_skill(self) -> int:
@@ -974,16 +986,7 @@ class Humanoid(Creature):
     def _effects_at_dodge_attempt(self) -> None:
         self._improve(config.evasion_skill, config.Dex)
 
-    @property
-    def melee_damage(self) -> int:
-        weapon = self._get_main_hand()
-        skill = self._effective_skill(weapon.melee_weapon_skill) / config.max_skill_value
-        effective_weapon_damage = (weapon.melee_damage * (0.75 + 0.75 * skill)
-                                   + self.stats[weapon.melee_weapon_stat] / 4 * self._exhaustion_modifier)
-        return int(effective_weapon_damage)
-
-    def _receive_normal_damage(self, damage: int) -> None:
-        super()._receive_normal_damage(damage)
+    def _react_to_hit(self) -> None:
         armor = self._get_armor()
         self._improve(armor.armor_skill, armor.armor_stat)
         shield = self._get_shield()
@@ -1021,21 +1024,16 @@ class Humanoid(Creature):
             return "Your ammo and weapon don't match!"
         return
 
-    @property
-    def _ranged_damage(self) -> int:
-        ranged_weapon = self._get_ranged_weapon()
-        ammo = self._get_ranged_ammo()
-        if ranged_weapon is ammo:
-            weapon_damage = ranged_weapon.ranged_damage
-        else:
-            weapon_damage = ranged_weapon.ranged_damage + ammo.ranged_damage
-        stats = int((self.stats[config.Dex] + self.stats[config.Per]) / 4)
-        return random.randint(0, max(stats, 1)) + weapon_damage
-
     def shoot(self) -> tuple[RangedAmmo, int, dict[str, int]]:
         weapon = self._get_ranged_weapon()
         ammo = self._get_ranged_ammo()
-        effects = {config.normal_damage_effect: self._ranged_damage}
+        if weapon is ammo:
+            effects = weapon.effects[config.combat_effects][config.ranged_combat].copy()
+        else:
+            effects = add_dicts(weapon.effects[config.combat_effects][config.ranged_combat],
+                                ammo.effects[config.combat_effects][config.ranged_combat])
+        if config.physical_damage in effects:
+            effects[config.physical_damage] += int(self.stats[weapon.ranged_weapon_stat] / 5)
         current_skill = self._effective_skill(weapon.ranged_weapon_skill)
         self._improve(weapon.ranged_weapon_skill, weapon.ranged_weapon_stat)
         for slot, item in self.equipped_items.items():

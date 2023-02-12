@@ -4,6 +4,9 @@ Adding the racial passives and documenting them in knowledge
 Imp:
     fire damage on fist
     fist is a fire-making tool
+Make evasion modifier, armor and combat exhaustion parts of the effects dict
+    After that, add a self.get_effect() method that just goes through the modifier dicts of equipment
+     and sums up the results
 Dryad:
     pass through all plants
     plant terrains don't tire them (bushes/jungle)
@@ -17,11 +20,6 @@ Water Elemental
 Fae
     doesn't wake sleeping creatures
     can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
-Combat effects
-    Move the melee/ranged damage into the effect dictionaries
-    Merge the dictionaries of the weapon and ammo/main&offhand when fighting, then send the effects over
-    Filter the effects by a 'combat' prefix (e.g., rock's hunger effects shouldn't be applied in combat)
-Make offhand weapons add damage or trigger more attacks
 
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!

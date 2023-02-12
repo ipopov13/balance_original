@@ -75,6 +75,7 @@ Per = "Perception"
 Wil = "Willpower"
 stats_order = [Str, End, Dex, Per, Wil]
 # Applied effects
+consumable_effects = 'consumable_effects'
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'
 hunger_water_effect = hunger_effect_prefix + 'water'
@@ -82,7 +83,11 @@ hunger_rock_effect = hunger_effect_prefix + 'rock'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 thirst_rock_effect = thirst_effect_prefix + 'rock'
-normal_damage_effect = 'normal_damage_effect'
+combat_effects = 'combat_effects'
+ranged_combat = 'ranged_combat'
+melee_combat = 'melee_combat'
+damage_effect_prefix = 'damage_'
+physical_damage = damage_effect_prefix + 'physical'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'
@@ -110,41 +115,42 @@ animal_armor_slot = 'AnimalArmor'
 animal_meat_slot = 'Meat'
 # Skills and prefixes for coloring
 skill_delimiter = "_"
-combat_prefix = "combat"
-crafting_prefix = "crafting"
-extraction_prefix = "extracting"
-social_prefix = "social"
-utility_prefix = "utility"
-skill_colors = {combat_prefix: console.fg.lightred,
-                crafting_prefix: console.fg.lightblue,
-                extraction_prefix: console.fg.lightgreen,
-                social_prefix: console.fg.yellow,
-                utility_prefix: console.fg.purple}
-gun_skill = combat_prefix + skill_delimiter + "Guns"
-bow_skill = combat_prefix + skill_delimiter + "Bows"
-crossbow_skill = combat_prefix + skill_delimiter + "Crossbows"
-sling_skill = combat_prefix + skill_delimiter + "Slings"
-daggers_skill = combat_prefix + skill_delimiter + "Daggers"
-onehanded_swords_skill = combat_prefix + skill_delimiter + "Swords"
-onehanded_axes_skill = combat_prefix + skill_delimiter + "Axes"
-onehanded_hammers_skill = combat_prefix + skill_delimiter + "Maces"
-twohanded_swords_skill = combat_prefix + skill_delimiter + "Great swords"
-twohanded_axes_skill = combat_prefix + skill_delimiter + "Great axes"
-twohanded_hammers_skill = combat_prefix + skill_delimiter + "Great hammers"
-staves_skill = combat_prefix + skill_delimiter + "Staves"
-spear_skill = combat_prefix + skill_delimiter + "Spears"
-throwing_knife_skill = combat_prefix + skill_delimiter + "Throwing knives"
-grenades_skill = combat_prefix + skill_delimiter + "Grenades"
-throwing_spear_skill = combat_prefix + skill_delimiter + "Throwing spears"
-improvised_combat_skill = combat_prefix + skill_delimiter + "Improvised weapons"
-unarmed_combat_skill = combat_prefix + skill_delimiter + "Unarmed combat"
-shield_skill = combat_prefix + skill_delimiter + "Shields"
-evasion_skill = combat_prefix + skill_delimiter + "Evasion"
-light_armor_skill = combat_prefix + skill_delimiter + "Light armor"
-heavy_armor_skill = combat_prefix + skill_delimiter + "Heavy armor"
-mining_skill = extraction_prefix + skill_delimiter + 'Mining'
-scavenging_skill = extraction_prefix + skill_delimiter + 'Scavenging'
-monster_harvesting_skill = extraction_prefix + skill_delimiter + 'Monster harvesting'
+combat_skill_prefix = "combat"
+crafting_skill_prefix = "crafting"
+extraction_skill_prefix = "extracting"
+social_skill_prefix = "social"
+utility_skill_prefix = "utility"
+skill_colors = {combat_skill_prefix: console.fg.lightred,
+                crafting_skill_prefix: console.fg.lightblue,
+                extraction_skill_prefix: console.fg.lightgreen,
+                social_skill_prefix: console.fg.yellow,
+                utility_skill_prefix: console.fg.purple}
+animal_innate_weapon_skill = combat_skill_prefix + skill_delimiter + "Innate weapons"
+gun_skill = combat_skill_prefix + skill_delimiter + "Guns"
+bow_skill = combat_skill_prefix + skill_delimiter + "Bows"
+crossbow_skill = combat_skill_prefix + skill_delimiter + "Crossbows"
+sling_skill = combat_skill_prefix + skill_delimiter + "Slings"
+daggers_skill = combat_skill_prefix + skill_delimiter + "Daggers"
+onehanded_swords_skill = combat_skill_prefix + skill_delimiter + "Swords"
+onehanded_axes_skill = combat_skill_prefix + skill_delimiter + "Axes"
+onehanded_hammers_skill = combat_skill_prefix + skill_delimiter + "Maces"
+twohanded_swords_skill = combat_skill_prefix + skill_delimiter + "Great swords"
+twohanded_axes_skill = combat_skill_prefix + skill_delimiter + "Great axes"
+twohanded_hammers_skill = combat_skill_prefix + skill_delimiter + "Great hammers"
+staves_skill = combat_skill_prefix + skill_delimiter + "Staves"
+spear_skill = combat_skill_prefix + skill_delimiter + "Spears"
+throwing_knife_skill = combat_skill_prefix + skill_delimiter + "Throwing knives"
+grenades_skill = combat_skill_prefix + skill_delimiter + "Grenades"
+throwing_spear_skill = combat_skill_prefix + skill_delimiter + "Throwing spears"
+improvised_combat_skill = combat_skill_prefix + skill_delimiter + "Improvised weapons"
+unarmed_combat_skill = combat_skill_prefix + skill_delimiter + "Unarmed combat"
+shield_skill = combat_skill_prefix + skill_delimiter + "Shields"
+evasion_skill = combat_skill_prefix + skill_delimiter + "Evasion"
+light_armor_skill = combat_skill_prefix + skill_delimiter + "Light armor"
+heavy_armor_skill = combat_skill_prefix + skill_delimiter + "Heavy armor"
+mining_skill = extraction_skill_prefix + skill_delimiter + 'Mining'
+scavenging_skill = extraction_skill_prefix + skill_delimiter + 'Scavenging'
+monster_harvesting_skill = extraction_skill_prefix + skill_delimiter + 'Monster harvesting'
 # Ranged weapon/ammo types
 hand_thrown_type = 'hand_thrown_type'
 acorn_gun_type = 'acorn_gun_type'
