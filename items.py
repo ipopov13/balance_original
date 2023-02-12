@@ -93,6 +93,19 @@ class TrollFist(go.Tool, go.RangedWeapon):
                                                           config.melee_combat: {config.physical_damage: 1}}})
 
 
+class ImpFist(go.Tool, go.RangedWeapon):
+    def __init__(self):
+        super().__init__(name="Your fist", description="Joyful flames dance over your fingers",
+                         weight=0, icon='.', color=console.fg.lightblack,
+                         work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
+                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
+                         ranged_weapon_type=config.hand_thrown_type, max_distance=5,
+                         effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
+                                                          config.melee_combat: {config.fire_damage: 3,
+                                                                                config.physical_damage: 0}}})
+
+
 class Pickaxe(go.Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",

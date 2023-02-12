@@ -2,7 +2,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Imp:
-    fire damage on fist
     fist is a fire-making tool
 Make evasion modifier, armor and combat exhaustion parts of the effects dict
     After that, add a self.get_effect() method that just goes through the modifier dicts of equipment

@@ -88,6 +88,7 @@ ranged_combat = 'ranged_combat'
 melee_combat = 'melee_combat'
 damage_effect_prefix = 'damage_'
 physical_damage = damage_effect_prefix + 'physical'
+fire_damage = damage_effect_prefix + 'fire'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'

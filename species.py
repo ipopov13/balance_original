@@ -85,7 +85,7 @@ imp_race = go.HumanoidSpecies(name=config.Imp,
                               color=config.chaos_color,
                               description=knowledge[config.Imp][0],
                               sort_key=8,
-                              fist_weapon=items.Fist,
+                              fist_weapon=items.ImpFist,
                               clothes=items.Clothes)
 dryad_race = go.HumanoidSpecies(name=config.Dryad,
                                 icon='D',
