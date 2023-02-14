@@ -2,7 +2,7 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
-from utils import make_stats, add_dicts, multiply_and_append_dict
+from utils import make_stats, add_dicts
 
 
 class GameObject:
@@ -318,10 +318,9 @@ class Helmet(Item):
 
 
 class Armor(Item):
-    def __init__(self, armor: int, armor_skill: str, armor_stat: str,
+    def __init__(self, armor_skill: str, armor_stat: str,
                  evasion_modifier: float, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
-        self.armor = armor
         self.armor_skill = armor_skill
         self.armor_stat = armor_stat
         self.evasion_modifier = evasion_modifier
@@ -422,9 +421,7 @@ class AnimalWeapon(Weapon):
 
 
 class AnimalArmor(Item):
-    def __init__(self, armor: int, **kwargs):
-        super().__init__(**kwargs)
-        self.armor = armor
+    pass
 
 
 class EdibleAnimalPart(Item):
@@ -554,25 +551,6 @@ class Creature(GameObject):
     @property
     def load(self) -> int:
         return sum([item.weight for item in self.equipped_items.values()])
-
-    @property
-    def armor(self) -> int:
-        skill = self._armor_skill / config.max_skill_value
-        effective_armor = int(self.equipment_armor() * (0.5 + 0.5 * skill))
-        return effective_armor
-
-    @property
-    def _armor_skill(self) -> int:
-        raise NotImplementedError(f"Class {self.__class__} must implement _armor_skill!")
-
-    def equipment_armor(self) -> int:
-        armor = 0
-        for item in set(self.effective_equipment.values()):
-            try:
-                armor += item.armor
-            except AttributeError:
-                pass
-        return armor
 
     @property
     def _combat_exhaustion(self) -> int:
@@ -766,7 +744,7 @@ class Creature(GameObject):
         elif name.startswith(config.thirst_effect_prefix):
             self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
         elif name.startswith(config.damage_effect_prefix):
-            self.hp -= max(0, effect_size - self.armor)
+            self.hp -= effect_size
         else:
             self._active_effects[name] = \
                 self._active_effects.get(name, 0) + effect_size
@@ -894,16 +872,26 @@ class Creature(GameObject):
         return {stat: f'{value:.2f}' for stat, value in self.stats.items()}
 
     def get_modifier_data(self) -> dict[str, str]:
-        modifiers = self._effect_modifiers.copy()
+        modifiers = set(self._effect_modifiers.keys())
         for item in set(self.effective_equipment.values()):
-            modifiers = multiply_and_append_dict(modifiers, item.effects.get(config.effect_modifiers, {}))
-        return {stat.split(config.skill_delimiter)[-1]: f'x {value:.2f}' for stat, value in modifiers.items()}
+            modifiers = modifiers | set(item.effects.get(config.effect_modifiers, {}).keys())
+        modifier_data = {}
+        for modifier in modifiers:
+            clean_name = modifier.split(config.skill_delimiter)[-1]
+            value = self._get_effect_modifier(modifier)
+            modifier_data[clean_name] = f'x {value:.2f}'
+        return modifier_data
 
     def get_resistances_and_affinities_data(self) -> dict[str, str]:
-        modifiers = self._resistances_and_affinities.copy()
+        modifiers = set(self._resistances_and_affinities.keys())
         for item in set(self.effective_equipment.values()):
-            modifiers = add_dicts(modifiers, item.effects.get(config.resistances_and_affinities, {}))
-        return {stat: f'{value}' for stat, value in modifiers.items()}
+            modifiers = modifiers | set(item.effects.get(config.resistances_and_affinities, {}).keys())
+        modifier_data = {}
+        for modifier in modifiers:
+            clean_name = modifier.split(config.skill_delimiter)[-1]
+            value = self._get_effect_resistance_or_affinity(modifier)
+            modifier_data[clean_name] = f'{value}'
+        return modifier_data
 
     def get_secondary_stats_data(self) -> dict[str, str]:
         return {'Hp': f'{self.hp}/{self.max_hp}',
@@ -937,10 +925,6 @@ class Animal(Creature):
 
     def _post_melee_effects(self, weapon: Weapon) -> None:
         return
-
-    @property
-    def _armor_skill(self) -> int:
-        return 100
 
     def _get_weapons(self) -> list[Weapon]:
         return [self.equipped_items[config.animal_weapon_slot]]
@@ -1006,11 +990,6 @@ class Humanoid(Creature):
 
     def _post_melee_effects(self, weapon: Weapon) -> None:
         self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
-
-    @property
-    def _armor_skill(self) -> int:
-        armor = self._get_armor()
-        return self._effective_skill(armor.armor_skill)
 
     @property
     def _evasion_ability(self) -> float:

@@ -27,7 +27,7 @@ class Clothes(go.Armor):
     def __init__(self):
         super().__init__(name='simple clothes', weight=0, icon='.', color=console.fg.lightblack,
                          description="Commoner's shirt and pants.",
-                         armor=0, armor_skill=config.evasion_skill, armor_stat=config.Dex,
+                         armor_skill=config.evasion_skill, armor_stat=config.Dex,
                          evasion_modifier=1, combat_exhaustion=0)
 
 
@@ -35,7 +35,8 @@ class HideArmor(go.Armor):
     def __init__(self):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
                          description='Armor made from light hide',
-                         armor=1, armor_skill=config.light_armor_skill, armor_stat=config.Dex,
+                         effects={config.resistances_and_affinities: {config.physical_damage: -1}},
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex,
                          evasion_modifier=0.9, combat_exhaustion=1)
 
 
@@ -43,7 +44,8 @@ class LeatherArmor(go.Armor):
     def __init__(self):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
                          description='Armor made from leather',
-                         armor=3, armor_skill=config.light_armor_skill, armor_stat=config.Dex,
+                         effects={config.resistances_and_affinities: {config.physical_damage: -3}},
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex,
                          evasion_modifier=0.85, combat_exhaustion=1)
 
 
@@ -51,7 +53,8 @@ class ChainMail(go.Armor):
     def __init__(self):
         super().__init__(name='chain mail', weight=9, icon='[', color=console.fg.lightblack,
                          description='A shirt of woven iron links.',
-                         armor=5, armor_skill=config.heavy_armor_skill, armor_stat=config.End,
+                         effects={config.resistances_and_affinities: {config.physical_damage: -5}},
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End,
                          evasion_modifier=0.6, combat_exhaustion=3)
 
 
@@ -59,7 +62,8 @@ class PlateArmor(go.Armor):
     def __init__(self):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates',
-                         armor=7, armor_skill=config.heavy_armor_skill, armor_stat=config.End,
+                         effects={config.resistances_and_affinities: {config.physical_damage: -7}},
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End,
                          evasion_modifier=0.3, combat_exhaustion=5)
 
 
@@ -474,31 +478,36 @@ class LargeTeeth(go.AnimalWeapon):
 class LightHide(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='light hide', weight=5, icon='(', color=config.brown_fg_color,
-                         description='The light hide of an animal', armor=1)
+                         description='The light hide of an animal',
+                         effects={config.resistances_and_affinities: {config.physical_damage: -1}},)
 
 
 class MediumHide(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='medium hide', weight=10, icon='(', color=config.brown_fg_color,
-                         description='The thick hide of an animal', armor=2)
+                         description='The thick hide of an animal',
+                         effects={config.resistances_and_affinities: {config.physical_damage: -2}},)
 
 
 class MediumScales(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='medium scaly hide', weight=10, icon='(', color=console.fg.lightgreen,
-                         description='The scaly hide of a lizard', armor=2)
+                         description='The scaly hide of a lizard',
+                         effects={config.resistances_and_affinities: {config.physical_damage: -2}},)
 
 
 class HeavyScales(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='heavy scaled hide', weight=20, icon='(', color=console.fg.lightgreen,
-                         description='The scaly hide of a monstrous lizard', armor=5)
+                         description='The scaly hide of a monstrous lizard',
+                         effects={config.resistances_and_affinities: {config.physical_damage: -5}},)
 
 
 class Feathers(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='feathers', weight=3, icon=',', color=console.fg.lightblack,
-                         description='The feathers of a bird', armor=1)
+                         description='The feathers of a bird',
+                         effects={config.resistances_and_affinities: {config.physical_damage: -1}},)
 
 
 class RawMeat(go.EdibleAnimalPart):
