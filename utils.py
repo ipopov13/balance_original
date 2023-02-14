@@ -186,10 +186,17 @@ def text_to_multiline(text: str, line_limit: int = config.max_text_line_length) 
     return '\n'.join(lines)
 
 
-def add_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict:
+def add_dicts(dict1: dict[str, int], dict2: dict[str, int]) -> dict[str, int]:
     new_dict = dict1.copy()
     for key, value in dict2.items():
         new_dict[key] = new_dict.get(key, 0) + value
+    return new_dict
+
+
+def multiply_and_append_dict(base: dict[str, float], addition: dict[str, float]) -> dict[str, float]:
+    new_dict = base.copy()
+    for key, value in addition.items():
+        new_dict[key] = new_dict.get(key, 1) * value
     return new_dict
 
 

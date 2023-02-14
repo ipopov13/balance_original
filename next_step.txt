@@ -4,10 +4,10 @@ Adding the racial passives and documenting them in knowledge
 Implement resistances/affinities (added to effects) and effect modifiers (multiply effects)
     *adjust all direct uses of _effect_modifiers to use the respective dict
     *split the racial bonuses into the new properties
-    add modifiers and resistance/affinities to the character screen
+    *add modifiers and resistance/affinities to the character screen
     move the armor and evasion modifier into the physical resistance and adjust items
     Combat exhaustion should be per item in order to apply skills
-    Combat exaustion should be different for ranged/melee
+    Combat exhaustion should be different for ranged/melee
 Imp:
     fist is a fire-making tool
 Dryad:

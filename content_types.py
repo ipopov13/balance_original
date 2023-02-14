@@ -39,6 +39,8 @@ class CharacterSheet(WindowContent):
         super().__init__(game_object)
         self.creature = self.game_object.character
         self._stats: dict[str, str] = self.creature.get_stats_data()
+        self._modifiers: dict[str, str] = self.creature.get_modifier_data()
+        self._resistances_and_affinities: dict[str, str] = self.creature.get_resistances_and_affinities_data()
         self._secondary_stats: dict[str, int] = self.creature.get_secondary_stats_data()
         self._skills: dict[str, int] = self._format_creature_skills()
         self._content: list[str] = []
@@ -81,18 +83,45 @@ class CharacterSheet(WindowContent):
                                             line_limit=config.max_text_line_length - stats_width - 2).split('\n')
         equalized_content = utils.equalize_rows([justified_stats, justified_secondary_stats, race_desc])
         stats_and_race = ['  '.join(rows) for rows in zip(*[c for c in equalized_content])]
-        self._content += stats_and_race
-        skills_title = utils.center_ansi_multiline(["Skills"])
-        self._content += [' ' * config.max_text_line_length] + skills_title + [' ' * config.max_text_line_length]
+        self._content += stats_and_race + [' ' * config.max_text_line_length]
+
+        modifier_title = 'Modifiers'
+        if self._modifiers:
+            adjusted_modifiers = utils.justify_ansi_dict(self._modifiers)
+        else:
+            adjusted_modifiers = ["No modifiers"]
+        if len(modifier_title) > utils.raw_length(adjusted_modifiers[0]):
+            adjusted_modifiers = utils.center_ansi_multiline(adjusted_modifiers, len(modifier_title))
+        else:
+            modifier_title = modifier_title.center(utils.raw_length(adjusted_modifiers[0]))
+        modifier_content = utils.center_ansi_multiline([modifier_title] + adjusted_modifiers,
+                                                       config.max_text_line_length // 2)
+        resistances_title = 'Resistances/Affinities'
+        if self._resistances_and_affinities:
+            adjusted_resistances = utils.justify_ansi_dict(self._resistances_and_affinities)
+        else:
+            adjusted_resistances = ["No resistances or affinities"]
+        if len(resistances_title) > utils.raw_length(adjusted_resistances[0]):
+            adjusted_resistances = utils.center_ansi_multiline(adjusted_resistances, len(resistances_title))
+        else:
+            resistances_title = resistances_title.center(utils.raw_length(adjusted_resistances[0]))
+        resistances_content = utils.center_ansi_multiline([resistances_title] + adjusted_resistances,
+                                                          config.max_text_line_length // 2)
+        equalized_content = utils.equalize_rows([modifier_content, resistances_content])
+        mod_and_res = ['  '.join(rows) for rows in zip(*[c for c in equalized_content])]
+        self._content += mod_and_res
+
+        self._content += [' ' * config.max_text_line_length] +\
+                         ["Skills".center(config.max_text_line_length)] +\
+                         [' ' * config.max_text_line_length]
         available_rows = config.max_text_lines_on_page - len(self._content)
-        self._skill_pages = utils.columnize(self._skills, rows=available_rows, fill_all_rows=True)
+        if self._skills:
+            self._skill_pages = utils.columnize(self._skills, rows=available_rows, fill_all_rows=True)
+        else:
+            self._skill_pages = [["You don't have any discernible skills yet.".center(config.max_text_line_length)]]
 
     def data(self) -> str:
-        if self._skills:
-            final_content = self._content + self._skill_pages[self._current_page]
-        else:
-            final_content = self._content + utils.center_ansi_multiline(["You don't have any discernible skills yet."])
-        return '\n'.join(final_content)
+        return '\n'.join(self._content + self._skill_pages[self._current_page])
 
 
 class GameScene(WindowContent):

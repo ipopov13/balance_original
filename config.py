@@ -94,11 +94,11 @@ fire_damage = damage_effect_prefix + 'fire'
 #  Resistances, affinities, and modifiers
 resistances_and_affinities = 'resistances_and_affinities'
 effect_modifiers = 'effect_modifiers'
-travel_energy_loss_modifier = 'travel_energy_loss_modifier'
-max_mana_modifier = 'max_mana_modifier'
-max_hp_modifier = 'max_hp_modifier'
-max_load_modifier = 'max_load_modifier'
-max_energy_modifier = 'max_energy_modifier'
+travel_energy_loss_modifier = 'Travel fatigue'
+max_mana_modifier = 'Max mana'
+max_hp_modifier = 'Max HP'
+max_load_modifier = 'Max load'
+max_energy_modifier = 'Max energy'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'

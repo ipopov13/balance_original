@@ -2,7 +2,7 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
-from utils import make_stats, add_dicts
+from utils import make_stats, add_dicts, multiply_and_append_dict
 
 
 class GameObject:
@@ -888,6 +888,18 @@ class Creature(GameObject):
 
     def get_stats_data(self) -> dict[str, str]:
         return {stat: f'{value:.2f}' for stat, value in self.stats.items()}
+
+    def get_modifier_data(self) -> dict[str, str]:
+        modifiers = self._effect_modifiers.copy()
+        for item in set(self.effective_equipment.values()):
+            modifiers = multiply_and_append_dict(modifiers, item.effects.get(config.effect_modifiers, {}))
+        return {stat.split(config.skill_delimiter)[-1]: f'x {value:.2f}' for stat, value in modifiers.items()}
+
+    def get_resistances_and_affinities_data(self) -> dict[str, str]:
+        modifiers = self._resistances_and_affinities.copy()
+        for item in set(self.effective_equipment.values()):
+            modifiers = add_dicts(modifiers, item.effects.get(config.resistances_and_affinities, {}))
+        return {stat: f'{value}' for stat, value in modifiers.items()}
 
     def get_secondary_stats_data(self) -> dict[str, str]:
         return {'Hp': f'{self.hp}/{self.max_hp}',
