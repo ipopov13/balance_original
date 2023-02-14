@@ -74,7 +74,8 @@ Dex = "Dexterity"
 Per = "Perception"
 Wil = "Willpower"
 stats_order = [Str, End, Dex, Per, Wil]
-# Applied effects
+# Item effects
+#  Consumables
 consumable_effects = 'consumable_effects'
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'
@@ -83,12 +84,21 @@ hunger_rock_effect = hunger_effect_prefix + 'rock'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 thirst_rock_effect = thirst_effect_prefix + 'rock'
+#  Combat
 combat_effects = 'combat_effects'
 ranged_combat = 'ranged_combat'
 melee_combat = 'melee_combat'
 damage_effect_prefix = 'damage_'
 physical_damage = damage_effect_prefix + 'physical'
 fire_damage = damage_effect_prefix + 'fire'
+#  Resistances, affinities, and modifiers
+resistances_and_affinities = 'resistances_and_affinities'
+effect_modifiers = 'effect_modifiers'
+travel_energy_loss_modifier = 'travel_energy_loss_modifier'
+max_mana_modifier = 'max_mana_modifier'
+max_hp_modifier = 'max_hp_modifier'
+max_load_modifier = 'max_load_modifier'
+max_energy_modifier = 'max_energy_modifier'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'
@@ -97,11 +107,6 @@ sick_effect = 'Sick'
 drunk_effect = 'Drunk'
 non_rest_energy_regen_effect = 'non_rest_energy_regen'
 non_rest_hp_regen_effect = 'non_rest_hp_regen_effect'
-travel_energy_loss_modifier = 'travel_energy_loss_modifier'
-max_mana_modifier = 'max_mana_modifier'
-max_hp_modifier = 'max_hp_modifier'
-max_load_modifier = 'max_load_modifier'
-max_energy_modifier = 'max_energy_modifier'
 # Visible effect values are shown as statuses
 visible_effects = [sick_effect, drunk_effect]
 # Equipment slots

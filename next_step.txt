@@ -1,11 +1,15 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
+Implement resistances/affinities (added to effects) and effect modifiers (multiply effects)
+    *adjust all direct uses of _effect_modifiers to use the respective dict
+    *split the racial bonuses into the new properties
+    add modifiers and resistance/affinities to the character screen
+    move the armor and evasion modifier into the physical resistance and adjust items
+    Combat exhaustion should be per item in order to apply skills
+    Combat exaustion should be different for ranged/melee
 Imp:
     fist is a fire-making tool
-Make evasion modifier, armor and combat exhaustion parts of the effects dict
-    After that, add a self.get_effect() method that just goes through the modifier dicts of equipment
-     and sums up the results
 Dryad:
     pass through all plants
     plant terrains don't tire them (bushes/jungle)

@@ -447,6 +447,7 @@ class Species(GameObject):
     def __init__(self, custom_ai: dict[str, list[str]] = None,
                  initial_disposition: str = config.indifferent_disposition,
                  base_effect_modifiers: dict[str, int] = None,
+                 base_resistances_and_affinities: dict[str, int] = None,
                  active_effects: dict[str, int] = None,
                  consumable_types: list[Type[Item]] = None,
                  base_skills: dict[str, int] = None,
@@ -463,6 +464,7 @@ class Species(GameObject):
         self.ai = basic_ai
         self.base_skills = base_skills or {}
         self.base_effect_modifiers = base_effect_modifiers or {}
+        self.base_resistances_and_affinities = base_resistances_and_affinities or {}
         self.active_effects = {config.non_rest_energy_regen_effect: 1}
         if active_effects is not None:
             self.active_effects.update(active_effects)
@@ -526,6 +528,7 @@ class Creature(GameObject):
         self._skills = self.species.base_skills.copy()
         self.stats = self.species.base_stats.copy()
         self._effect_modifiers = self.species.base_effect_modifiers
+        self._resistances_and_affinities = self.species.base_resistances_and_affinities
         self._active_effects: dict[str, int] = self.species.active_effects
         self.equipment_slots = self.species.equipment_slots
         self.equipped_items = {k: empty_space for k in self.equipment_slots}
@@ -642,17 +645,20 @@ class Creature(GameObject):
     @property
     def max_hp(self) -> int:
         base_hp = self.stats[config.Str] + 2 * self.stats[config.End]
-        return int(base_hp * self._effect_modifiers.get(config.max_hp_modifier, 1))
+        modifier = self._get_effect_modifier(config.max_hp_modifier)
+        return int(base_hp * modifier)
 
     @property
     def max_mana(self) -> int:
         base_mana = self.stats[config.Wil] * 10
-        return int(base_mana * self._effect_modifiers.get(config.max_mana_modifier, 1))
+        modifier = self._get_effect_modifier(config.max_mana_modifier)
+        return int(base_mana * modifier)
 
     @property
     def max_energy(self) -> int:
         base_energy = int(self.stats[config.End] * 10)
-        return int(base_energy * self._effect_modifiers.get(config.max_energy_modifier, 1))
+        modifier = self._get_effect_modifier(config.max_energy_modifier)
+        return int(base_energy * modifier)
 
     @property
     def current_max_energy(self) -> int:
@@ -670,8 +676,9 @@ class Creature(GameObject):
         return direction
 
     def travel(self) -> None:
-        fraction = self._effect_modifiers.get(config.travel_energy_loss_modifier, self.load / self.max_load)
-        energy_to_lose = int(self.max_energy * fraction) // 2
+        base_fraction = self.load / self.max_load
+        modifier = self._get_effect_modifier(config.travel_energy_loss_modifier)
+        energy_to_lose = int(self.max_energy * base_fraction * modifier) // 2
         self.energy -= energy_to_lose
         self.ranged_target = None
 
@@ -713,20 +720,36 @@ class Creature(GameObject):
 
     def apply_effects(self, effects: dict[str, int]) -> None:
         """
-        Personalized effect values are created through the _effect_modifiers dictionary that
-        depends on the race and the actions of the character.
+        Personalized effect values are created through effect modifiers, resistances,
+        and affinities that depend on the race and the actions of the character.
         """
-        if config.dodge_difficulty in effects:
+        # We make a copy so that the effects are not modified for other creatures they apply to
+        local_effects = effects.copy()
+        if config.dodge_difficulty in local_effects:
             dodge = self._evasion_ability
-            difficulty = effects[config.dodge_difficulty]
+            difficulty = local_effects[config.dodge_difficulty]
             self._effects_at_dodge_attempt()
             if random.random() < dodge / (dodge + difficulty) * config.max_dodge_chance:
                 return
             else:
-                effects.pop(config.dodge_difficulty)
+                local_effects.pop(config.dodge_difficulty)
                 self._react_to_hit()
-        for name, effect in effects.items():
-            self._apply_effect(name, effect + self._effect_modifiers.get(name, 0))
+        for name, effect_size in local_effects.items():
+            modified_effect_size = effect_size + self._get_effect_resistance_or_affinity(name)
+            final_effect_size = int(modified_effect_size * self._get_effect_modifier(name))
+            self._apply_effect(name, final_effect_size)
+
+    def _get_effect_resistance_or_affinity(self, effect_name: str) -> int:
+        effect_adjustment = self._resistances_and_affinities.get(effect_name, 0)
+        for item in set(self.effective_equipment.values()):
+            effect_adjustment += item.effects.get(config.resistances_and_affinities, {}).get(effect_name, 0)
+        return effect_adjustment
+
+    def _get_effect_modifier(self, effect_name: str) -> float:
+        effect_adjustment = self._effect_modifiers.get(effect_name, 1)
+        for item in set(self.effective_equipment.values()):
+            effect_adjustment *= item.effects.get(config.effect_modifiers, {}).get(effect_name, 1)
+        return effect_adjustment
 
     def _apply_effect(self, name: str, effect_size: int) -> None:
         """
@@ -758,7 +781,8 @@ class Creature(GameObject):
     @property
     def max_load(self) -> int:
         base_load = self.stats[config.Str] * 5
-        return int(base_load * self._effect_modifiers.get(config.max_load_modifier, 1))
+        load_modifier = self._get_effect_modifier(config.max_load_modifier)
+        return int(base_load * load_modifier)
 
     @property
     def bag(self):
@@ -874,7 +898,7 @@ class Creature(GameObject):
 
     def _effective_skill(self, skill_name: str) -> int:
         raw_skill = self._skills.get(skill_name, 0)
-        modifier = self._effect_modifiers.get(skill_name, 1)
+        modifier = self._get_effect_modifier(skill_name)
         return int(raw_skill * modifier)
 
     def get_skills_data(self) -> dict[str, int]:
