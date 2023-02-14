@@ -5,8 +5,10 @@ Implement resistances/affinities (added to effects) and effect modifiers (multip
     *adjust all direct uses of _effect_modifiers to use the respective dict
     *split the racial bonuses into the new properties
     *add modifiers and resistance/affinities to the character screen
-    move the armor and evasion modifier into the physical resistance and adjust items
-    Combat exhaustion should be per item in order to apply skills
+    move the armor and evasion modifier into the effects dict of items
+    adjust code to use the dicts
+    drop the armor-specific methods
+    Combat exhaustion should be defined per item in order to apply skills
     Combat exhaustion should be different for ranged/melee
 Imp:
     fist is a fire-making tool

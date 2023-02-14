@@ -742,7 +742,11 @@ class Creature(GameObject):
     def _get_effect_resistance_or_affinity(self, effect_name: str) -> int:
         effect_adjustment = self._resistances_and_affinities.get(effect_name, 0)
         for item in set(self.effective_equipment.values()):
-            effect_adjustment += item.effects.get(config.resistances_and_affinities, {}).get(effect_name, 0)
+            effective_value = item.effects.get(config.resistances_and_affinities, {}).get(effect_name, 0)
+            if isinstance(item, Armor):
+                skill = self._effective_skill(item.armor_skill) / config.max_skill_value
+                effective_value = int(effective_value * (0.5 + 0.5 * skill))
+            effect_adjustment += effective_value
         return effect_adjustment
 
     def _get_effect_modifier(self, effect_name: str) -> float:
