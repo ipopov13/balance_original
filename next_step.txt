@@ -5,10 +5,7 @@ Implement resistances/affinities (added to effects) and effect modifiers (multip
     *adjust all direct uses of _effect_modifiers to use the respective dict
     *split the racial bonuses into the new properties
     *add modifiers and resistance/affinities to the character screen
-    Make the evasion modifier an evasion skill modifier?
-        But then the shield skill has no usage, since skills cannot affect modifiers
-        OR, specify the exact modifiers to be affected, so that there is no chance for endless loops?
-    move the evasion modifier into the effects dict of items
+    Make the armor/shield evasion modifier an evasion skill modifier
     adjust code to use the dicts
     Combat exhaustion should be defined per item in order to apply skills
     Combat exhaustion should be different for ranged/melee
