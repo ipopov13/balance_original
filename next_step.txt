@@ -2,7 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    a fire needs firewood (scavenging skill on non-frozen trees/bushes)
+    add a flint-n-steel
     firewood provides a special "Light fire" command when the character has a source of fire
     a lit fire is a multi-turn effect that is kept by the game
     the effect is passed to the location for rendering, but should be under the creature layer

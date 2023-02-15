@@ -139,7 +139,16 @@ terrain_transformations = {
                                       'message': 'You sift through the pile of bones.'}},
     junk_pile: {config.scavenging_skill: {'new_terrain': junk_pile, 'number_of_drops': 3,
                                           'drop_types': [None, items.JunkItem], 'drop_weights': [40, 60],
-                                          'message': 'You sift through the pile of bones.'}}
+                                          'message': 'You sift through the pile of bones.'}},
+    tree: {config.scavenging_skill: {'new_terrain': tree, 'number_of_drops': 1,
+                                     'drop_types': [None, items.Firewood], 'drop_weights': [40, 60],
+                                     'message': 'You try to break a branch off.'}},
+    dead_tree: {config.scavenging_skill: {'new_terrain': dead_tree, 'number_of_drops': 4,
+                                          'drop_types': [None, items.Firewood], 'drop_weights': [40, 60],
+                                          'message': 'You try to break a branch off.'}},
+    bush: {config.scavenging_skill: {'new_terrain': bush, 'number_of_drops': 1,
+                                     'drop_types': [None, items.Firewood], 'drop_weights': [40, 60],
+                                     'message': 'You search for firewood.'}}
 }
 for terrain_type in terrain_transformations:
     terrain_type.transformations = terrain_transformations[terrain_type]

@@ -525,6 +525,13 @@ class Rock(go.RangedAmmo):
                          is_stackable=True, ranged_ammo_type=config.hand_thrown_type)
 
 
+class Firewood(go.Item):
+    def __init__(self):
+        super().__init__(name='firewood', weight=1, icon='-', color=config.brown_fg_color,
+                         description='Can be used to light a fire',
+                         effects={config.creation_effects: {}})
+
+
 class IronOre(go.Item):
     def __init__(self):
         super().__init__(name='iron ore', weight=2, icon='*', color=console.fg.default,
