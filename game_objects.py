@@ -979,6 +979,12 @@ class Humanoid(Creature):
                 if isinstance(item, Armor):
                     skill_mod = self._effective_skill(item.armor_skill) / config.max_skill_value
                     exhaustion += item.combat_exhaustion * (1 - 0.5 * skill_mod)
+                elif isinstance(item, Shield):
+                    skill_mod = self._effective_skill(item.shield_skill) / config.max_skill_value
+                    exhaustion += item.combat_exhaustion * (1 - 0.5 * skill_mod)
+                elif isinstance(item, (LargeWeapon, SmallWeapon, TwoHandedWeapon)):
+                    skill_mod = self._effective_skill(item.melee_weapon_skill) / config.max_skill_value
+                    exhaustion += item.combat_exhaustion * (1 - 0.5 * skill_mod)
                 else:
                     exhaustion += item.combat_exhaustion
         return int(exhaustion)

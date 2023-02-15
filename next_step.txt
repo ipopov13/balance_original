@@ -1,9 +1,6 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
-Implement resistances/affinities (added to effects) and effect modifiers (multiply effects)
-    Combat exhaustion should be defined per item in order to apply skills
-    Combat exhaustion should be different for ranged/melee
 Imp:
     fist is a fire-making tool
 Dryad:
@@ -53,7 +50,6 @@ Interface
 Architecture
     ? Make containers use coord dicts instead of nested lists (will make non-square worlds possible!)
 Character screen
-    Add the effect modifiers, make the config names sensible and display them
     Add the active effects?
 Inventory
     Add item descriptions in details (line formatted)
@@ -167,7 +163,6 @@ World:
     After midnight	300	diamond
     Before dawn	250	turquoise
 Races
-
     -fairy invisibility flower crown
     fairy2:
     -midnight crown (natrupva strah u sushtestvata koito sa naokolo i ne q vijdat; nosi se samo prez noshtta i trae edna nosht)
