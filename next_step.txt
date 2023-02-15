@@ -5,8 +5,12 @@ Implement resistances/affinities (added to effects) and effect modifiers (multip
     *adjust all direct uses of _effect_modifiers to use the respective dict
     *split the racial bonuses into the new properties
     *add modifiers and resistance/affinities to the character screen
-    Make the armor/shield evasion modifier an evasion skill modifier
-    adjust code to use the dicts
+    *Make the armor/shield evasion modifier an evasion skill modifier
+    *Leave only positive evasion item modifiers (like staves/shields! heavy items already affect the load)
+    *Make weapons also apply the skill to the modifiers
+    Add current effective dodge chance (%) to char screen (under HP/mana)
+    do calculation on the avoided damage for different armors and hit sizes to make sire they are balanced
+     and the progression is correct (skill being equal)
     Combat exhaustion should be defined per item in order to apply skills
     Combat exhaustion should be different for ranged/melee
 Imp:

@@ -27,8 +27,7 @@ class Clothes(go.Armor):
     def __init__(self):
         super().__init__(name='simple clothes', weight=0, icon='.', color=console.fg.lightblack,
                          description="Commoner's shirt and pants.",
-                         armor_skill=config.evasion_skill, armor_stat=config.Dex,
-                         evasion_modifier=1, combat_exhaustion=0)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=0)
 
 
 class HideArmor(go.Armor):
@@ -36,8 +35,7 @@ class HideArmor(go.Armor):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
                          description='Armor made from light hide',
                          effects={config.resistances_and_affinities: {config.physical_damage: -1}},
-                         armor_skill=config.light_armor_skill, armor_stat=config.Dex,
-                         evasion_modifier=0.9, combat_exhaustion=1)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
 
 
 class LeatherArmor(go.Armor):
@@ -45,8 +43,7 @@ class LeatherArmor(go.Armor):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
                          description='Armor made from leather',
                          effects={config.resistances_and_affinities: {config.physical_damage: -3}},
-                         armor_skill=config.light_armor_skill, armor_stat=config.Dex,
-                         evasion_modifier=0.85, combat_exhaustion=1)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
 
 
 class ChainMail(go.Armor):
@@ -54,8 +51,7 @@ class ChainMail(go.Armor):
         super().__init__(name='chain mail', weight=9, icon='[', color=console.fg.lightblack,
                          description='A shirt of woven iron links.',
                          effects={config.resistances_and_affinities: {config.physical_damage: -5}},
-                         armor_skill=config.heavy_armor_skill, armor_stat=config.End,
-                         evasion_modifier=0.6, combat_exhaustion=3)
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=3)
 
 
 class PlateArmor(go.Armor):
@@ -63,8 +59,7 @@ class PlateArmor(go.Armor):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates',
                          effects={config.resistances_and_affinities: {config.physical_damage: -7}},
-                         armor_skill=config.heavy_armor_skill, armor_stat=config.End,
-                         evasion_modifier=0.3, combat_exhaustion=5)
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=5)
 
 
 class Bag(go.Back):
@@ -196,21 +191,21 @@ class Buckler(go.Shield):
     def __init__(self):
         super().__init__(name='buckler', weight=3, icon=']', color=console.fg.lightblack,
                          description='A small, round shield made of iron.',
-                         evasion_modifier=1.3, combat_exhaustion=1)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 1.3}}, combat_exhaustion=1)
 
 
 class RoundShield(go.Shield):
     def __init__(self):
         super().__init__(name='round shield', weight=4, icon=']', color=config.brown_fg_color,
                          description='A round, wooden shield. Can carry a coat of arms.',
-                         evasion_modifier=1.6, combat_exhaustion=2)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 1.6}}, combat_exhaustion=2)
 
 
 class TowerShield(go.Shield):
     def __init__(self):
         super().__init__(name='tower shield', weight=7, icon=']', color=console.fg.lightblack,
                          description='A tall, rectangular metal shield.',
-                         evasion_modifier=2.1, combat_exhaustion=4)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 2.1}}, combat_exhaustion=4)
 
 
 class AcornGun(go.RangedWeapon):
@@ -398,7 +393,8 @@ class Staff(go.TwoHandedWeapon):
         super().__init__(name='staff', weight=4, icon='/', color=color,
                          description='A long stick is better than nothing.',
                          melee_weapon_skill=config.staves_skill, combat_exhaustion=2,
-                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 3}}})
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 3}},
+                                  config.effect_modifiers: {config.evasion_modifier: 1.3}})
 
 
 class BattleStaff(go.TwoHandedWeapon):
@@ -406,7 +402,8 @@ class BattleStaff(go.TwoHandedWeapon):
         super().__init__(name='battle staff', weight=7, icon='/', color=color,
                          description='The ends are capped with metal.',
                          melee_weapon_skill=config.staves_skill, combat_exhaustion=5,
-                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 6}}})
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 6}},
+                                  config.effect_modifiers: {config.evasion_modifier: 1.1}})
 
 
 class TravellerStaff(go.TwoHandedWeapon):
@@ -414,7 +411,8 @@ class TravellerStaff(go.TwoHandedWeapon):
         super().__init__(name="traveller's staff", weight=2, icon='/', color=color,
                          description='A stick to make walking easier.',
                          melee_weapon_skill=config.staves_skill, combat_exhaustion=1,
-                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}}})
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}},
+                                  config.effect_modifiers: {config.evasion_modifier: 1.2}})
 
 
 class GiantAxe(go.TwoHandedWeapon):

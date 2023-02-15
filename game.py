@@ -72,7 +72,7 @@ class Game:
 
         self._current_location.put_item(items.Bag(), character_coords)
         self._current_location.put_item(items.ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(items.GreatSword(), character_coords)
+        self._current_location.put_item(items.BattleStaff(), character_coords)
         self._current_location.put_item(items.Buckler(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
         for i in range(10):

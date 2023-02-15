@@ -99,6 +99,7 @@ max_mana_modifier = 'Max mana'
 max_hp_modifier = 'Max HP'
 max_load_modifier = 'Max load'
 max_energy_modifier = 'Max energy'
+evasion_modifier = 'Evasion chance'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'
@@ -151,7 +152,6 @@ throwing_spear_skill = combat_skill_prefix + skill_delimiter + "Throwing spears"
 improvised_combat_skill = combat_skill_prefix + skill_delimiter + "Improvised weapons"
 unarmed_combat_skill = combat_skill_prefix + skill_delimiter + "Unarmed combat"
 shield_skill = combat_skill_prefix + skill_delimiter + "Shields"
-evasion_skill = combat_skill_prefix + skill_delimiter + "Evasion"
 light_armor_skill = combat_skill_prefix + skill_delimiter + "Light armor"
 heavy_armor_skill = combat_skill_prefix + skill_delimiter + "Heavy armor"
 mining_skill = extraction_skill_prefix + skill_delimiter + 'Mining'

@@ -318,12 +318,10 @@ class Helmet(Item):
 
 
 class Armor(Item):
-    def __init__(self, armor_skill: str, armor_stat: str,
-                 evasion_modifier: float, combat_exhaustion: int, **kwargs):
+    def __init__(self, armor_skill: str, armor_stat: str, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
         self.armor_skill = armor_skill
         self.armor_stat = armor_stat
-        self.evasion_modifier = evasion_modifier
         self.combat_exhaustion = combat_exhaustion
 
 
@@ -384,12 +382,11 @@ class Offhand:
 
 
 class Shield(Item, Offhand):
-    def __init__(self, evasion_modifier: float, combat_exhaustion: int, **kwargs):
+    def __init__(self, combat_exhaustion: int, **kwargs):
         super().__init__(**kwargs)
         self.shield_skill = config.shield_skill
         self.shield_stat = config.End
         self.combat_exhaustion = combat_exhaustion
-        self.evasion_modifier = evasion_modifier
 
 
 class RangedAmmo(Item, Offhand):
@@ -690,9 +687,6 @@ class Creature(GameObject):
     def _evasion_ability(self) -> float:
         raise NotImplementedError(f"Class {self.__class__} must implement _evasion_ability!")
 
-    def _effects_at_dodge_attempt(self) -> None:
-        raise NotImplementedError(f"Class {self.__class__} must implement _effects_at_dodge_attempt!")
-
     def _react_to_hit(self) -> None:
         raise NotImplementedError(f"Class {self.__class__} must implement _react_to_hit!")
 
@@ -706,7 +700,6 @@ class Creature(GameObject):
         if config.dodge_difficulty in local_effects:
             dodge = self._evasion_ability
             difficulty = local_effects[config.dodge_difficulty]
-            self._effects_at_dodge_attempt()
             if random.random() < dodge / (dodge + difficulty) * config.max_dodge_chance:
                 return
             else:
@@ -721,8 +714,15 @@ class Creature(GameObject):
         effect_adjustment = self._resistances_and_affinities.get(effect_name, 0)
         for item in set(self.effective_equipment.values()):
             effective_value = item.effects.get(config.resistances_and_affinities, {}).get(effect_name, 0)
-            if isinstance(item, Armor) and effect_name != item.armor_skill:
+            if isinstance(item, Armor) and effect_name != item.armor_skill and effective_value != 0:
                 skill = self._effective_skill(item.armor_skill) / config.max_skill_value
+                effective_value = int(effective_value * (0.5 + 0.5 * skill))
+            elif isinstance(item, Shield) and effect_name != item.shield_skill and effective_value != 0:
+                skill = self._effective_skill(item.shield_skill) / config.max_skill_value
+                effective_value = int(effective_value * (0.5 + 0.5 * skill))
+            elif isinstance(item, (LargeWeapon, SmallWeapon, TwoHandedWeapon)) \
+                    and effect_name != item.melee_weapon_skill and effective_value != 1:
+                skill = self._effective_skill(item.melee_weapon_skill) / config.max_skill_value
                 effective_value = int(effective_value * (0.5 + 0.5 * skill))
             effect_adjustment += effective_value
         return effect_adjustment
@@ -733,7 +733,14 @@ class Creature(GameObject):
             effect_adjustment = item.effects.get(config.effect_modifiers, {}).get(effect_name, 1)
             if isinstance(item, Armor) and effect_name != item.armor_skill and effect_adjustment != 1:
                 skill = self._effective_skill(item.armor_skill) / config.max_skill_value
-                effect_adjustment = 1 + (1 - effect_adjustment) * (0.5 + 0.5 * skill)
+                effect_adjustment = 1 + (effect_adjustment - 1) * (0.5 + 0.5 * skill)
+            elif isinstance(item, Shield) and effect_name != item.shield_skill and effect_adjustment != 1:
+                skill = self._effective_skill(item.shield_skill) / config.max_skill_value
+                effect_adjustment = 1 + (effect_adjustment - 1) * (0.5 + 0.5 * skill)
+            elif isinstance(item, (LargeWeapon, SmallWeapon, TwoHandedWeapon)) \
+                    and effect_name != item.melee_weapon_skill and effect_adjustment != 1:
+                skill = self._effective_skill(item.melee_weapon_skill) / config.max_skill_value
+                effect_adjustment = 1 + (effect_adjustment - 1) * (0.5 + 0.5 * skill)
             effect_value *= effect_adjustment
         return effect_value
 
@@ -921,9 +928,6 @@ class Animal(Creature):
     def _evasion_ability(self) -> float:
         return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
 
-    def _effects_at_dodge_attempt(self) -> None:
-        return
-
     def _react_to_hit(self) -> None:
         return
 
@@ -997,17 +1001,11 @@ class Humanoid(Creature):
 
     @property
     def _evasion_ability(self) -> float:
-        evasion_skill = self._effective_skill(config.evasion_skill)
-        armor = self._get_armor()
-        shield = self._get_shield()
-        shield_modifier = 1
-        if shield is not None:
-            shield_skill = self._effective_skill(config.shield_skill) / config.max_skill_value
-            shield_modifier = 1 + (shield.evasion_modifier - 1) * (0.5 + 0.5 * shield_skill)
-        return evasion_skill * armor.evasion_modifier * shield_modifier
-
-    def _effects_at_dodge_attempt(self) -> None:
-        self._improve(config.evasion_skill, config.Dex)
+        load_modifier = self.load / self.max_load
+        dex_modifier = self.stats[config.Dex] / config.max_stat_value
+        evasion_modifier = self._get_effect_modifier(config.evasion_modifier)
+        evasion_chance = dex_modifier * load_modifier * evasion_modifier * self._exhaustion_modifier
+        return evasion_chance
 
     def _react_to_hit(self) -> None:
         armor = self._get_armor()
