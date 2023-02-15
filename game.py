@@ -72,7 +72,9 @@ class Game:
 
         self._current_location.put_item(items.Bag(), character_coords)
         self._current_location.put_item(items.ShortSword(color=console.fg.red), character_coords)
-        self._current_location.put_item(items.BattleStaff(), character_coords)
+        water_skin = items.WaterSkin()
+        water_skin.fill(items.water_liquid, 2)
+        self._current_location.put_item(water_skin, character_coords)
         self._current_location.put_item(items.Buckler(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
         for i in range(10):
@@ -291,7 +293,7 @@ class Game:
         return True
 
     def _consume_from_bag_in_inventory_screen(self, _) -> bool:
-        self.character.apply_effects(self._selected_bag_item.effects)
+        self.character.apply_effects(self._selected_bag_item.effects.get(config.consumable_effects, {}))
         if isinstance(self._selected_bag_item, go.LiquidContainer):
             self._selected_bag_item.decant(1)
         else:
@@ -300,7 +302,7 @@ class Game:
         return True
 
     def _consume_from_ground_in_inventory_screen(self, _) -> bool:
-        self.character.apply_effects(self._selected_ground_item.effects)
+        self.character.apply_effects(self._selected_ground_item.effects.get(config.consumable_effects, {}))
         if isinstance(self._selected_ground_item, go.LiquidContainer):
             self._selected_ground_item.decant(1)
         else:

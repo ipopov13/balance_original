@@ -79,11 +79,11 @@ stats_order = [Str, End, Dex, Per, Wil]
 consumable_effects = 'consumable_effects'
 hunger_effect_prefix = "hunger_"
 hunger_meat_effect = hunger_effect_prefix + 'meat'
-hunger_water_effect = hunger_effect_prefix + 'water'
-hunger_rock_effect = hunger_effect_prefix + 'rock'
+hunger_water_effect = hunger_effect_prefix + 'Water sustenance'
+hunger_rock_effect = hunger_effect_prefix + 'Rock eating'
 thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
-thirst_rock_effect = thirst_effect_prefix + 'rock'
+thirst_rock_effect = thirst_effect_prefix + 'Rock drinking'
 #  Combat
 combat_effects = 'combat_effects'
 ranged_combat = 'ranged_combat'

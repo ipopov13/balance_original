@@ -1,6 +1,13 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
+Tool usage/tags
+    a fire needs firewood (scavenging skill on non-frozen trees/bushes)
+    firewood provides a special "Light fire" command when the character has a source of fire
+    a lit fire is a multi-turn effect that is kept by the game
+    the effect is passed to the location for rendering, but should be under the creature layer
+    firewood provides an "Add to fire" command when there is already a fire on the spot
+    adding more fuel prolongs the duration of the effect
 Imp:
     fist is a fire-making tool
 Dryad:
@@ -58,6 +65,7 @@ Inventory
     ? Open inner container in bag
     Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Crafting
+    Add environment factors like fire just like the available substances for containers!
     Add "properties" to crafting ingredients: what the ingredient contains
     Different crafts act on different properties
     The amount of change is based on the skill

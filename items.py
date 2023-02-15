@@ -519,8 +519,8 @@ class Rock(go.RangedAmmo):
     def __init__(self):
         super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightblack,
                          description='Building material and throwing weapon',
-                         effects={config.consumable_effects: {config.hunger_rock_effect: 10,
-                                                              config.thirst_rock_effect: 10},
+                         effects={config.consumable_effects: {config.hunger_rock_effect: 5,
+                                                              config.thirst_rock_effect: 5},
                                   config.combat_effects: {config.ranged_combat: {config.physical_damage: 1}}},
                          is_stackable=True, ranged_ammo_type=config.hand_thrown_type)
 
@@ -529,24 +529,24 @@ class IronOre(go.Item):
     def __init__(self):
         super().__init__(name='iron ore', weight=2, icon='*', color=console.fg.default,
                          description='Can be smelted and turned into metal bars',
-                         effects={config.consumable_effects: {config.hunger_rock_effect: 20,
-                                                              config.thirst_rock_effect: 5}})
+                         effects={config.consumable_effects: {config.hunger_rock_effect: 10,
+                                                              config.thirst_rock_effect: -5}})
 
 
 class SilverOre(go.Item):
     def __init__(self):
-        super().__init__(name='rock', weight=2, icon='*', color=console.fg.lightwhite,
+        super().__init__(name='silver ore', weight=2, icon='*', color=console.fg.lightwhite,
                          description='Can be smelted and turned into metal bars',
-                         effects={config.consumable_effects: {config.hunger_rock_effect: 5,
-                                                              config.thirst_rock_effect: 15}})
+                         effects={config.consumable_effects: {config.hunger_rock_effect: -5,
+                                                              config.thirst_rock_effect: 5}})
 
 
 class GoldOre(go.Item):
     def __init__(self):
-        super().__init__(name='rock', weight=2, icon='*', color=console.fg.yellow,
+        super().__init__(name='gold ore', weight=2, icon='*', color=console.fg.yellow,
                          description='Can be smelted and turned into metal bars',
-                         effects={config.consumable_effects: {config.hunger_rock_effect: 5,
-                                                              config.thirst_rock_effect: 25}})
+                         effects={config.consumable_effects: {config.hunger_rock_effect: -5,
+                                                              config.thirst_rock_effect: 15}})
 
 
 class IceShard(go.Item):
