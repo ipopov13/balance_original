@@ -684,7 +684,7 @@ class Creature(GameObject):
         return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
     @property
-    def _evasion_ability(self) -> float:
+    def _evasion_ability(self) -> int:
         raise NotImplementedError(f"Class {self.__class__} must implement _evasion_ability!")
 
     def _react_to_hit(self) -> None:
@@ -908,7 +908,8 @@ class Creature(GameObject):
         return {'Hp': f'{self.hp}/{self.max_hp}',
                 'Mana': f'{self.mana}/{self.max_mana}',
                 'Energy': f'{self.energy}/{self.max_energy}',
-                'Load': f'{self.load}/{self.max_load}'
+                'Load': f'{self.load}/{self.max_load}',
+                'Dodge': f'{self._evasion_ability}'
                 }
 
     def _effective_skill(self, skill_name: str) -> int:
@@ -925,8 +926,10 @@ class Animal(Creature):
         super().__init__(species, **kwargs)
 
     @property
-    def _evasion_ability(self) -> float:
-        return (self.stats[config.Dex] / config.max_stat_value) * self._exhaustion_modifier
+    def _evasion_ability(self) -> int:
+        dex_modifier = self.stats[config.Dex] / config.max_stat_value
+        evasion_skill = dex_modifier * self._exhaustion_modifier * config.max_skill_value
+        return int(evasion_skill)
 
     def _react_to_hit(self) -> None:
         return
@@ -1000,12 +1003,12 @@ class Humanoid(Creature):
         self._improve(weapon.melee_weapon_skill, weapon.melee_weapon_stat)
 
     @property
-    def _evasion_ability(self) -> float:
-        load_modifier = self.load / self.max_load
+    def _evasion_ability(self) -> int:
+        load_modifier = 1 - self.load / self.max_load
         dex_modifier = self.stats[config.Dex] / config.max_stat_value
         evasion_modifier = self._get_effect_modifier(config.evasion_modifier)
-        evasion_chance = dex_modifier * load_modifier * evasion_modifier * self._exhaustion_modifier
-        return evasion_chance
+        all_mods = dex_modifier * load_modifier * evasion_modifier * self._exhaustion_modifier
+        return int(all_mods * config.max_skill_value)
 
     def _react_to_hit(self) -> None:
         armor = self._get_armor()
