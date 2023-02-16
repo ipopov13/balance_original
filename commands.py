@@ -25,6 +25,12 @@ class CharacterSheet(Command):
     changes_window = True
 
 
+class LightAFire(Command):
+    character = 'L'
+    hint = '(L)ight a fire'
+    description = 'Light a fire on the ground'
+
+
 class Inventory(Command):
     character = 'I'
     hint = '(I)nventory'

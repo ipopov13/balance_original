@@ -3,6 +3,7 @@ Concrete Item objects
 """
 import game_objects as go
 import config
+import commands
 import random
 import console
 
@@ -112,6 +113,13 @@ class Pickaxe(go.Tool):
                          work_exhaustion=5, work_skill=config.mining_skill, work_stat=config.Str,
                          melee_weapon_skill=config.twohanded_axes_skill, combat_exhaustion=5,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}}})
+
+
+class FlintAndSteel(go.Item):
+    def __init__(self):
+        super().__init__(name="flint and steel", description="Strike to light a fire",
+                         weight=1, icon=';', color=console.fg.lightblack,
+                         effects={config.tool_tag: config.fire_lighter_tool})
 
 
 class LongSword(go.LargeWeapon):
@@ -528,8 +536,7 @@ class Rock(go.RangedAmmo):
 class Firewood(go.Item):
     def __init__(self):
         super().__init__(name='firewood', weight=1, icon='-', color=config.brown_fg_color,
-                         description='Can be used to light a fire',
-                         effects={config.creation_effects: {}})
+                         description='Can be used to light a fire')
 
 
 class IronOre(go.Item):
@@ -577,3 +584,8 @@ wine_liquid = go.Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
                         description='Fermented fruit juice',
                         effects={config.consumable_effects: {config.thirst_water_effect: 15,
                                                              config.drunk_effect: 10}})
+
+# Item transformations
+# NOTE: The order of transformations matters, as the Game takes the first matching one!
+item_transformations = {Firewood: {config.fire_lighter_tool: {config.transformation_effects: {config.light_a_fire: 15},
+                                                              config.transformation_command: commands.LightAFire}}}

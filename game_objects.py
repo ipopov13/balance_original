@@ -71,7 +71,7 @@ class Container(GameObject):
         return self._height, self._width
 
     @property
-    def item_list(self):
+    def item_list(self) -> list['Item']:
         full_list = []
         for line in self._contents:
             full_list += line
@@ -777,10 +777,6 @@ class Creature(GameObject):
         load_modifier = self._get_effect_modifier(config.max_load_modifier)
         return int(base_load * load_modifier)
 
-    @property
-    def bag(self):
-        return self.equipped_items[config.back_slot]
-
     def can_equip(self, item: Item) -> bool:
         return any([isinstance(item, slot_type) for slot_type in self.equipment_slots.values()])
 
@@ -945,6 +941,19 @@ class Humanoid(Creature):
     def __init__(self, species: HumanoidSpecies, **kwargs):
         super().__init__(species, **kwargs)
         self.species = species
+
+    @property
+    def bag(self):
+        return self.equipped_items[config.back_slot]
+
+    @property
+    def available_tools(self) -> list[str]:
+        tools = []
+        for item in self.bag.item_list + list(self.effective_equipment.values()):
+            tag = item.effects.get(config.tool_tag, '')
+            if tag:
+                tools.append(tag)
+        return tools
 
     @property
     def description(self) -> str:

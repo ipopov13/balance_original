@@ -100,8 +100,12 @@ max_hp_modifier = 'Max HP'
 max_load_modifier = 'Max load'
 max_energy_modifier = 'Max energy'
 evasion_modifier = 'Evasion chance'
-#  Creation effects
-creation_effects = 'creation_effects'
+#  Item transformation tools and effects
+tool_tag = 'tool_tag'
+transformation_effects = 'transformation_effects'
+transformation_command = 'transformation_command'
+fire_lighter_tool = 'fire_lighter_tool'
+light_a_fire = 'light_a_fire'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'

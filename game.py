@@ -52,6 +52,7 @@ class Game:
         self._current_message: str = ''
         self._observed_target: Optional[tuple[int, int]] = None
         self._sub_turn_effects: dict = {}
+        self._chosen_transformation: Optional[dict] = None
 
     @property
     def _selected_equipped_item(self):
@@ -75,12 +76,11 @@ class Game:
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)
-        self._current_location.put_item(items.Buckler(), character_coords)
+        self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
         for i in range(10):
             self._current_location.put_item(items.Acorn(), character_coords)
-        for i in range(10):
-            self._current_location.put_item(items.Rock(), character_coords)
+        self._current_location.put_item(items.FlintAndSteel(), character_coords)
         self._current_location.put_item(items.PlateArmor(), character_coords)
 
         self.state = Game.playing_state
@@ -145,6 +145,10 @@ class Game:
                     inventory_commands[commands.InventoryEmpty()] = self._empty_from_ground_in_inventory_screen
             # "From bag" commands
             if self.active_inventory_container_name == self.get_bag_name():
+                if self._item_can_be_transformed(self._selected_bag_item):
+                    transformation = self._get_item_transformation(self._selected_bag_item)
+                    self._chosen_transformation = transformation[config.transformation_effects]
+                    inventory_commands[transformation[config.transformation_command]()] = self._transform_item
                 if self._selected_bag_item is not go.empty_space \
                         and (self._ground_container.has_space()
                              or isinstance(self._ground_container, go.Tile)):
@@ -173,6 +177,24 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    def _transform_item(self, _) -> bool:
+        self.character.bag.provide_item(self._selected_bag_item.weight,
+                                        self._selected_bag_item, 1)
+        # TODO: Apply the _chosen_transformation
+        return True
+
+    def _item_can_be_transformed(self, item: go.Item):
+        available_tools = self.character.available_tools
+        return any([tool in available_tools
+                    for tool in items.item_transformations.get(item.__class__, {})])
+
+    def _get_item_transformation(self, item: go.Item) -> dict:
+        available_tools = self.character.available_tools
+        for tool, transformation in items.item_transformations[item.__class__].items():
+            if tool in available_tools:
+                return transformation
+        raise IndexError(f"No tool available for transforming {item.name}!")
 
     def _open_character_sheet(self, _) -> bool:
         self.substate = Game.character_sheet_substate
