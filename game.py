@@ -647,8 +647,12 @@ class Game:
         if not self.character.can_carry(self._selected_ground_item):
             weight_color = console.fg.lightred
         item_details = self._selected_ground_item.details(weight_color=weight_color)
-        tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
+        tile_coords = self._get_coords_of_creature(self.character)
+        tile_terrain_substance = self._current_location.substance_at(tile_coords)
         substance_details = [f"There is {sub.liquid.name} here!" for sub in tile_terrain_substance]
+        if tile_coords in self._turn_effects:
+            substance_details += [f"There is {sub.name} here!"
+                                  for sub in self._turn_effects[tile_coords].substances]
         return item_details + substance_details
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
