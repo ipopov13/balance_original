@@ -2,9 +2,8 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    firewood provides a special "Light fire" command when the character has a source of fire
-    a lit fire is a multi-turn effect that is kept by the game
-    the effect is passed to the location for rendering, but should be under the creature layer
+    Effect names should be displayed in the Look state
+    Effects can be sources displayed in the Items screen
     firewood provides an "Add to fire" command when there is already a fire on the spot
     adding more fuel prolongs the duration of the effect
     The same approach with item transformations from the inventory can be used to: plant seeds, place beehives, etc.
@@ -24,6 +23,9 @@ Fae
     doesn't wake sleeping creatures
     can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
 
+Terrain/travel
+    Deep water should put the character in a Swimming state, in which they lose energy and then life
+    Terrain energy cost (see excel)
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
         Some transforms are faster/easier than others

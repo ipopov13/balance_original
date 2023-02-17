@@ -7,6 +7,7 @@ from world import Location, World
 import commands
 import config
 import items
+import effects
 
 
 class Game:
@@ -51,8 +52,9 @@ class Game:
         self._new_message: str = ''
         self._current_message: str = ''
         self._observed_target: Optional[tuple[int, int]] = None
+        self._turn_effects: dict[tuple[int, int], go.Effect] = {}
         self._sub_turn_effects: dict = {}
-        self._chosen_transformation: Optional[dict] = None
+        self._chosen_transformation: Optional[dict[str, int]] = None
 
     @property
     def _selected_equipped_item(self):
@@ -76,6 +78,8 @@ class Game:
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)
+        self._current_location.put_item(items.Firewood(), character_coords)
+        self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
         for i in range(10):
@@ -181,8 +185,14 @@ class Game:
     def _transform_item(self, _) -> bool:
         self.character.bag.provide_item(self._selected_bag_item.weight,
                                         self._selected_bag_item, 1)
-        # TODO: Apply the _chosen_transformation
+        for effect, effect_size in self._chosen_transformation.items():
+            self._apply_effect(effect, effect_size, self._get_coords_of_creature(self.character))
+        self._chosen_transformation = None
         return True
+
+    def _apply_effect(self, effect: str, effect_size: int, coords: tuple[int, int]) -> None:
+        if effect == config.light_a_fire:
+            self._turn_effects[coords] = effects.Campfire(effect_size)
 
     def _item_can_be_transformed(self, item: go.Item):
         available_tools = self.character.available_tools
@@ -217,7 +227,7 @@ class Game:
                 if distance > max_distance:
                     self._add_message("The target is beyond your weapon's range!")
                 else:
-                    projectile, skill, effects = self.character.shoot()
+                    projectile, skill, effect_dict = self.character.shoot()
                     max_deviation = int(
                         (max_distance / 5)
                         * ((config.max_skill_value - skill) / config.max_skill_value)
@@ -232,7 +242,7 @@ class Game:
                         final_target = (target[0] + y_deviation, target[1] + x_deviation)
                     projectile_path = direct_path(character_position, final_target)[1:]
                     flying_projectile = {'item': projectile, 'path': projectile_path,
-                                         'effects': effects}
+                                         'effects': effect_dict}
                     self._sub_turn_effects[projectile_path[0]] = flying_projectile
         self._living_world()
         return True
@@ -433,12 +443,16 @@ class Game:
                   Ivan Popov'''
 
     def _living_world(self) -> None:
-        # TODO: Change effect visuals (blinking fires, etc)
         self._current_message = self._new_message
         self._new_message = ''
         self._turn += 1
         self._move_npcs()
         self.character.live()
+        for position in list(self._turn_effects):
+            effect = self._turn_effects[position]
+            effect.tick()
+            if effect.length == 0:
+                self._turn_effects.pop(position)
 
     def sub_turn_tick(self) -> None:
         for position in list(self._sub_turn_effects):
@@ -686,8 +700,8 @@ class Game:
         return colored_gauge
 
     def _collate_creatures_and_effects(self) -> dict[tuple[int, int], go.GameObject]:
-        effect_visuals = {pos: effect['item'] for pos, effect in self._sub_turn_effects.items()}
-        combined_dict = {**self._creature_coords, **effect_visuals}
+        sub_turn_effect_visuals = {pos: effect['item'] for pos, effect in self._sub_turn_effects.items()}
+        combined_dict = {**self._turn_effects, **self._creature_coords, **sub_turn_effect_visuals}
         return combined_dict
 
     def get_area_view(self) -> str:

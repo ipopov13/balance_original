@@ -23,7 +23,7 @@ class GameObject:
         return self._description
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         return self.color + self.raw_icon + console.fx.end
 
     @property
@@ -37,6 +37,20 @@ class GameObject:
     @staticmethod
     def data() -> str:
         return config.empty_string
+
+
+class Effect(GameObject):
+    def __init__(self, color_range: list[str], length: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self._color_range = color_range
+        self.color = self._color_range[0]
+        if length <= 0:
+            raise ValueError(f"Effect {self.name} cannot have a length <= 0!")
+        self.length = length
+
+    def tick(self) -> None:
+        self.length -= 1
+        self.color = random.choice(self._color_range)
 
 
 class Container(GameObject):
@@ -1223,7 +1237,7 @@ class Tile(PhysicalContainer):
         return description
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         item_list = self.item_list
         if len(item_list) == 1:
             return item_list[0].icon

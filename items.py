@@ -485,35 +485,35 @@ class LightHide(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='light hide', weight=5, icon='(', color=config.brown_fg_color,
                          description='The light hide of an animal',
-                         effects={config.resistances_and_affinities: {config.physical_damage: -1}},)
+                         effects={config.resistances_and_affinities: {config.physical_damage: -1}}, )
 
 
 class MediumHide(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='medium hide', weight=10, icon='(', color=config.brown_fg_color,
                          description='The thick hide of an animal',
-                         effects={config.resistances_and_affinities: {config.physical_damage: -2}},)
+                         effects={config.resistances_and_affinities: {config.physical_damage: -2}}, )
 
 
 class MediumScales(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='medium scaly hide', weight=10, icon='(', color=console.fg.lightgreen,
                          description='The scaly hide of a lizard',
-                         effects={config.resistances_and_affinities: {config.physical_damage: -2}},)
+                         effects={config.resistances_and_affinities: {config.physical_damage: -2}}, )
 
 
 class HeavyScales(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='heavy scaled hide', weight=20, icon='(', color=console.fg.lightgreen,
                          description='The scaly hide of a monstrous lizard',
-                         effects={config.resistances_and_affinities: {config.physical_damage: -5}},)
+                         effects={config.resistances_and_affinities: {config.physical_damage: -5}}, )
 
 
 class Feathers(go.AnimalArmor):
     def __init__(self):
         super().__init__(name='feathers', weight=3, icon=',', color=console.fg.lightblack,
                          description='The feathers of a bird',
-                         effects={config.resistances_and_affinities: {config.physical_damage: -1}},)
+                         effects={config.resistances_and_affinities: {config.physical_damage: -1}}, )
 
 
 class RawMeat(go.EdibleAnimalPart):
@@ -587,5 +587,7 @@ wine_liquid = go.Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
 
 # Item transformations
 # NOTE: The order of transformations matters, as the Game takes the first matching one!
-item_transformations = {Firewood: {config.fire_lighter_tool: {config.transformation_effects: {config.light_a_fire: 15},
-                                                              config.transformation_command: commands.LightAFire}}}
+item_transformations = {
+    Firewood: {config.fire_lighter_tool: {config.transformation_effects: {config.light_a_fire: 15},
+                                          config.transformation_command: commands.LightAFire}}
+}
