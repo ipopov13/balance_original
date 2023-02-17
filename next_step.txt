@@ -2,7 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Effect names should be displayed in the Look state
+    Add ground item transformations
     Effects can be sources displayed in the Items screen
     firewood provides an "Add to fire" command when there is already a fire on the spot
     adding more fuel prolongs the duration of the effect

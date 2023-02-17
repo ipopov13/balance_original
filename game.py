@@ -667,6 +667,8 @@ class Game:
             message = self._current_location.tile_at(self._observed_target).description
             if self._observed_target in self._creature_coords:
                 message += ' ' + self._creature_coords[self._observed_target].description
+            if self._observed_target in self._turn_effects:
+                message += ' ' + self._turn_effects[self._observed_target].description
         elif self._current_message:
             message = self._current_message
         else:
