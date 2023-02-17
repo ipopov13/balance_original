@@ -963,7 +963,8 @@ class Humanoid(Creature):
     @property
     def available_tools(self) -> list[str]:
         tools = []
-        for item in self.bag.item_list + list(self.effective_equipment.values()):
+        bag_items = [] if self.bag is empty_space else self.bag.item_list
+        for item in bag_items + list(self.effective_equipment.values()):
             tag = item.effects.get(config.tool_tag, '')
             if tag:
                 tools.append(tag)

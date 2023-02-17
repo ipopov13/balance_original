@@ -2,10 +2,9 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Add ground item transformations
     Effects can be sources displayed in the Items screen
     firewood provides an "Add to fire" command when there is already a fire on the spot
-    adding more fuel prolongs the duration of the effect
+    What about different effects on the same tile?
     The same approach with item transformations from the inventory can be used to: plant seeds, place beehives, etc.
 Imp:
     fist is a fire-making tool

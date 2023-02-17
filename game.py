@@ -129,6 +129,10 @@ class Game:
             inventory_commands = {commands.Close(): self._back_to_scene}
             # "From ground" commands
             if self.active_inventory_container_name == self.get_ground_name():
+                if self._item_can_be_transformed(self._selected_ground_item):
+                    transformation = self._get_item_transformation(self._selected_ground_item)
+                    self._chosen_transformation = transformation[config.transformation_effects]
+                    inventory_commands[transformation[config.transformation_command]()] = self._transform_ground_item
                 if self.character.bag is not go.empty_space \
                         and self.character.bag.has_space() \
                         and self.character.can_carry_stack_or_item(self._selected_ground_item) \
@@ -152,7 +156,7 @@ class Game:
                 if self._item_can_be_transformed(self._selected_bag_item):
                     transformation = self._get_item_transformation(self._selected_bag_item)
                     self._chosen_transformation = transformation[config.transformation_effects]
-                    inventory_commands[transformation[config.transformation_command]()] = self._transform_item
+                    inventory_commands[transformation[config.transformation_command]()] = self._transform_bag_item
                 if self._selected_bag_item is not go.empty_space \
                         and (self._ground_container.has_space()
                              or isinstance(self._ground_container, go.Tile)):
@@ -182,7 +186,15 @@ class Game:
         else:
             return {}
 
-    def _transform_item(self, _) -> bool:
+    def _transform_ground_item(self, _) -> bool:
+        self._ground_container.provide_item(self._selected_ground_item.weight,
+                                            self._selected_ground_item, 1)
+        for effect, effect_size in self._chosen_transformation.items():
+            self._apply_effect(effect, effect_size, self._get_coords_of_creature(self.character))
+        self._chosen_transformation = None
+        return True
+
+    def _transform_bag_item(self, _) -> bool:
         self.character.bag.provide_item(self._selected_bag_item.weight,
                                         self._selected_bag_item, 1)
         for effect, effect_size in self._chosen_transformation.items():
@@ -192,7 +204,10 @@ class Game:
 
     def _apply_effect(self, effect: str, effect_size: int, coords: tuple[int, int]) -> None:
         if effect == config.light_a_fire:
-            self._turn_effects[coords] = effects.Campfire(effect_size)
+            if isinstance(self._turn_effects.get(coords), effects.Campfire):
+                self._turn_effects[coords].length += effect_size
+            else:
+                self._turn_effects[coords] = effects.Campfire(effect_size)
 
     def _item_can_be_transformed(self, item: go.Item):
         available_tools = self.character.available_tools
