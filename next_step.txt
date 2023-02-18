@@ -2,13 +2,17 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Add Substance class as a parent of Liquid
-    Rename SubstanceSource to LiquidSource
-    Make Fire a Substance
-    Effects can be Substance sources and will be displayed in the Items screen
+    Make Fire a Power Resource and effects a Source
+    Effects can be Resource sources and will be displayed in the Items screen
+    Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
     What about different effects on the same tile?
-    The same approach with item transformations from the inventory can be used to: plant seeds, place beehives, etc.
+        Add all Sources and Effects as items on the Tile, then there can be as many as needed
+        THis way, a tile can simply check the item list, instead of implementing
+         methods for substances (like it does now)
+        Make Effects and Sources display no weight (more intuitive)
+    The same approach with item transformations from the inventory can be used to:
+        plant seeds, water plants, place beehives, etc.
 Imp:
     fist is a fire-making tool
 Dryad:

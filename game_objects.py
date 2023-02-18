@@ -231,12 +231,22 @@ class PhysicalContainer(Container, Item):
         return len(self.item_list) < self._height * self._width
 
 
-class Liquid(Item):
-    """A container class for singleton object instances to be used as liquids in the game"""
+class Resource(Item):
+    """An abstract class for singleton object instances to be used as resources in the game"""
 
     @property
     def name(self) -> str:
         return self.color + self._name + console.fx.end
+
+
+class Liquid(Resource):
+    """A container class for singleton object instances to be used as liquids in the game"""
+    pass
+
+
+class Power(Resource):
+    """A container class for singleton object instances to be used as power in the game"""
+    pass
 
 
 class LiquidContainer(Item):
@@ -245,24 +255,24 @@ class LiquidContainer(Item):
     def __init__(self, max_volume: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._max_volume: int = max_volume
-        self.liquid: Optional[Liquid] = None
-        self.contained_volume: int = 0
+        self.liquid: Union[Liquid, Item] = empty_space
+        self.contained_amount: int = 0
         if '/' not in kwargs.get('name', '') or '{' not in kwargs.get('name', ''):
             raise ValueError("LiquidContainer name must support splitting and formatting!")
 
     @property
     def name(self) -> str:
-        if self.liquid is None:
+        if self.liquid is empty_space:
             return self._name.split('/')[0]
         else:
             return self._name.split('/')[1].format(self.liquid.name)
 
     @property
     def description(self) -> str:
-        if self.liquid is None:
+        if self.liquid is empty_space:
             return f"It can hold {self.empty_volume} units of liquid."
         else:
-            return f"It holds {self.contained_volume} units of {self.liquid.name}," \
+            return f"It holds {self.contained_amount} units of {self.liquid.name}," \
                    f" can hold {self.empty_volume} more."
 
     @property
@@ -271,60 +281,78 @@ class LiquidContainer(Item):
 
     @property
     def weight(self):
-        if self.liquid is None:
-            return self._own_weight
-        else:
-            return self._own_weight + self.liquid.weight * self.contained_volume
+        return self._own_weight + self.liquid.weight * self.contained_amount
 
     @property
     def __class__(self) -> Type:
-        if self.liquid is None:
+        if self.liquid is empty_space:
             return LiquidContainer
         else:
             return self.liquid.__class__
 
     @property
     def empty_volume(self) -> int:
-        empty_volume = self._max_volume - self.contained_volume
+        empty_volume = self._max_volume - self.contained_amount
         if empty_volume < 0:
             raise ValueError(f"Container {self.name} is holding more than the max_volume!")
         return empty_volume
 
     def can_hold(self, substance: Item) -> bool:
         return isinstance(substance, Liquid) and \
-            (self.liquid is None or self.liquid is substance)
+            (self.liquid is empty_space or self.liquid is substance)
 
     def fill(self, liquid: Liquid, volume: int) -> None:
         """Fills the container and returns the remainder amount to update the other container"""
-        if self.liquid is not None and liquid is not self.liquid:
+        if self.liquid is not empty_space and liquid is not self.liquid:
             raise ValueError("Container cannot hold more than one Liquid!")
         if volume < 1:
             raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
-        if self.liquid is None:
+        if self.liquid is empty_space:
             self.liquid = liquid
         if volume > self.empty_volume:
             raise ValueError(f"Container {self.name} cannot exceed max volume!")
-        self.contained_volume += volume
+        self.contained_amount += volume
 
     def decant(self, volume_to_decant) -> None:
-        if volume_to_decant > self.contained_volume:
+        if volume_to_decant > self.contained_amount:
             raise ValueError(f"Container {self.name} asked to decant {volume_to_decant},"
-                             f" but {self.contained_volume} available!")
-        self.contained_volume -= volume_to_decant
-        if self.contained_volume == 0:
-            self.liquid = None
+                             f" but {self.contained_amount} available!")
+        self.contained_amount -= volume_to_decant
+        if self.contained_amount == 0:
+            self.liquid = empty_space
 
 
-class SubstanceSource(Item):
-    def __init__(self, name: str = "(substance source)",
-                 description: str = '(empty source description)',
-                 liquid: Liquid = None):
-        super().__init__(name=name, icon='o', description=description, color=liquid.color)
-        self.liquid = liquid
-        self.contained_volume = 9999
+class ResourceSource(Item):
+    """An abstract class representing natural sources that provide a Resource without acting as containers"""
+    def __init__(self, resource: Resource,
+                 contained_amount: int = 9999, **kwargs):
+        super().__init__(color=resource.color, **kwargs)
+        self.resource = resource
+        self.contained_amount = contained_amount
+
+
+class LiquidSource(ResourceSource):
+    """
+    A natural source of a Liquid
+    Examples: a well, a river, a lava lake
+    """
+    def __init__(self, resource: Liquid, name: str = "(liquid source)",
+                 description: str = '(empty liquid source description)'):
+        super().__init__(resource, name=name, icon='o', description=description)
+        self.liquid = resource
 
     def decant(self, volume_to_decant) -> None:
         return
+
+
+class PowerSource(ResourceSource):
+    """
+    A natural source of Power
+    Examples: fires, magical lay lines
+    """
+    def __init__(self, resource: Power, name: str = "(power source)",
+                 description: str = '(empty power source description)'):
+        super().__init__(resource, name=name, icon='*', description=description)
 
 
 class Helmet(Item):
@@ -1159,7 +1187,7 @@ class Humanoid(Creature):
 class Terrain(GameObject):
     def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
                  spawned_creatures: list[Species] = None,
-                 substances: list[SubstanceSource] = None,
+                 substances: list[LiquidSource] = None,
                  allowed_species: list[Species] = None,
                  **kwargs):
         super().__init__(**kwargs)
@@ -1253,5 +1281,5 @@ class Tile(PhysicalContainer):
         return len(self.item_list) < self._height * self._width
 
     @property
-    def terrain_substances(self) -> list[SubstanceSource]:
+    def terrain_substances(self) -> list[LiquidSource]:
         return self.terrain.substances

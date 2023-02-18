@@ -39,8 +39,8 @@ class Inventory(Command):
 
 
 class InventoryEmpty(Command):
-    character = 'x'
-    hint = '(x)Empty'
+    character = 'q'
+    hint = '(q)Empty'
     description = 'Empty the selected container'
 
 

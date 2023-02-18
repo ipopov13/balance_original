@@ -149,7 +149,7 @@ class Game:
                         and self._selected_ground_item.empty_volume > 0:
                     inventory_commands[commands.InventoryFill()] = self._fill_from_ground_in_inventory_screen
                 if isinstance(self._selected_ground_item, go.LiquidContainer) \
-                        and self._selected_ground_item.contained_volume > 0:
+                        and self._selected_ground_item.contained_amount > 0:
                     inventory_commands[commands.InventoryEmpty()] = self._empty_from_ground_in_inventory_screen
             # "From bag" commands
             if self.active_inventory_container_name == self.get_bag_name():
@@ -171,7 +171,7 @@ class Game:
                         and self._selected_bag_item.empty_volume > 0:
                     inventory_commands[commands.InventoryFill()] = self._fill_from_bag_in_inventory_screen
                 if isinstance(self._selected_bag_item, go.LiquidContainer) \
-                        and self._selected_bag_item.contained_volume > 0:
+                        and self._selected_bag_item.contained_amount > 0:
                     inventory_commands[commands.InventoryEmpty()] = self._empty_from_bag_in_inventory_screen
             # "From equipment" commands
             if self.active_inventory_container_name == config.equipment_title:
@@ -295,7 +295,7 @@ class Game:
 
     def _empty_from_bag_in_inventory_screen(self, _) -> bool:
         if isinstance(self._selected_bag_item, go.LiquidContainer):
-            volume_to_empty = self._selected_bag_item.contained_volume
+            volume_to_empty = self._selected_bag_item.contained_amount
             self._selected_bag_item.decant(volume_to_empty)
         else:
             raise ValueError(f"Item {self._selected_bag_item.name} is not a LiquidContainer!")
@@ -303,7 +303,7 @@ class Game:
 
     def _empty_from_ground_in_inventory_screen(self, _) -> bool:
         if isinstance(self._selected_ground_item, go.LiquidContainer):
-            volume_to_empty = self._selected_ground_item.contained_volume
+            volume_to_empty = self._selected_ground_item.contained_amount
             self._selected_ground_item.decant(volume_to_empty)
         else:
             raise ValueError(f"Item {self._selected_ground_item.name} is not a LiquidContainer!")
@@ -574,13 +574,13 @@ class Game:
             lines.append(f'{item.icon} {label}')
         return '\n'.join(lines)
 
-    def get_available_substances(self) -> list[Union[go.LiquidContainer, go.SubstanceSource]]:
+    def get_available_substances(self) -> list[Union[go.LiquidContainer, go.LiquidSource]]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
         tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
         bag_items = [] if self.character.bag is go.empty_space else self.character.bag.item_list
         compatible_substance_sources = []
         for item in tile_items + tile_terrain_substance + bag_items:
-            if (isinstance(item, go.LiquidContainer) or isinstance(item, go.SubstanceSource)) \
+            if (isinstance(item, go.LiquidContainer) or isinstance(item, go.LiquidSource)) \
                     and self._container_to_fill.can_hold(item.liquid) \
                     and item is not self._container_to_fill:
                 compatible_substance_sources.append(item)
@@ -589,7 +589,7 @@ class Game:
     def fill_container(self, source: Optional[go.LiquidContainer]) -> None:
         if source is not None:
             volume_to_fill = self._container_to_fill.empty_volume
-            available_volume = source.contained_volume
+            available_volume = source.contained_amount
             exchanged_volume = min(volume_to_fill, available_volume)
             self._container_to_fill.fill(source.liquid, exchanged_volume)
             source.decant(exchanged_volume)
@@ -649,7 +649,7 @@ class Game:
         item_details = self._selected_ground_item.details(weight_color=weight_color)
         tile_coords = self._get_coords_of_creature(self.character)
         tile_terrain_substance = self._current_location.substance_at(tile_coords)
-        substance_details = [f"There is {sub.liquid.name} here!" for sub in tile_terrain_substance]
+        substance_details = [f"There is {sub.resource.name} here!" for sub in tile_terrain_substance]
         if tile_coords in self._turn_effects:
             substance_details += [f"There is {sub.name} here!"
                                   for sub in self._turn_effects[tile_coords].substances]

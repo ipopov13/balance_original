@@ -1,7 +1,7 @@
 from typing import Optional
 import console
 import random
-from game_objects import Terrain, FlavorTerrain, SubstanceSource, Item, \
+from game_objects import Terrain, FlavorTerrain, LiquidSource, Item, \
     Creature, Container, HumanoidSpecies, Animal, GameObject, Tile
 import items
 import config
@@ -108,9 +108,8 @@ water = Terrain(color=console.fg.blue, name='water', icon='~', description='Wate
 stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%', passable=False,
                         description='A column of stilled water.')
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='A water well.',
-                       substances=[SubstanceSource(name='water well',
-                                                   description='A water well.',
-                                                   liquid=items.water_liquid)])
+                       substances=[
+                           LiquidSource(resource=items.water_liquid, name='water well', description='A water well.')])
 
 terrain_transformations = {
     rocks: {config.mining_skill: {'new_terrain': dirt, 'number_of_drops': 10,
@@ -469,7 +468,7 @@ class Location(Container):
     def items_at(self, coords: tuple[int, int]) -> list[Item]:
         return self.tile_at(coords).item_list
 
-    def substance_at(self, coords: tuple[int, int]) -> list[SubstanceSource]:
+    def substance_at(self, coords: tuple[int, int]) -> list[LiquidSource]:
         return self.tile_at(coords).terrain_substances
 
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
