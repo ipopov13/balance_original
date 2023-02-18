@@ -2,6 +2,7 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
+import utils
 from utils import make_stats, add_dicts
 
 
@@ -40,17 +41,29 @@ class GameObject:
 
 
 class Effect(GameObject):
-    def __init__(self, color_range: list[str], length: int = 0, **kwargs):
+    def __init__(self, color_range: list[str] = None, length: int = 0, **kwargs):
         super().__init__(**kwargs)
-        self._color_range = color_range
+        self._color_range = color_range or [self.color]
         self.color = self._color_range[0]
         if length <= 0:
             raise ValueError(f"Effect {self.name} cannot have a length <= 0!")
-        self.length = length
+        self._length = length
 
     def tick(self) -> None:
         self.length -= 1
+        if isinstance(self, (Effect, PowerSource)):
+            self.contained_amount = self.length
         self.color = random.choice(self._color_range)
+
+    @property
+    def length(self) -> int:
+        return self._length
+
+    @length.setter
+    def length(self, value) -> None:
+        self._length = value
+        if isinstance(self, (Effect, PowerSource)):
+            self.contained_amount = self._length
 
 
 class Container(GameObject):
@@ -324,9 +337,11 @@ class LiquidContainer(Item):
 
 class ResourceSource(Item):
     """An abstract class representing natural sources that provide a Resource without acting as containers"""
-    def __init__(self, resource: Resource,
+    def __init__(self, resource: Resource = None,
                  contained_amount: int = 9999, **kwargs):
         super().__init__(color=resource.color, **kwargs)
+        if resource is None:
+            raise ValueError(f"Source of type {self.__class__} cannot be initialized without a resource!")
         self.resource = resource
         self.contained_amount = contained_amount
 
@@ -336,7 +351,7 @@ class LiquidSource(ResourceSource):
     A natural source of a Liquid
     Examples: a well, a river, a lava lake
     """
-    def __init__(self, resource: Liquid, name: str = "(liquid source)",
+    def __init__(self, resource: Liquid = None, name: str = "(liquid source)",
                  description: str = '(empty liquid source description)'):
         super().__init__(resource, name=name, icon='o', description=description)
         self.liquid = resource
@@ -344,15 +359,30 @@ class LiquidSource(ResourceSource):
     def decant(self, volume_to_decant) -> None:
         return
 
+    @property
+    def name(self) -> str:
+        return self.resource.name
+
 
 class PowerSource(ResourceSource):
     """
     A natural source of Power
     Examples: fires, magical lay lines
     """
-    def __init__(self, resource: Power, name: str = "(power source)",
-                 description: str = '(empty power source description)'):
-        super().__init__(resource, name=name, icon='*', description=description)
+    def __init__(self, resource: Power = None, name: str = "(power source)",
+                 description: str = '(empty power source description)', **kwargs):
+        super().__init__(resource, name=name, icon='*', description=description, **kwargs)
+
+    @property
+    def name(self) -> str:
+        if self.contained_amount < 15:
+            strength = 'weak'
+        elif self.contained_amount < 30:
+            strength = 'medium'
+        else:
+            strength = 'strong'
+        name = f"A {strength} {utils.strip_ansi_escape_sequences(self.resource.name)}"
+        return self.resource.color + name + console.fx.end
 
 
 class Helmet(Item):

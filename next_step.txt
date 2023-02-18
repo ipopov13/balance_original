@@ -2,12 +2,10 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Make Fire a Power Resource and effects a Source
-    Effects can be Resource sources and will be displayed in the Items screen
     Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
     What about different effects on the same tile?
-        Add all Sources and Effects as items on the Tile, then there can be as many as needed
+        Add physical Sources and Effects as items on the Tile, then there can be as many as needed
         THis way, a tile can simply check the item list, instead of implementing
          methods for substances (like it does now)
         Make Effects and Sources display no weight (more intuitive)

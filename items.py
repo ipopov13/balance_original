@@ -575,7 +575,10 @@ class StilledWaterShard(go.Item):
                          description='Used to meld still water equipment')
 
 
-# Liquids
+# Resource singletons
+#  Powers
+fire_power = go.Power(name='fire', color=console.fg.lightred, icon='*', description='It heats and burns')
+#  Liquids
 water_liquid = go.Liquid(name='water', weight=1, icon=',', color=console.fg.blue,
                          description='The one thing everyone needs',
                          effects={config.consumable_effects: {config.thirst_water_effect: 20,
