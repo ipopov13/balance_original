@@ -103,7 +103,8 @@ class ImpFist(go.Tool, go.RangedWeapon):
                          ranged_weapon_type=config.hand_thrown_type, max_distance=5,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
                                                           config.melee_combat: {config.fire_damage: 3,
-                                                                                config.physical_damage: 0}}})
+                                                                                config.physical_damage: 0}},
+                                  config.tool_tag: config.fire_lighter_tool})
 
 
 class Pickaxe(go.Tool):

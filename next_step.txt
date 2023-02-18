@@ -4,15 +4,10 @@ Adding the racial passives and documenting them in knowledge
 Tool usage/tags
     Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
-    What about different effects on the same tile?
-        Add physical Sources and Effects as items on the Tile, then there can be as many as needed
-        THis way, a tile can simply check the item list, instead of implementing
-         methods for substances (like it does now)
-        Make Effects and Sources display no weight (more intuitive)
     The same approach with item transformations from the inventory can be used to:
         plant seeds, water plants, place beehives, etc.
 Imp:
-    fist is a fire-making tool
+    add knowledge entries for Imp fire hands (combat and lighting fires)
 Dryad:
     pass through all plants
     plant terrains don't tire them (bushes/jungle)
