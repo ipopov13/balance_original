@@ -649,13 +649,15 @@ class Game:
         item_details = self._selected_ground_item.details(weight_color=weight_color)
         tile_coords = self._get_coords_of_creature(self.character)
         tile_terrain_substance = self._current_location.substance_at(tile_coords)
-        substance_details = [f"There is {sub.resource.name} here!" for sub in tile_terrain_substance]
+        resources = [f"There is {sub.resource.name} here!" for sub in tile_terrain_substance]
         if isinstance(self._turn_effects.get(tile_coords), go.ResourceSource):
             try:
-                substance_details += [self._turn_effects[tile_coords].name]
+                resources += [self._turn_effects[tile_coords].name]
             except AttributeError:
                 pass
-        return item_details + substance_details
+        if resources:
+            resources = ['','Resources:'] + resources
+        return item_details + resources
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         try:
