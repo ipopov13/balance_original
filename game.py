@@ -52,7 +52,7 @@ class Game:
         self._new_message: str = ''
         self._current_message: str = ''
         self._observed_target: Optional[tuple[int, int]] = None
-        self._turn_effects: dict[tuple[int, int], go.Effect] = {}
+        self._turn_effects: dict[tuple[int, int], list[go.Effect]] = {}
         self._sub_turn_effects: dict = {}
         self._chosen_transformation: Optional[dict[str, int]] = None
 
@@ -204,10 +204,13 @@ class Game:
 
     def _apply_effect(self, effect: str, effect_size: int, coords: tuple[int, int]) -> None:
         if effect == config.light_a_fire:
-            if isinstance(self._turn_effects.get(coords), effects.Campfire):
-                self._turn_effects[coords].length += effect_size
+            if coords in self._turn_effects:
+                for effect in self._turn_effects[coords]:
+                    if isinstance(effect, effects.Campfire):
+                        effect.duration += effect_size
             else:
-                self._turn_effects[coords] = effects.Campfire(effect_size)
+                self._turn_effects[coords] = [effects.Campfire(duration=effect_size,
+                                                               tile=self._current_location.tile_at(coords))]
 
     def _item_can_be_transformed(self, item: go.Item):
         available_tools = self.character.available_tools
@@ -463,11 +466,11 @@ class Game:
         self._turn += 1
         self._move_npcs()
         self.character.live()
-        for position in list(self._turn_effects):
-            effect = self._turn_effects[position]
-            effect.tick()
-            if effect.length == 0:
-                self._turn_effects.pop(position)
+        for position, effect_list in self._turn_effects.items():
+            for effect in effect_list[:]:
+                effect.tick()
+                if effect.duration == 0:
+                    effect_list.remove(effect)
 
     def sub_turn_tick(self) -> None:
         for position in list(self._sub_turn_effects):
@@ -650,13 +653,11 @@ class Game:
         tile_coords = self._get_coords_of_creature(self.character)
         tile_terrain_substance = self._current_location.substance_at(tile_coords)
         resources = [f"There is {sub.resource.name} here!" for sub in tile_terrain_substance]
-        if isinstance(self._turn_effects.get(tile_coords), go.ResourceSource):
-            try:
-                resources += [self._turn_effects[tile_coords].name]
-            except AttributeError:
-                pass
+        for effect in self._turn_effects.get(tile_coords, []):
+            if isinstance(effect, go.ResourceSource):
+                resources += [effect.name]
         if resources:
-            resources = ['','Resources:'] + resources
+            resources = ['', 'Resources:'] + resources
         return item_details + resources
 
     def get_bag_item_details(self, item_coords: tuple[int, int]) -> list[str]:
@@ -677,7 +678,7 @@ class Game:
         return self._current_location.name
 
     def get_character_hud(self) -> str:
-        # TODO: Add target location (chosen on map, hinted with Travelling: West-NW)
+        # TODO: Add travel destination (chosen on map, hinted with Travelling: West-NW)
         hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
         mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
         energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color,
@@ -690,8 +691,9 @@ class Game:
             message = self._current_location.tile_at(self._observed_target).description
             if self._observed_target in self._creature_coords:
                 message += ' ' + self._creature_coords[self._observed_target].description
-            if self._observed_target in self._turn_effects:
-                message += ' ' + self._turn_effects[self._observed_target].description
+            for effect in self._turn_effects.get(self._observed_target, []):
+                if effect.is_observable:
+                    message += ' ' + effect.description
         elif self._current_message:
             message = self._current_message
         else:
@@ -726,7 +728,7 @@ class Game:
 
     def _collate_creatures_and_effects(self) -> dict[tuple[int, int], go.GameObject]:
         sub_turn_effect_visuals = {pos: effect['item'] for pos, effect in self._sub_turn_effects.items()}
-        combined_dict = {**self._turn_effects, **self._creature_coords, **sub_turn_effect_visuals}
+        combined_dict = {**self._creature_coords, **sub_turn_effect_visuals}
         return combined_dict
 
     def get_area_view(self) -> str:

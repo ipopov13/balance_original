@@ -2,7 +2,6 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
-import utils
 from utils import make_stats, add_dicts
 
 
@@ -41,29 +40,38 @@ class GameObject:
 
 
 class Effect(GameObject):
-    def __init__(self, color_range: list[str] = None, length: int = 0, **kwargs):
+    def __init__(self, color_range: list[str] = None, duration: int = 0, tile: 'Tile' = None,
+                 is_observable: bool = False, **kwargs):
+        if duration <= 0:
+            raise ValueError(f"Effect {self.name} cannot have a duration <= 0!")
+        if tile is None:
+            raise ValueError(f"Effect {self.name} cannot have None as a tile!")
         super().__init__(**kwargs)
+        self.is_observable = is_observable
         self._color_range = color_range or [self.color]
+        self._tile = tile
         self.color = self._color_range[0]
-        if length <= 0:
-            raise ValueError(f"Effect {self.name} cannot have a length <= 0!")
-        self._length = length
+        self._duration = duration
 
-    def tick(self) -> None:
-        self.length -= 1
-        if isinstance(self, (Effect, PowerSource)):
-            self.contained_amount = self.length
+    def tick(self, creature: 'Creature' = None) -> None:
+        self.duration -= 1
         self.color = random.choice(self._color_range)
+        self._tick_specific_effects(creature)
 
     @property
-    def length(self) -> int:
-        return self._length
+    def duration(self) -> int:
+        return self._duration
 
-    @length.setter
-    def length(self, value) -> None:
-        self._length = value
-        if isinstance(self, (Effect, PowerSource)):
-            self.contained_amount = self._length
+    @duration.setter
+    def duration(self, value) -> None:
+        self._duration = value
+        self._effects_on_duration_change()
+
+    def _tick_specific_effects(self, creature: 'Creature' = None) -> None:
+        raise NotImplementedError(f"Effect {self.name} must implement _tick_specific_effects!")
+
+    def _effects_on_duration_change(self) -> None:
+        raise NotImplementedError(f"Effect {self.name} must implement _effects_on_duration_change!")
 
 
 class Container(GameObject):
@@ -371,6 +379,8 @@ class PowerSource(ResourceSource):
     """
     def __init__(self, resource: Power = None, name: str = "(power source)",
                  description: str = '(empty power source description)', **kwargs):
+        if '{' not in name:
+            raise ValueError(f"PowerResource name must support formatting, but got '{name}'!")
         super().__init__(resource, name=name, icon='*', description=description, **kwargs)
 
     @property
@@ -381,7 +391,7 @@ class PowerSource(ResourceSource):
             strength = 'medium'
         else:
             strength = 'strong'
-        name = f"A {strength} {utils.strip_ansi_escape_sequences(self.resource.name)}"
+        name = self._name.format(strength)
         return self.resource.color + name + console.fx.end
 
 

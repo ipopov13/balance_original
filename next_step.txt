@@ -2,6 +2,9 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
+    Create ImmobileObject class for immobile items
+    Make the Campfire an ImmobileObject
+    Make the Well an ImmobileObject
     Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
     The same approach with item transformations from the inventory can be used to:
@@ -22,6 +25,9 @@ Fae
     doesn't wake sleeping creatures
     can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
 
+Knowledge
+    Add lighting fires and getting firewood entries
+    Add getting water entry, containers
 Terrain/travel
     Deep water should put the character in a Swimming state, in which they lose energy and then life
     Terrain energy cost (see excel)
