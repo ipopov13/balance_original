@@ -1,6 +1,7 @@
 import game_objects as go
 import items
 import console
+import config
 
 contained_fire_color_range = [console.fg.lightyellow, console.fg.yellow,
                               console.fg.lightred, console.fg.red]
@@ -11,7 +12,8 @@ class Campfire(go.Effect):
         super().__init__(color_range=contained_fire_color_range, duration=duration, tile=tile,
                          name='a campfire', description='A small campfire.')
         self._campfire = go.PowerSource(resource=items.fire_power, contained_amount=duration,
-                                        name='a {} campfire', description='A campfire.')
+                                        name='a {} campfire', description='A campfire.',
+                                        effects={config.tool_tag: config.burning_fire_tool})
         self._tile.add_item(self._campfire)
 
     def _tick_specific_effects(self, creature: go.Creature = None) -> None:

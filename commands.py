@@ -31,6 +31,12 @@ class LightAFire(Command):
     description = 'Light a fire on the ground'
 
 
+class AddToFire(Command):
+    character = 'A'
+    hint = '(A)dd to fire'
+    description = 'Fuel the existing fire'
+
+
 class Inventory(Command):
     character = 'I'
     hint = '(I)nventory'

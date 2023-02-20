@@ -3,8 +3,6 @@ Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
 Tool usage/tags
     Make the Well drinkable
-    Check for tools on the ground too
-    firewood provides an "Add to fire" command when there is already a fire on the spot
     The same approach with item transformations from the inventory can be used to:
         plant seeds, water plants, place beehives, etc.
 Dryad:

@@ -592,6 +592,8 @@ wine_liquid = go.Liquid(name='wine', weight=1, icon=',', color=console.fg.red,
 # Item transformations
 # NOTE: The order of transformations matters, as the Game takes the first matching one!
 item_transformations = {
-    Firewood: {config.fire_lighter_tool: {config.transformation_effects: {config.light_a_fire: 15},
+    Firewood: {config.burning_fire_tool: {config.transformation_effects: {config.light_a_fire: 15},
+                                          config.transformation_command: commands.AddToFire},
+               config.fire_lighter_tool: {config.transformation_effects: {config.light_a_fire: 15},
                                           config.transformation_command: commands.LightAFire}}
 }

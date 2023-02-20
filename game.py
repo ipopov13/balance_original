@@ -212,13 +212,21 @@ class Game:
                 self._turn_effects[coords] = [effects.Campfire(duration=effect_size,
                                                                tile=self._current_location.tile_at(coords))]
 
-    def _item_can_be_transformed(self, item: go.Item):
-        available_tools = self.character.available_tools
+    def _get_accessible_tools(self) -> list[str]:
+        available_tools = []
+        for item in self._current_location.tile_at(self._get_coords_of_creature(self.character)).item_list:
+            if config.tool_tag in item.effects:
+                available_tools.append(item.effects[config.tool_tag])
+        available_tools += self.character.available_tools
+        return available_tools
+
+    def _item_can_be_transformed(self, item: go.Item) -> bool:
+        available_tools = self._get_accessible_tools()
         return any([tool in available_tools
                     for tool in items.item_transformations.get(item.__class__, {})])
 
     def _get_item_transformation(self, item: go.Item) -> dict:
-        available_tools = self.character.available_tools
+        available_tools = self._get_accessible_tools()
         for tool, transformation in items.item_transformations[item.__class__].items():
             if tool in available_tools:
                 return transformation

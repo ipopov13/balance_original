@@ -105,6 +105,7 @@ tool_tag = 'tool_tag'
 transformation_effects = 'transformation_effects'
 transformation_command = 'transformation_command'
 fire_lighter_tool = 'fire_lighter_tool'
+burning_fire_tool = 'burning_fire_tool'
 light_a_fire = 'light_a_fire'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
