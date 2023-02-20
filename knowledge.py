@@ -85,7 +85,17 @@ knowledge = {
         " a dwarf likened their rock hurlers to a siege engine, they came up with a name that made everyone else laugh."
     ],
     config.Imp: [
-        "Fire burns in an imp's veins and dances over their fingers. To burn is to feel alive!"
+        "Fire burns in an Imp's veins and dances over their fingers. To burn is to feel alive!",
+        "An imp's skin structure creates a bending of the magical field of the world, rendering"
+        " most flammable objects aflame. Imp society eschews fire-making tools, and has glorified the"
+        " ability to light fires through touch while preserving the surrounding items or creatures.",
+        "Imps can suppress their fire-starting ability quite effectively even though there"
+        " have been reports of individuals losing that control as a kind of illness. The affected Imp"
+        " would be unable to keep hold of anything made of cloth, wood, or leather, as the item would"
+        " combust or eventually char beyond any usable state.",
+        "Fire-spreading touch means that an Imp is not to be ignored, even if they are not holding a"
+        " sword or axe in a fight. They can deliver medium burns with a punch, giving even thick-skinned"
+        " beasts pause."
     ],
     config.Kraken: [
         "Descendants of deep-sea monsters, the kraken have learned to reap even the most disgusting"
