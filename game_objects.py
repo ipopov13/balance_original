@@ -133,6 +133,11 @@ class Item(GameObject):
         return self._effects
 
 
+class Immobile:
+    """A mixin class marking objects that cannot be picked up"""
+    pass
+
+
 class ItemStack(Item):
     def __init__(self, items: list[Item]):
         unstacked_items = []
@@ -343,7 +348,7 @@ class LiquidContainer(Item):
             self.liquid = empty_space
 
 
-class ResourceSource(Item):
+class ResourceSource(Item, Immobile):
     """An abstract class representing natural sources that provide a Resource without acting as containers"""
     def __init__(self, resource: Resource = None,
                  contained_amount: int = 9999, **kwargs):
@@ -866,6 +871,8 @@ class Creature(GameObject):
         return item.weight <= self.max_load - self.load
 
     def can_carry_stack_or_item(self, item: Item) -> bool:
+        if isinstance(item, Immobile):
+            return False
         if not isinstance(item, ItemStack):
             return self.can_carry(item)
         single_unit = item.items[0]

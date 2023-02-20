@@ -2,8 +2,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Create ImmobileObject class for immobile items
-    Make the Campfire an ImmobileObject
     Make the Well an ImmobileObject
     Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
