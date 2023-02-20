@@ -374,7 +374,7 @@ class LiquidSource(ResourceSource):
 
     @property
     def name(self) -> str:
-        return self.resource.name
+        return self.resource.color + self._name + console.fx.end
 
 
 class PowerSource(ResourceSource):
@@ -1267,6 +1267,8 @@ class Tile(PhysicalContainer):
     def __init__(self, terrain: Terrain):
         super().__init__(height=config.tile_size, width=config.tile_size)
         self.terrain = terrain
+        for source in self.terrain.substances:
+            self.add_item(source)
         self._transformations = {}
         self._last_skill_applied: Optional[str] = None
 
@@ -1323,10 +1325,3 @@ class Tile(PhysicalContainer):
 
     def is_passable_for(self, creature: Creature):
         return self.terrain.is_passable_for(creature)
-
-    def has_space(self):
-        return len(self.item_list) < self._height * self._width
-
-    @property
-    def terrain_substances(self) -> list[LiquidSource]:
-        return self.terrain.substances

@@ -468,9 +468,6 @@ class Location(Container):
     def items_at(self, coords: tuple[int, int]) -> list[Item]:
         return self.tile_at(coords).item_list
 
-    def substance_at(self, coords: tuple[int, int]) -> list[LiquidSource]:
-        return self.tile_at(coords).terrain_substances
-
     def put_item(self, item: Item, coords: tuple[int, int]) -> None:
         tile = self.tile_at(coords)
         if tile.has_space():

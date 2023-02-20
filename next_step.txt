@@ -2,7 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken
 Tool usage/tags
-    Make the Well an ImmobileObject
+    Make the Well drinkable
     Check for tools on the ground too
     firewood provides an "Add to fire" command when there is already a fire on the spot
     The same approach with item transformations from the inventory can be used to:
@@ -70,7 +70,6 @@ Inventory
     ? Open inner container in bag
     Add non-selectable items to EquipmentList with the note "too heavy to carry"
 Crafting
-    Add environment factors like fire just like the available substances for containers!
     Add "properties" to crafting ingredients: what the ingredient contains
     Different crafts act on different properties
     The amount of change is based on the skill

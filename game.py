@@ -579,10 +579,9 @@ class Game:
 
     def get_available_substances(self) -> list[Union[go.LiquidContainer, go.LiquidSource]]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
-        tile_terrain_substance = self._current_location.substance_at(self._get_coords_of_creature(self.character))
         bag_items = [] if self.character.bag is go.empty_space else self.character.bag.item_list
         compatible_substance_sources = []
-        for item in tile_items + tile_terrain_substance + bag_items:
+        for item in tile_items + bag_items:
             if (isinstance(item, go.LiquidContainer) or isinstance(item, go.LiquidSource)) \
                     and self._container_to_fill.can_hold(item.liquid) \
                     and item is not self._container_to_fill:
@@ -651,11 +650,10 @@ class Game:
             weight_color = console.fg.lightred
         item_details = self._selected_ground_item.details(weight_color=weight_color)
         tile_coords = self._get_coords_of_creature(self.character)
-        tile_terrain_substance = self._current_location.substance_at(tile_coords)
-        resources = [f"There is {sub.resource.name} here!" for sub in tile_terrain_substance]
-        for effect in self._turn_effects.get(tile_coords, []):
-            if isinstance(effect, go.ResourceSource):
-                resources += [effect.name]
+        resources = []
+        for item in self._current_location.tile_at(tile_coords).item_list:
+            if isinstance(item, go.ResourceSource):
+                resources += [item.name]
         if resources:
             resources = ['', 'Resources:'] + resources
         return item_details + resources
