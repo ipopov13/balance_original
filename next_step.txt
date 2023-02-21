@@ -2,12 +2,11 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
 Terrain/travel
-    Terrain energy cost (see excel)
-    Terrain passage failure
-    Drop passable False's for above-ground terrains (except lava)
+    Terrain passage failure effects
     Terrain energy cost modifiers
     race and item modifiers
     add deep_snow with more tiring cost
+    add stilled water field - like a mountain
     add deep_water that induces the swimming effect instead!
 Dryad:
     pass through all plants
