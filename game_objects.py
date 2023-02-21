@@ -843,6 +843,8 @@ class Creature(GameObject):
             self.thirst -= max(0, effect_size - self._active_effects.get(config.sick_effect, 0))
         elif name.startswith(config.damage_effect_prefix):
             self.hp -= effect_size
+        elif name.startswith(config.terrain_passage_cost):
+            self.energy -= effect_size
         else:
             self._active_effects[name] = \
                 self._active_effects.get(name, 0) + effect_size
@@ -1004,6 +1006,9 @@ class Creature(GameObject):
 
     def get_skills_data(self) -> dict[str, int]:
         return {skill: self._effective_skill(skill) for skill in self._skills}
+
+    def traverse(self, tile: 'Tile') -> None:
+        self.apply_effects(tile.effects)
 
 
 class Animal(Creature):
@@ -1231,15 +1236,14 @@ class Humanoid(Creature):
         raise TypeError(f"Could not find equipment slot to stack {item.name}!")
 
 
-class Terrain(GameObject):
-    def __init__(self, passable: bool = True, exhaustion_factor: int = 0,
+class Terrain(Item):
+    def __init__(self, passable: bool = True,
                  spawned_creatures: list[Species] = None,
                  substances: list[LiquidSource] = None,
                  allowed_species: list[Species] = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.passable = passable
-        self.exhaustion_factor = exhaustion_factor
         self._allowed_species = allowed_species or []
         self.spawned_creatures: list[Species] = spawned_creatures or []
         self.substances = substances or []
@@ -1275,6 +1279,10 @@ class Tile(PhysicalContainer):
     @property
     def name(self):
         return self.terrain.name
+
+    @property
+    def effects(self) -> dict:
+        return self.terrain.effects
 
     @property
     def hp(self) -> int:

@@ -1,10 +1,14 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
-Tool usage/tags
-    Make the Well drinkable
-    The same approach with item transformations from the inventory can be used to:
-        plant seeds, water plants, place beehives, etc.
+Terrain/travel
+    Terrain energy cost (see excel)
+    Terrain passage failure
+    Drop passable False's for above-ground terrains (except lava)
+    Terrain energy cost modifiers
+    race and item modifiers
+    add deep_snow with more tiring cost
+    add deep_water that induces the swimming effect instead!
 Dryad:
     pass through all plants
     plant terrains don't tire them (bushes/jungle)
@@ -24,7 +28,7 @@ Knowledge
     Add getting water entry, containers
 Terrain/travel
     Deep water should put the character in a Swimming state, in which they lose energy and then life
-    Terrain energy cost (see excel)
+    Make the Well drinkable
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
         Some transforms are faster/easier than others
@@ -60,6 +64,8 @@ Architecture
 Character screen
     Add the active effects?
 Inventory
+    The same approach with item transformations from the inventory can be used to:
+        plant seeds, water plants, place beehives, etc.
     Add item descriptions in details (line formatted)
     Use "(e/E)quip" hint and commands for multi-slot equipping for races
     ? Open inner container on ground

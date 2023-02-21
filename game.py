@@ -807,5 +807,7 @@ class Game:
                         old_location.stored_creatures.append(self._creature_coords.pop(coords))
                 self.character.travel()
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
+            else:
+                self.character.traverse(self._current_location.tile_at(new_coords))
         else:
             self._add_message("You can't go through that!")

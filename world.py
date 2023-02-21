@@ -16,11 +16,14 @@ ashes = Terrain(color=console.fg.lightblack, name='ashes',
 dirt = Terrain(color=config.brown_fg_color, name='dirt',
                description='Dirt.', spawned_creatures=[sp.field_mouse_species])
 snow = Terrain(color=console.fg.white, name='snow',
-               description='Snow.', spawned_creatures=[sp.snow_hare_species])
+               description='Snow.', spawned_creatures=[sp.snow_hare_species],
+               effects={config.snow_passage_cost: 2})
 sand = Terrain(color=console.fg.yellow, name='sand',
-               description='Sand.', spawned_creatures=[sp.sand_snake_species, sp.scorpion_species])
+               description='Sand.', spawned_creatures=[sp.sand_snake_species, sp.scorpion_species],
+               effects={config.sand_passage_cost: 2})
 ice = Terrain(color=console.fg.lightblue, name='ice',
-              description='Slippery-looking ice.', spawned_creatures=[sp.ice_mantis_species])
+              description='Slippery-looking ice.', spawned_creatures=[sp.ice_mantis_species],
+              effects={config.ice_passage_cost: 2})
 # Other base terrains
 tree = Terrain(color=console.fg.lightgreen, name='tree', icon='T',
                description='A tree.', spawned_creatures=[sp.fox_species, sp.wolf_species])
@@ -32,21 +35,27 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
                       spawned_creatures=[sp.ice_fox_species, sp.winter_wolf_species])
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%', passable=False,
                     description='A huge block of ice.',
-                    spawned_creatures=[sp.winter_wolf_species, sp.ice_bear_species])
+                    spawned_creatures=[sp.winter_wolf_species, sp.ice_bear_species],
+                    effects={config.ice_climbing_cost: 100})
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%', passable=False,
                 description='A rock outcropping.',
                 spawned_creatures=[sp.bear_species, sp.eagle_species],
-                allowed_species=[sp.gnome_race, sp.eagle_species])
+                allowed_species=[sp.gnome_race, sp.eagle_species],
+                effects={config.rock_climbing_cost: 100})
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#',
-               description='A bush.', spawned_creatures=[sp.fox_species])
+               description='A bush.', spawned_creatures=[sp.fox_species],
+               effects={config.plant_passage_cost: 3})
 swamp = Terrain(color=console.fg.lightgreen, name='swamp', icon='~',
                 description='Swampy ground.',
-                spawned_creatures=[sp.crocodile_species, sp.swamp_dragon_species, sp.hydra_species])
+                spawned_creatures=[sp.crocodile_species, sp.swamp_dragon_species, sp.hydra_species],
+                effects={config.wading_passage_cost: 5})
 salt_lake = Terrain(color=console.fg.lightyellow, name='salt lake',
-                    description='Salt-encrusted water.', spawned_creatures=[sp.crocodile_species])
+                    description='Salt-encrusted water.', spawned_creatures=[sp.crocodile_species],
+                    effects={config.wading_passage_cost: 5})
 jungle = Terrain(color=console.fg.green, name='tree', icon='T', passable=False,
                  description='Impenetrable jungle.',
-                 spawned_creatures=[sp.monkey_species, sp.crocodile_species, sp.jaguar_species])
+                 spawned_creatures=[sp.monkey_species, sp.crocodile_species, sp.jaguar_species],
+                 effects={config.plant_passage_cost: 50})
 all_base_terrains = [grass, ashes, dirt, snow, sand, ice, tree, dead_tree, frozen_tree, ice_block,
                      rocks, bush, swamp, salt_lake, jungle]
 # Flavor terrains
@@ -54,32 +63,39 @@ poisonous_flowers = FlavorTerrain(color=console.fg.purple, name='poisonous flowe
                                   required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
 bones = FlavorTerrain(color=console.fg.lightwhite, name='bones', icon='~',
                       description='Grizzly-looking bones.',
-                      required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
+                      required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
+                      effects={config.bones_passage_cost: 2})
 venomous_thorns = FlavorTerrain(color=console.fg.lightgreen, name='venomous thorns', icon='#',
                                 description='A bush.',
-                                required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
+                                required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
+                                effects={config.plant_passage_cost: 6})
 junk_pile = FlavorTerrain(color=console.fg.lightblack, name='junk pile', icon='o',
                           description='Foul-smelling junk.',
-                          required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
+                          required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
+                          effects={config.junk_pile_passage_cost: 2})
 lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~', passable=False,
                      description='A hole with bubbling lava!',
                      required_base_terrains=all_base_terrains, required_climates=[config.HOT_CLIMATE])
 gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%', passable=False,
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          allowed_species=[sp.gnome_race, sp.eagle_species])
+                          allowed_species=[sp.gnome_race, sp.eagle_species],
+                          effects={config.rock_climbing_cost: 100})
 silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%', passable=False,
                             description='A rock outcropping.',
                             required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                            allowed_species=[sp.gnome_race, sp.eagle_species])
+                            allowed_species=[sp.gnome_race, sp.eagle_species],
+                            effects={config.rock_climbing_cost: 100})
 iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%', passable=False,
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          allowed_species=[sp.gnome_race, sp.eagle_species])
+                          allowed_species=[sp.gnome_race, sp.eagle_species],
+                          effects={config.rock_climbing_cost: 100})
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%', passable=False,
                            description='A moss-covered boulder.',
                            required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                           allowed_species=[sp.gnome_race, sp.eagle_species])
+                           allowed_species=[sp.gnome_race, sp.eagle_species],
+                           effects={config.rock_climbing_cost: 100})
 lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
                              description='A big clump of lichen.',
                              required_base_terrains=all_base_terrains, required_climates=[config.COLD_CLIMATE])
@@ -91,11 +107,13 @@ old_pavement = FlavorTerrain(color=console.fg.lightyellow, name='old pavement',
                              required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
 ruined_wall = FlavorTerrain(color=config.brown_fg_color, name='ruined wall', icon='#', passable=False,
                             description='Ancient wall.',
-                            required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
+                            required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
+                            effects={config.rock_climbing_cost: 100})
 engraved_column = FlavorTerrain(color=config.brown_fg_color, name='engraved column', icon='|', passable=False,
                                 description='An engraved column.',
-                                required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
-fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o', passable=False,
+                                required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
+                                effects={config.rock_climbing_cost: 100})
+fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o',
                           description='A fireplace.',
                           required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
 farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='farmland', icon='=',
@@ -103,10 +121,14 @@ farmland = FlavorTerrain(color=console.fg.green + config.brown_bg_color, name='f
                          required_base_terrains=[grass, dirt, tree, jungle, bush, swamp],
                          required_climates=config.ALL_CLIMATES)
 # Structure building blocks
-poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~', description='Murky water.')
-water = Terrain(color=console.fg.blue, name='water', icon='~', description='Water.')
+poisoned_water = Terrain(color=console.fg.lightblack, name='poisoned water', icon='~', description='Murky water.',
+                         effects={config.wading_passage_cost: 2})
+water = Terrain(color=console.fg.blue, name='water', icon='~', description='Water.',
+                effects={config.wading_passage_cost: 2})
+# TODO: stilled water field - like a mountain!
 stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%', passable=False,
-                        description='A column of stilled water.')
+                        description='A block of stilled water.',
+                        effects={config.ice_climbing_cost: 100})
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='A water well.',
                        substances=[
                            LiquidSource(resource=items.water_liquid, name='water well', description='A water well.')])
@@ -132,7 +154,7 @@ terrain_transformations = {
                                       'message': 'The ice breaks into razor-sharp pieces!'}},
     stilled_water: {config.mining_skill: {'new_terrain': water, 'number_of_drops': 10,
                                           'drop_types': [items.StilledWaterShard], 'drop_weights': [100],
-                                          'message': 'The translucent column breaks apart!'}},
+                                          'message': 'The translucent block breaks apart!'}},
     bones: {config.scavenging_skill: {'new_terrain': bones, 'number_of_drops': 3,
                                       'drop_types': [None, items.JunkItem], 'drop_weights': [80, 20],
                                       'message': 'You sift through the pile of bones.'}},
