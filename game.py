@@ -788,15 +788,20 @@ class Game:
         direction = self.character.confirm_movement_direction(direction)
         old_coords = self._get_coords_of_creature(self.character)
         new_coords = calculate_new_position(old_coords, direction, *self.World.size)
-        old_location = self._current_location
-        new_location = self.World.get_location(new_coords)
         if new_coords in self._creature_coords:
             self._last_character_target = self._creature_coords[new_coords]
             self.character.bump_with(self._last_character_target)
             if self._last_character_target.is_dead:
                 self._creature_died(self._last_character_target)
-        elif new_location.can_ocupy(self.character, new_coords):
+            return
+        else:
             self._last_character_target = None
+        old_location = self._current_location
+        new_location = self.World.get_location(new_coords)
+        new_tile = new_location.tile_at(new_coords)
+        if problem_with_passage := self.character.can_traverse(new_tile):
+            self._add_message(problem_with_passage)
+        else:
             self._creature_coords.pop(old_coords)
             self._creature_coords[new_coords] = self.character
             self._current_location = new_location
@@ -809,5 +814,3 @@ class Game:
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
             else:
                 self.character.traverse(self._current_location.tile_at(new_coords))
-        else:
-            self._add_message("You can't go through that!")

@@ -1004,11 +1004,19 @@ class Creature(GameObject):
         modifier = self._get_effect_modifier(skill_name)
         return int(raw_skill * modifier)
 
-    def get_skills_data(self) -> dict[str, int]:
-        return {skill: self._effective_skill(skill) for skill in self._skills}
+    def can_traverse(self, tile: 'Tile') -> str:
+        passage_cost = list(tile.effects[config.terrain_passage_cost].values())[0]
+        if not tile.is_passable_for(self) or self.max_energy < passage_cost:
+            return 'You cannot go there!'
+        if self.energy < passage_cost:
+            return 'You are too tired to move forward!'
+        return ''
 
     def traverse(self, tile: 'Tile') -> None:
-        self.apply_effects(tile.effects)
+        self.apply_effects(tile.effects[config.terrain_passage_cost])
+
+    def get_skills_data(self) -> dict[str, int]:
+        return {skill: self._effective_skill(skill) for skill in self._skills}
 
 
 class Animal(Creature):
@@ -1241,8 +1249,13 @@ class Terrain(Item):
                  spawned_creatures: list[Species] = None,
                  substances: list[LiquidSource] = None,
                  allowed_species: list[Species] = None,
+                 effects: dict = None,
                  **kwargs):
-        super().__init__(**kwargs)
+        if effects is None:
+            effects = {}
+        if config.terrain_passage_cost not in effects:
+            effects[config.terrain_passage_cost] = {config.terrain_passage_cost: 0}
+        super().__init__(effects=effects, **kwargs)
         self.passable = passable
         self._allowed_species = allowed_species or []
         self.spawned_creatures: list[Species] = spawned_creatures or []
