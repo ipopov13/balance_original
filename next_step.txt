@@ -1,7 +1,10 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps, dryads
-BUG: tired animals do random moves instead, if the terrain under their target has a cost
+    Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
+Gnomes
+    Should get extra armor when inside a rock!
+Magic schools
+    Nature: protection (get armor when standing under a tree, like gnomes)
 Day/night cycle
     Creatures should have a base per turn energy cost: they need sleep at some point anyway!
     Add day/night cycle

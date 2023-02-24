@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, Type
 import console
 import random
 from game_objects import Terrain, FlavorTerrain, LiquidSource, Item, \
-    Creature, Container, HumanoidSpecies, Animal, GameObject, Tile
+    Creature, Container, HumanoidSpecies, Animal, GameObject, Tile, Species
 import items
 import config
 import species as sp
@@ -284,7 +284,8 @@ class Location(Container):
                       goals: list[str], other_creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
         for goal in goals:
             if goal is config.chase_humanoid_behavior:
-                step = self._find_prey(current_coords, other_creatures=other_creatures, hunter=creature)
+                step = self._find_prey(current_coords, other_creatures=other_creatures,
+                                       hunter=creature, target_type=HumanoidSpecies)
                 if step == current_coords:
                     continue
                 else:
@@ -322,12 +323,13 @@ class Location(Container):
 
     def _find_prey(self, coords,
                    other_creatures: dict[tuple[int, int], Creature],
-                   hunter: Creature) -> tuple[int, int]:
+                   hunter: Creature,
+                   target_type: Type[Species]) -> tuple[int, int]:
         distance = hunter.perception_radius
         for prey_coords, prey in other_creatures.items():
-            if isinstance(prey.species, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
+            if isinstance(prey.species, target_type) and coord_distance(coords, prey_coords) < distance:
                 path = direct_path(coords, prey_coords)
-                if hunter.can_traverse(self.tile_at(path[1])) == '':
+                if hunter.can_traverse(self.tile_at(path[1])) == '' or len(path) == 2:
                     return path[1]
         return coords
 
