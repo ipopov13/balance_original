@@ -78,9 +78,9 @@ stats_order = [Str, End, Dex, Per, Wil]
 #  Terrains
 terrain_passage_cost = 'terrain_passage_cost_'
 snow_passage_cost = terrain_passage_cost + 'Snow passage cost'
-ice_climbing_cost = terrain_passage_cost + 'Ice passage cost'
+ice_climbing_cost = terrain_passage_cost + 'Ice climbing cost'
 rock_climbing_cost = terrain_passage_cost + 'Rock passage cost'
-wall_climbing_cost = terrain_passage_cost + 'Wall passage cost'
+wall_climbing_cost = terrain_passage_cost + 'Wall climbing cost'
 wading_passage_cost = terrain_passage_cost + 'Wading cost'
 junk_pile_passage_cost = terrain_passage_cost + 'Junk passage cost'
 plant_passage_cost = terrain_passage_cost + 'Plant passage cost'

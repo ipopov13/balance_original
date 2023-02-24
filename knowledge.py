@@ -18,7 +18,16 @@ knowledge = {
         " and other government-unhappy individuals for smashing things at a distance.",
         "Harvesting the useful parts of monsters is an integral part of the current economy. From steel-like"
         " tendons to lava-resistant skin, the most useful and rare components of many crafting professions come"
-        " from harvesting."
+        " from harvesting.",
+        "Rock climbing has never been seen as anything more than a stupid endeavour by the rational denizens"
+        " of most cities, irrespective of race. After all, what would make you expose yourself to the wild animals"
+        " while carrying a bulky bundle of rope with a heavy metal hook on one end?",
+        "Going deep into a jungle is a very brave and very stupid thing in case you are not equipped accordingly."
+        " A machete blade is essential for making your way through the undergrowth, but beware of poisonous"
+        " snakes and bugs, as well as the bigger threats of the jungle.",
+        "To brave the abyssal drops and climbs of ice mountains, explorers have created various"
+        " accessories and tools. A pair of ice picks and a matching pair of spiked boots for ice trekking"
+        " will get you anywhere, assuming you are climbing a frozen peak of course."
     ],
     config.Human: [
         'Explorers and treasure-seekers, the human race combines the primal need '

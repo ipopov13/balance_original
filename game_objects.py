@@ -797,8 +797,8 @@ class Creature(GameObject):
             self._apply_effect(name, final_effect_size)
 
     def _get_final_effect_size(self, effect_name: str, effect_size: int) -> int:
-        modified_effect_size = effect_size + self._get_effect_resistance_or_affinity(effect_name)
-        final_effect_size = int(modified_effect_size * self._get_effect_modifier(effect_name))
+        modified_effect_size = int(effect_size * self._get_effect_modifier(effect_name))
+        final_effect_size = modified_effect_size + self._get_effect_resistance_or_affinity(effect_name)
         return final_effect_size
 
     def _get_effect_resistance_or_affinity(self, effect_name: str) -> int:
@@ -812,7 +812,8 @@ class Creature(GameObject):
                 skill = self._effective_skill(item.shield_skill) / config.max_skill_value
                 effective_value = int(effective_value * (0.5 + 0.5 * skill))
             elif isinstance(item, (LargeWeapon, SmallWeapon, TwoHandedWeapon)) \
-                    and effect_name != item.melee_weapon_skill and effective_value != 1:
+                    and effect_name != item.melee_weapon_skill and effective_value != 0 \
+                    and not effect_name.startswith(config.terrain_passage_cost):
                 skill = self._effective_skill(item.melee_weapon_skill) / config.max_skill_value
                 effective_value = int(effective_value * (0.5 + 0.5 * skill))
             effect_adjustment += effective_value

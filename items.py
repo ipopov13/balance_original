@@ -69,6 +69,15 @@ class Bag(go.Back):
                          color=console.fg.default, description='A very small bag')
 
 
+class SpikedBoots(go.Boots):
+    # TODO: Add to items spreadsheet
+    def __init__(self):
+        super().__init__(name='spiked boots', weight=4, icon=']',
+                         color=console.fg.default, description='Spiked boots for walking on slippery ice.',
+                         effects={config.effect_modifiers: {config.ice_climbing_cost: 0.05,
+                                                            config.ice_passage_cost: 0.5}})
+
+
 class Fist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
@@ -163,6 +172,17 @@ class Spear(go.LargeWeapon):
                          description='A long pole with a sharp metal head.',
                          melee_weapon_skill=config.spear_skill, combat_exhaustion=4,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}}})
+
+
+class IcePick(go.SmallWeapon):
+    # TODO: Add to items spreadsheet
+    def __init__(self, color=console.fg.default):
+        super().__init__(name='ice pick', weight=3, icon='|', color=color,
+                         description='Too small to mine, but great for climbing icy surfaces.',
+                         melee_weapon_skill=config.onehanded_hammers_skill,
+                         melee_weapon_stat=config.Str, combat_exhaustion=2,
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
+                                  config.resistances_and_affinities: {config.ice_climbing_cost: -20}})
 
 
 class ShortSword(go.SmallWeapon):
@@ -404,7 +424,8 @@ class RopeAndHook(go.TwoHandedWeapon):
     def __init__(self, color=console.fg.lightblack):
         super().__init__(name='rope and hook', weight=6, icon='^', color=color,
                          description='For scaling mountains.',
-                         melee_weapon_skill=config.sling_skill, combat_exhaustion=7,
+                         melee_weapon_skill=config.sling_skill,
+                         melee_weapon_stat=config.Dex, combat_exhaustion=7,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
                                   config.effect_modifiers: {config.rock_climbing_cost: 0.01}})
 

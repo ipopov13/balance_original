@@ -3,8 +3,7 @@ Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps, dryads
 Terrain/travel
     BUG: tired animals do random moves instead, if the terrain under their target has a cost
-    add all modifier items in the respective slots (weapon, boots)
-        ice pick
+    add all modifier items and knowledge about them
         snowshoes
         desert shoes
         ice claws (walking)

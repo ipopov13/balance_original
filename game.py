@@ -74,7 +74,9 @@ class Game:
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
 
         self._current_location.put_item(items.Bag(), character_coords)
-        self._current_location.put_item(items.RopeAndHook(), character_coords)
+        self._current_location.put_item(items.IcePick(), character_coords)
+        self._current_location.put_item(items.IcePick(), character_coords)
+        self._current_location.put_item(items.SpikedBoots(), character_coords)
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)
