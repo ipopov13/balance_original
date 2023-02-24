@@ -829,7 +829,8 @@ class Creature(GameObject):
                 skill = self._effective_skill(item.shield_skill) / config.max_skill_value
                 effect_adjustment = 1 + (effect_adjustment - 1) * (0.5 + 0.5 * skill)
             elif isinstance(item, (LargeWeapon, SmallWeapon, TwoHandedWeapon)) \
-                    and effect_name != item.melee_weapon_skill and effect_adjustment != 1:
+                    and effect_name != item.melee_weapon_skill and effect_adjustment != 1 \
+                    and not effect_name.startswith(config.terrain_passage_cost):
                 skill = self._effective_skill(item.melee_weapon_skill) / config.max_skill_value
                 effect_adjustment = 1 + (effect_adjustment - 1) * (0.5 + 0.5 * skill)
             effect_value *= effect_adjustment

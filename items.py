@@ -131,6 +131,16 @@ class LongSword(go.LargeWeapon):
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 5}}})
 
 
+class Machete(go.LargeWeapon):
+    # TODO: Add to items spreadsheet
+    def __init__(self, color=console.fg.lightwhite):
+        super().__init__(name='machete', weight=7, icon='|', color=color,
+                         description="Passing through a thick jungle is easy with this heavy blade.",
+                         melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=6,
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}},
+                                  config.effect_modifiers: {config.plant_passage_cost: 0.1}})
+
+
 class BattleAxe(go.LargeWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='battle axe', weight=5, icon='|', color=color,
@@ -387,6 +397,16 @@ class HuntingSpear(go.ThrownWeapon):
                          ranged_weapon_stat=config.Str,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 5},
                                                           config.melee_combat: {config.physical_damage: 2}}})
+
+
+class RopeAndHook(go.TwoHandedWeapon):
+    # TODO: Add to items spreadsheet
+    def __init__(self, color=console.fg.lightblack):
+        super().__init__(name='rope and hook', weight=6, icon='^', color=color,
+                         description='For scaling mountains.',
+                         melee_weapon_skill=config.sling_skill, combat_exhaustion=7,
+                         effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
+                                  config.effect_modifiers: {config.rock_climbing_cost: 0.01}})
 
 
 class GreatSword(go.TwoHandedWeapon):
