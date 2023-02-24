@@ -78,6 +78,14 @@ class SpikedBoots(go.Boots):
                                                             config.ice_passage_cost: 0.5}})
 
 
+class SnowShoes(go.Boots):
+    # TODO: Add to items spreadsheet
+    def __init__(self):
+        super().__init__(name='snowshoes', weight=2, icon=')',
+                         color=config.brown_fg_color, description='Wide wooden frames to keep you above the snow.',
+                         effects={config.effect_modifiers: {config.snow_passage_cost: 0.5}})
+
+
 class Fist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",

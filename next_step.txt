@@ -4,7 +4,6 @@ Adding the racial passives and documenting them in knowledge
 Terrain/travel
     BUG: tired animals do random moves instead, if the terrain under their target has a cost
     add all modifier items and knowledge about them
-        snowshoes
         desert shoes
         ice claws (walking)
     add deep_snow with more tiring cost
@@ -33,6 +32,7 @@ Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
 Terrain/travel
+    Normal shoes/boots decrease the travel cost across areas (different modifier values)
     Deep water should put the character in a Swimming state, in which they lose energy and then life
     Make the Well drinkable
 Skills

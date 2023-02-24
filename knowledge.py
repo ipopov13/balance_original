@@ -25,6 +25,8 @@ knowledge = {
         "Going deep into a jungle is a very brave and very stupid thing in case you are not equipped accordingly."
         " A machete blade is essential for making your way through the undergrowth, but beware of poisonous"
         " snakes and bugs, as well as the bigger threats of the jungle.",
+        "Snowshoes are a very basic tool of the northern tribes, made to spread your weight across a wider area."
+        " They are otherwise bulky and slow, but they will get you to your snowy destination!",
         "To brave the abyssal drops and climbs of ice mountains, explorers have created various"
         " accessories and tools. A pair of ice picks and a matching pair of spiked boots for ice trekking"
         " will get you anywhere, assuming you are climbing a frozen peak of course."
