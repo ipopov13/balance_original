@@ -2,8 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
 Terrain/travel
-    Terrain energy cost modifiers
-    race and item modifiers
+    item modifiers
     add all modifier items in the respective slots (weapon, boots)
     unify the Game._move_creature() method to work for everyone, incl. the character
         extract goal-setting

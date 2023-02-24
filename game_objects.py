@@ -793,9 +793,13 @@ class Creature(GameObject):
                 local_effects.pop(config.dodge_difficulty)
                 self._react_to_hit()
         for name, effect_size in local_effects.items():
-            modified_effect_size = effect_size + self._get_effect_resistance_or_affinity(name)
-            final_effect_size = int(modified_effect_size * self._get_effect_modifier(name))
+            final_effect_size = self._get_final_effect_size(name, effect_size)
             self._apply_effect(name, final_effect_size)
+
+    def _get_final_effect_size(self, effect_name: str, effect_size: int) -> int:
+        modified_effect_size = effect_size + self._get_effect_resistance_or_affinity(effect_name)
+        final_effect_size = int(modified_effect_size * self._get_effect_modifier(effect_name))
+        return final_effect_size
 
     def _get_effect_resistance_or_affinity(self, effect_name: str) -> int:
         effect_adjustment = self._resistances_and_affinities.get(effect_name, 0)
@@ -1005,10 +1009,11 @@ class Creature(GameObject):
         return int(raw_skill * modifier)
 
     def can_traverse(self, tile: 'Tile') -> str:
-        passage_cost = list(tile.effects[config.terrain_passage_cost].values())[0]
-        if not tile.is_passable_for(self) or self.max_energy < passage_cost:
+        cost_type, passage_cost = list(tile.effects[config.terrain_passage_cost].items())[0]
+        final_cost = self._get_final_effect_size(cost_type, passage_cost)
+        if self.max_energy < final_cost:
             return 'You cannot go there!'
-        if self.energy < passage_cost:
+        if self.energy < final_cost:
             return 'You are too tired to move forward!'
         return ''
 
@@ -1245,10 +1250,9 @@ class Humanoid(Creature):
 
 
 class Terrain(Item):
-    def __init__(self, passable: bool = True,
+    def __init__(self,
                  spawned_creatures: list[Species] = None,
                  substances: list[LiquidSource] = None,
-                 allowed_species: list[Species] = None,
                  effects: dict = None,
                  **kwargs):
         if effects is None:
@@ -1256,14 +1260,9 @@ class Terrain(Item):
         if config.terrain_passage_cost not in effects:
             effects[config.terrain_passage_cost] = {config.terrain_passage_cost: 0}
         super().__init__(effects=effects, **kwargs)
-        self.passable = passable
-        self._allowed_species = allowed_species or []
         self.spawned_creatures: list[Species] = spawned_creatures or []
         self.substances = substances or []
         self.transformations = {}
-
-    def is_passable_for(self, creature: Creature) -> bool:
-        return self.passable or creature.species in self._allowed_species
 
 
 class FlavorTerrain(Terrain):
@@ -1343,6 +1342,3 @@ class Tile(PhysicalContainer):
         elif len(item_list) > 1:
             return config.multiple_items_icon
         return self.terrain.icon
-
-    def is_passable_for(self, creature: Creature):
-        return self.terrain.is_passable_for(creature)

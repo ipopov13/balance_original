@@ -77,15 +77,17 @@ stats_order = [Str, End, Dex, Per, Wil]
 # Item effects
 #  Terrains
 terrain_passage_cost = 'terrain_passage_cost_'
-snow_passage_cost = terrain_passage_cost + 'snow'
-ice_climbing_cost = terrain_passage_cost + 'ice_climbing'
-rock_climbing_cost = terrain_passage_cost + 'rock_climbing'
-wading_passage_cost = terrain_passage_cost + 'wading'
-junk_pile_passage_cost = terrain_passage_cost + 'junk_pile'
-plant_passage_cost = terrain_passage_cost + 'plants'
-sand_passage_cost = terrain_passage_cost + 'sand'
-ice_passage_cost = terrain_passage_cost + 'ice'
-bones_passage_cost = terrain_passage_cost + 'bones'
+snow_passage_cost = terrain_passage_cost + 'Snow passage cost'
+ice_climbing_cost = terrain_passage_cost + 'Ice passage cost'
+rock_climbing_cost = terrain_passage_cost + 'Rock passage cost'
+wall_climbing_cost = terrain_passage_cost + 'Wall passage cost'
+wading_passage_cost = terrain_passage_cost + 'Wading cost'
+junk_pile_passage_cost = terrain_passage_cost + 'Junk passage cost'
+plant_passage_cost = terrain_passage_cost + 'Plant passage cost'
+sand_passage_cost = terrain_passage_cost + 'Sand passage cost'
+ice_passage_cost = terrain_passage_cost + 'Ice walking cost'
+bones_passage_cost = terrain_passage_cost + 'Bones passage cost'
+lava_passage_cost = terrain_passage_cost + 'Lava passage cost'
 #  Consumables
 consumable_effects = 'consumable_effects'
 hunger_effect_prefix = "hunger_"

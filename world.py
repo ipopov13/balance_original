@@ -36,12 +36,11 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%',
                     description='A huge block of ice.',
                     spawned_creatures=[sp.winter_wolf_species, sp.ice_bear_species],
-                    effects={config.terrain_passage_cost: {config.ice_climbing_cost: 100}})
+                    effects={config.terrain_passage_cost: {config.ice_climbing_cost: 1000}})
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%',
                 description='A rock outcropping.',
                 spawned_creatures=[sp.bear_species, sp.eagle_species],
-                allowed_species=[sp.gnome_race, sp.eagle_species],
-                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#',
                description='A bush.', spawned_creatures=[sp.fox_species],
                effects={config.terrain_passage_cost: {config.plant_passage_cost: 3}})
@@ -73,29 +72,26 @@ junk_pile = FlavorTerrain(color=console.fg.lightblack, name='junk pile', icon='o
                           description='Foul-smelling junk.',
                           required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
                           effects={config.terrain_passage_cost: {config.junk_pile_passage_cost: 2}})
-lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~', passable=False,
+lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~',
                      description='A hole with bubbling lava!',
-                     required_base_terrains=all_base_terrains, required_climates=[config.HOT_CLIMATE])
+                     required_base_terrains=all_base_terrains, required_climates=[config.ALL_CLIMATES],
+                     effects={config.terrain_passage_cost: {config.lava_passage_cost: 10_000}})
 gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%',
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          allowed_species=[sp.gnome_race, sp.eagle_species],
-                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%',
                             description='A rock outcropping.',
                             required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                            allowed_species=[sp.gnome_race, sp.eagle_species],
-                            effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                            effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%',
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          allowed_species=[sp.gnome_race, sp.eagle_species],
-                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%',
                            description='A moss-covered boulder.',
                            required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                           allowed_species=[sp.gnome_race, sp.eagle_species],
-                           effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                           effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
                              description='A big clump of lichen.',
                              required_base_terrains=all_base_terrains, required_climates=[config.COLD_CLIMATE])
@@ -108,11 +104,11 @@ old_pavement = FlavorTerrain(color=console.fg.lightyellow, name='old pavement',
 ruined_wall = FlavorTerrain(color=config.brown_fg_color, name='ruined wall', icon='#',
                             description='Ancient wall.',
                             required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                            effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                            effects={config.terrain_passage_cost: {config.wall_climbing_cost: 1000}})
 engraved_column = FlavorTerrain(color=config.brown_fg_color, name='engraved column', icon='|',
                                 description='An engraved column.',
                                 required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
+                                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
 fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o',
                           description='A fireplace.',
                           required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
@@ -127,7 +123,7 @@ water = Terrain(color=console.fg.blue, name='water', icon='~', description='Wate
                 effects={config.terrain_passage_cost: {config.wading_passage_cost: 2}})
 stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%',
                         description='A block of stilled water.',
-                        effects={config.terrain_passage_cost: {config.ice_climbing_cost: 100}})
+                        effects={config.terrain_passage_cost: {config.ice_climbing_cost: 1000}})
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='A water well.',
                        substances=[
                            LiquidSource(resource=items.water_liquid, name='water well', description='A water well.')])
@@ -281,7 +277,7 @@ class Location(Container):
         for row in range(self._height):
             for column in range(self._width):
                 coords = (row + self._top_left[0], column + self._top_left[1])
-                if self.tile_at(coords).is_passable_for(creature):
+                if creature.can_traverse(self.tile_at(coords)) == '':
                     return coords
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
@@ -318,7 +314,7 @@ class Location(Container):
                               ]
                 for step in safe_steps:
                     try:
-                        if self.tile_at(step).is_passable_for(runner):
+                        if runner.can_traverse(self.tile_at(step)) == '':
                             return step
                     except ValueError:
                         pass
@@ -331,7 +327,7 @@ class Location(Container):
         for prey_coords, prey in other_creatures.items():
             if isinstance(prey.species, HumanoidSpecies) and coord_distance(coords, prey_coords) < distance:
                 path = direct_path(coords, prey_coords)
-                if self.tile_at(path[1]).is_passable_for(hunter):
+                if hunter.can_traverse(self.tile_at(path[1])) == '':
                     return path[1]
         return coords
 
@@ -354,7 +350,7 @@ class Location(Container):
         neighbors = self._all_neighbors(coords)
         random.shuffle(neighbors)
         for new_coords in neighbors:
-            if self.tile_at(new_coords).is_passable_for(creature):
+            if creature.can_traverse(self.tile_at(new_coords)) == '':
                 return new_coords
         else:
             return coords
@@ -393,7 +389,7 @@ class Location(Container):
                 additional_creatures.append(Animal(chosen_creature_species))
         for creature_instance in additional_creatures:
             new_coords = self._random_coords()
-            while new_coords in local_creatures or not self.can_ocupy(creature_instance, new_coords):
+            while new_coords in local_creatures or creature_instance.can_traverse(self.tile_at(new_coords)) != '':
                 new_coords = self._random_coords()
             local_creatures[new_coords] = creature_instance
         return local_creatures
@@ -452,9 +448,6 @@ class Location(Container):
     def contents(self) -> list[list[Tile]]:
         self._data_prep()
         return self._contents
-
-    def can_ocupy(self, creature: Creature, coords: tuple[int, int]) -> bool:
-        return self.tile_at(coords).is_passable_for(creature)
 
     def tile_at(self, coords: tuple[int, int]) -> Tile:
         if not self.contains_coords(coords):
