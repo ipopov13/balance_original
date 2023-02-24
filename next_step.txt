@@ -2,6 +2,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
 Terrain/travel
+    Creatures should have a resting AI step! -> sleep!!!
     item modifiers
     add all modifier items in the respective slots (weapon, boots)
     unify the Game._move_creature() method to work for everyone, incl. the character

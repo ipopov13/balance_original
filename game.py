@@ -557,7 +557,7 @@ class Game:
             goals = creature.get_goals()
             next_coords = self._current_location.get_goal_step(creature, old_coords,
                                                                goals, self._creature_coords)
-            if next_coords in self._creature_coords:
+            if next_coords in self._creature_coords and next_coords != old_coords:
                 other_creature = self._creature_coords[next_coords]
                 creature.bump_with(other_creature)
                 if other_creature.is_dead:
@@ -567,6 +567,7 @@ class Game:
             else:
                 self._creature_coords.pop(old_coords)
                 self._creature_coords[next_coords] = creature
+                creature.traverse(self._current_location.tile_at(next_coords))
 
     def _get_coords_of_creature(self, creature: go.Creature) -> tuple[int, int]:
         for coords in self._creature_coords:
