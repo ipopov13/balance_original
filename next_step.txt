@@ -1,19 +1,19 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
-    Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps
+    Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps, dryads
 Terrain/travel
-    Creatures should have a resting AI step! -> sleep!!!
     item modifiers
     add all modifier items in the respective slots (weapon, boots)
-    unify the Game._move_creature() method to work for everyone, incl. the character
-        extract goal-setting
-        add missing Animal methods? (traversal, direction confirmation)
     add deep_snow with more tiring cost
     add stilled water field - like a mountain
     add deep_water that induces the swimming effect instead!
-Dryad:
-    pass through all plants
-    plant terrains don't tire them (bushes/jungle)
+Day/night cycle
+    Add day/night cycle
+    Clock? Some display of the time of day
+    Each creature is night or day, thus switching to a sleep AI or out of it
+    Creatures should have a resting AI step! -> sleep!!!
+    Creatures should wake up based on the character approaching
+    Stealth skill
 Shaper
     Animals don't attack (in the selection of targets?)
 Water Elemental

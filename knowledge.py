@@ -119,7 +119,9 @@ knowledge = {
     ],
     config.Dryad: [
         "The kin of plants, dryads are champions of the forest. They give trees their all and"
-        " received undying love in return."
+        " received undying love in return.",
+        "Plants react to a dryad instinctively, enveloping them in a loving hug. Thus, to a dryad,"
+        " passing through the thickest undergrowth is comparable to a warm bath or a massage."
     ],
     config.Shifter: [
         "A shifter can easily pass as a human if they cut their talon-like fingernails and keep"
@@ -127,7 +129,12 @@ knowledge = {
     ],
     config.Fae: [
         "The fae are born from the natural magic of the world, and they have developed methods to"
-        " manipulate it. Their ability to trespass into the dreams of others is an insignificant side effect."
+        " manipulate it. Their ability to trespass into the dreams of others is an insignificant side effect.",
+        "A fay does not have dreams of their own. Unfortunately, this does not free them form the need to"
+        " process sensory information, and the race has adapted to this by being able to use shards of"
+        " the dreams of other creatures. A shard can be used for a very long time, and some fay do not change"
+        " their personal dream for years. In fay society, there a different schools of thought preaching"
+        " the benefits, and often the detriments, of their chosen \"dream regimen\"."
     ],
     config.WaterElemental: [
         "To make other living beings see the beauty of water, elementals turn it into art, home,"
