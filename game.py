@@ -76,7 +76,7 @@ class Game:
         self._current_location.put_item(items.Bag(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
-        self._current_location.put_item(items.SnowShoes(), character_coords)
+        self._current_location.put_item(items.DesertShoes(), character_coords)
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)

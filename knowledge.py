@@ -27,6 +27,10 @@ knowledge = {
         " snakes and bugs, as well as the bigger threats of the jungle.",
         "Snowshoes are a very basic tool of the northern tribes, made to spread your weight across a wider area."
         " They are otherwise bulky and slow, but they will get you to your snowy destination!",
+        "Desert survival starts with getting water and shade, but if you really want to survive, you have to"
+        " eventually get out of the desert and reach a more hospitable place. The best friend on this journey is"
+        " a pair of loose-fitting desert boots made to protect you from chaffing and the painful sores that sand"
+        " creates.",
         "To brave the abyssal drops and climbs of ice mountains, explorers have created various"
         " accessories and tools. A pair of ice picks and a matching pair of spiked boots for ice trekking"
         " will get you anywhere, assuming you are climbing a frozen peak of course."

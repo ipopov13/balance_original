@@ -1,14 +1,7 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, gnomes, orcs, trolls, goblins, kraken, imps, dryads
-Terrain/travel
-    BUG: tired animals do random moves instead, if the terrain under their target has a cost
-    add all modifier items and knowledge about them
-        desert shoes
-        ice claws (walking)
-    add deep_snow with more tiring cost
-    add stilled water field - like a mountain
-    add deep_water that induces the swimming effect instead!
+BUG: tired animals do random moves instead, if the terrain under their target has a cost
 Day/night cycle
     Creatures should have a base per turn energy cost: they need sleep at some point anyway!
     Add day/night cycle
@@ -32,9 +25,11 @@ Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
 Terrain/travel
-    Normal shoes/boots decrease the travel cost across areas (different modifier values)
-    Deep water should put the character in a Swimming state, in which they lose energy and then life
     Make the Well drinkable
+    add deep_snow with more tiring cost
+    add stilled water field - like a mountain
+    add deep_water that induces the swimming effect, in which they lose energy and then life
+    Normal shoes/boots decrease the travel cost across areas (different modifier values)
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
         Some transforms are faster/easier than others

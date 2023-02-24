@@ -86,6 +86,15 @@ class SnowShoes(go.Boots):
                          effects={config.effect_modifiers: {config.snow_passage_cost: 0.5}})
 
 
+class DesertShoes(go.Boots):
+    # TODO: Add to items spreadsheet
+    def __init__(self):
+        super().__init__(name='desert boots', weight=3, icon=')',
+                         color=console.fg.yellow, description='Wide and comfortable shoes that keep '
+                                                              'the sand off your toes.',
+                         effects={config.effect_modifiers: {config.sand_passage_cost: 0.5}})
+
+
 class Fist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
