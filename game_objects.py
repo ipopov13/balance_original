@@ -735,13 +735,6 @@ class Creature(GameObject):
             return rose_of_directions[new_index]
         return direction
 
-    def travel(self) -> None:
-        base_fraction = self.load / self.max_load
-        modifier = self._get_effect_modifier(config.travel_energy_loss_modifier)
-        energy_to_lose = int(self.max_energy * base_fraction * modifier) // 2
-        self.energy -= energy_to_lose
-        self.ranged_target = None
-
     def live(self) -> None:
         """
         Tick effects like sickness/poison/regen/regular non-rest energy regain

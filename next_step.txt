@@ -2,7 +2,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Day/night cycle
-    Area travel should take time!
     Each creature is night or day, thus switching to a sleep/rest AI or out of it completely during the rest cycle
     Creatures should have a rest AI active, unless a target is available - replace the random movement with rest
     When hungry, creatures should have a search AI
@@ -45,11 +44,12 @@ Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
 Terrain/travel
+    Add more shoes/boots to decrease the travel cost (different resistance/modifier combos)
+        hiking boots (sand/ice - 1)
     Make the Well drinkable
     add deep_snow with more tiring cost
     add stilled water field - like a mountain
     add deep_water that induces the swimming effect, in which they lose energy and then life
-    Normal shoes/boots decrease the travel cost across areas (different modifier values)
 Skills
     Make tiles have separate hp/max_hp for each transform, make the max_hp part of the transform!
         Some transforms are faster/easier than others

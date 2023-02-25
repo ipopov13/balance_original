@@ -107,7 +107,6 @@ fire_damage = damage_effect_prefix + 'Fire damage'
 #  Resistances, affinities, and modifiers
 resistances_and_affinities = 'resistances_and_affinities'
 effect_modifiers = 'effect_modifiers'
-travel_energy_loss_modifier = 'Travel fatigue'
 max_mana_modifier = 'Max mana'
 max_hp_modifier = 'Max HP'
 max_load_modifier = 'Max load'

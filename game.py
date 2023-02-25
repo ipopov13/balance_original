@@ -76,7 +76,7 @@ class Game:
         self._current_location.put_item(items.Bag(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
-        self._current_location.put_item(items.SpikedBoots(), character_coords)
+        self._current_location.put_item(items.SnowShoes(), character_coords)
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)
@@ -843,7 +843,7 @@ class Game:
                 for coords in list(self._creature_coords):
                     if self._creature_coords[coords] is not self.character:
                         old_location.stored_creatures.append(self._creature_coords.pop(coords))
-                self.character.travel()
+                self.character.ranged_target = None
                 self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
             else:
                 self.character.traverse(self._current_location.tile_at(new_coords))
