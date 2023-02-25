@@ -1,6 +1,8 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
+Add AI goal handling in the Game._move_creatures(), instead of the Location!
+    Only pass a single goal to Location.get_goal_step
 Day/night cycle
     Each creature is night or day, thus switching to a sleep/rest AI or out of it completely during the rest cycle
     Creatures should have a rest AI active, unless a target is available - replace the random movement with rest
