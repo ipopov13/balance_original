@@ -53,6 +53,10 @@ fearful_disposition = 'fearful'
 chase_humanoid_behavior = 'chase_humanoid'
 random_behavior = 'random'
 run_from_humanoid_behavior = 'run_from_humanoid'
+
+basic_ai = {indifferent_disposition: [random_behavior],
+            fearful_disposition: [run_from_humanoid_behavior, random_behavior],
+            aggressive_disposition: [chase_humanoid_behavior, random_behavior]}
 # Races
 Human = "Human"
 Dwarf = "Dwarf"

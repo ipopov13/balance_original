@@ -525,24 +525,19 @@ class Species(GameObject):
 
     initial_equipment = ()
 
-    def __init__(self, custom_ai: dict[str, list[str]] = None,
+    def __init__(self, ai: dict[str, list[str]] = config.basic_ai,
                  initial_disposition: str = config.indifferent_disposition,
                  base_effect_modifiers: dict[str, int] = None,
                  base_resistances_and_affinities: dict[str, int] = None,
                  active_effects: dict[str, int] = None,
                  consumable_types: list[Type[Item]] = None,
                  base_skills: dict[str, int] = None,
+                 active_phase: str = config.daylight_phase,
                  **kwargs):
         super().__init__(**kwargs)
-        basic_ai = {config.indifferent_disposition: [config.random_behavior],
-                    config.fearful_disposition: [config.run_from_humanoid_behavior,
-                                                 config.random_behavior],
-                    config.aggressive_disposition: [config.chase_humanoid_behavior,
-                                                    config.random_behavior]}
-        if custom_ai is not None:
-            basic_ai.update(custom_ai)
         self.initial_disposition = initial_disposition
-        self.ai = basic_ai
+        self.active_phase = active_phase
+        self.ai = ai
         self.base_skills = base_skills or {}
         self.base_effect_modifiers = base_effect_modifiers or {}
         self.base_resistances_and_affinities = base_resistances_and_affinities or {}
@@ -602,6 +597,7 @@ class Creature(GameObject):
             kwargs['name'] = species.name
         super().__init__(**kwargs)
         self.species = species
+        self.active_phase = self.species.active_phase
         if self.description == config.empty_string:
             self._description = self.species.description
         self._disposition = self.species.initial_disposition
