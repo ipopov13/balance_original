@@ -661,7 +661,7 @@ class Creature(GameObject):
         difference = self._energy - value
         if difference > 0:
             self._get_hungry(difference)
-        self._energy = min(self.max_energy - self.current_max_energy, max(0, value))
+        self._energy = min(self.max_energy - self.unusable_energy, max(0, value))
 
     def _get_hungry(self, change):
         """Add hunger and thirst on every 100 points of energy spent or every 100 turns"""
@@ -671,6 +671,7 @@ class Creature(GameObject):
             self.hunger += famine
             self.thirst += famine
             self._sustenance_needs = self._sustenance_needs % 100
+            self._energy = min(self.max_energy - self.unusable_energy, self._energy)
 
     @property
     def hunger(self):
@@ -687,10 +688,6 @@ class Creature(GameObject):
     @thirst.setter
     def thirst(self, value):
         self._thirst = min(50, max(0, value))
-
-    @property
-    def sustenance_modifier(self) -> int:
-        return (self.hunger + self.thirst) // 10 * 10
 
     @property
     def _exhaustion_modifier(self) -> float:
@@ -723,8 +720,9 @@ class Creature(GameObject):
         return int(base_energy * modifier)
 
     @property
-    def current_max_energy(self) -> int:
-        return self.max_energy * self.sustenance_modifier // 100
+    def unusable_energy(self) -> int:
+        sustenance_modifier = (self.hunger + self.thirst) // 10 * 10
+        return self.max_energy * sustenance_modifier // 100
 
     def confirm_movement_direction(self, direction: str) -> str:
         """Apply effects that might change the direction of movement"""

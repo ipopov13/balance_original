@@ -700,9 +700,8 @@ class Game:
         hp_gauge = self._format_filled_gauge(self.character.hp, self.character.max_hp, config.hp_color)
         mana_gauge = self._format_filled_gauge(self.character.mana, self.character.max_mana, config.mana_color)
         energy_gauge = self._format_filled_gauge(self.character.energy, self.character.max_energy, config.energy_color,
-                                                 ailment_score=self.character.current_max_energy,
+                                                 ailment_score=self.character.unusable_energy,
                                                  ailment_color=config.famine_color)
-        load_gauge = self._format_filled_gauge(self.character.load, self.character.max_load, config.load_color)
         day_time, phase = self._time_of_day()
         time_gauge = self._format_marker_gauge(day_time,
                                                config.day_phases[phase][config.phase_length],
