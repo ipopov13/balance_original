@@ -46,6 +46,7 @@ Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
 Terrain/travel
+    Add SmallAnimal class that adds plant passage, Bird for others?
     Add more shoes/boots to decrease the travel cost (different resistance/modifier combos)
         hiking boots (sand/ice - 1)
     Make the Well drinkable

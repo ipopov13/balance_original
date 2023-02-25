@@ -494,11 +494,13 @@ Game Over!
         self._turn += 1
         self._move_npcs()
         self.character.live()
-        for position, effect_list in self._turn_effects.items():
+        for (position, effect_list) in list(self._turn_effects.items()):
             for effect in effect_list[:]:
                 effect.tick()
-                if effect.duration == 0:
-                    effect_list.remove(effect)
+                if effect.duration <= 0:
+                    self._turn_effects[position].remove(effect)
+                    if not self._turn_effects[position]:
+                        self._turn_effects.pop(position)
 
     def sub_turn_tick(self) -> None:
         for position in list(self._sub_turn_effects):
