@@ -9,6 +9,8 @@ class GameSequence:
     def get_window(ui) -> Window:
         if ui.game.state is Game.welcome_state:
             return Window(ui=ui, content=ct.WindowContent(ui.game))
+        elif ui.game.state is Game.ended_state:
+            return Window(ui=ui, content=ct.EndedGameContent(ui.game))
         elif ui.game.state is Game.new_game_state and ui.game.substate is Game.character_name_substate:
             return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True, title='Enter your name',
                                content=ct.TextInputField(), target=ui.game.set_character_name)

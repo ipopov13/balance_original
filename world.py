@@ -617,7 +617,7 @@ class Region(Container):
 
 
 class World(Container):
-    region_suffixes = {config.CHAOS_FORCE: """of Blood
+    chaos_suffixes = """of Blood
 of Blisters
 of Bone
 of Darkness
@@ -644,8 +644,8 @@ of the Dead
 of the Tyrant
 of Vampires 
 of the Worm
-of the Zombie""".split('\n'),
-                       config.ORDER_FORCE: """of Bread
+of the Zombie""".split('\n')
+    order_suffixes = """of Bread
 of Beauty
 of the Bell
 of the Bridge
@@ -673,8 +673,8 @@ of the Tailor
 of the Tomb
 of the Trader
 of White
-of Wine""".split('\n'),
-                       config.NATURE_FORCE: """of the Bear
+of Wine""".split('\n')
+    nature_suffixes = """of the Bear
 of the Bee
 of the Bird
 of Bloom
@@ -701,14 +701,16 @@ of Thunder
 of the Tiger
 of Whispers
 of Wings
-of the Wolf""".split('\n')}
+of the Wolf""".split('\n')
 
     def __init__(self):
         super().__init__(height=config.world_size, width=config.world_size)
         forces = [config.NATURE_FORCE, config.ORDER_FORCE, config.CHAOS_FORCE] * (config.world_size ** 2 // 3 + 1)
         random.shuffle(forces)
         self._contents: Optional[list[list[Region]]] = []
-        suffixes = World.region_suffixes.copy()
+        suffixes = {config.ORDER_FORCE: World.order_suffixes[:],
+                    config.NATURE_FORCE: World.nature_suffixes[:],
+                    config.CHAOS_FORCE: World.chaos_suffixes[:]}
         for f in suffixes:
             random.shuffle(suffixes[f])
         for row in range(self._height):

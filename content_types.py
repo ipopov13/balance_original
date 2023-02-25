@@ -34,6 +34,11 @@ class WindowContent:
         return object_commands
 
 
+class EndedGameContent(WindowContent):
+    def data(self) -> str:
+        return self.game_object.game_over_screen()
+
+
 class CharacterSheet(WindowContent):
     def __init__(self, game_object):
         super().__init__(game_object)

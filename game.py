@@ -56,6 +56,12 @@ class Game:
         self._sub_turn_effects: dict = {}
         self._chosen_transformation: Optional[dict[str, int]] = None
 
+    @staticmethod
+    def game_over_screen() -> str:
+        return r'''
+Game Over!
+ You died'''
+
     @property
     def _selected_equipped_item(self):
         return list(self.character.effective_equipped_items.values())[self.selected_equipped_item_index]
@@ -106,6 +112,10 @@ class Game:
         if self.state == Game.welcome_state:
             return {commands.NewGame(): self._new_game,
                     commands.LoadGame(): self._initiate_load}
+        elif self.state == Game.ended_state:
+            return {commands.Close(): self._close_game}
+        elif self.state == Game.playing_state and self.character.is_dead:
+            return {commands.Close(): self._end_game}
         elif self.state == Game.playing_state and self.substate == Game.working_substate:
             return {commands.Stop(): self._go_to_normal_mode,
                     commands.Rest(): self._character_rests,
@@ -187,6 +197,14 @@ class Game:
             return inventory_commands
         else:
             return {}
+
+    @staticmethod
+    def _close_game(_) -> bool:
+        return False
+
+    def _end_game(self, _) -> bool:
+        self.state = Game.ended_state
+        return True
 
     def _transform_ground_item(self, _) -> bool:
         self._ground_container.provide_item(self._selected_ground_item.weight,
@@ -512,6 +530,8 @@ class Game:
             self._current_location.put_item(effect['item'], position)
 
     def _creature_died(self, creature: go.Creature) -> None:
+        if creature is self.character:
+            return
         coords = self._get_coords_of_creature(creature)
         for item in creature.get_drops():
             self._current_location.put_item(item, coords)
