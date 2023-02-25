@@ -187,7 +187,27 @@ ballista_type = 'ballista_type'
 sling_type = 'sling_type'
 
 random_creatures_respawn_period = 500
-creature_rarity_scale = [1, 1/2, 1/9]
+creature_rarity_scale = [1, 1 / 2, 1 / 9]
+
+# Day and night cycle
+daylight_phase = ' Day'
+nighttime_phase = 'Dark'
+phase_length = 'length'
+phase_background = 'background'
+phase_marker = 'marker'
+phase_marker_color = 'marker_color'
+day_length = 1000
+night_length = 1000
+day_phases = {daylight_phase: {phase_length: day_length,
+                               phase_background: console.bg.cyan,
+                               phase_marker: '*',
+                               phase_marker_color: console.fg.red},
+              nighttime_phase: {phase_length: night_length,
+                                phase_background: console.bg.lightblack,
+                                phase_marker: 'o',
+                                phase_marker_color: console.fg.lightwhite},
+              }
+day_and_night_length = day_length + night_length
 
 max_stat_value = 20
 max_skill_value = 100

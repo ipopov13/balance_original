@@ -76,7 +76,7 @@ class Game:
         self._current_location.put_item(items.Bag(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
         self._current_location.put_item(items.IcePick(), character_coords)
-        self._current_location.put_item(items.DesertShoes(), character_coords)
+        self._current_location.put_item(items.SpikedBoots(), character_coords)
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
         self._current_location.put_item(water_skin, character_coords)
@@ -674,7 +674,7 @@ class Game:
             self._selected_bag_item = self.character.bag.contents[item_coords[0]][item_coords[1]]
         except AttributeError:
             self._selected_bag_item = go.empty_space
-        load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
+        load_gauge = self._format_filled_gauge(self.character.load, self.character.max_load, config.load_color)
         load_line = f'Load [{load_gauge}]'
         return self._selected_bag_item.details() + [load_line]
 
@@ -686,15 +686,31 @@ class Game:
     def get_current_location_name(self) -> str:
         return self._current_location.name
 
+    def _time_of_day(self) -> tuple[int, str]:
+        current_day_time = self._turn % config.day_and_night_length
+        if current_day_time >= config.day_length:
+            phase = config.nighttime_phase
+            current_day_time -= config.day_length
+        else:
+            phase = config.daylight_phase
+        return current_day_time, phase
+
     def get_character_hud(self) -> str:
         # TODO: Add travel destination (chosen on map, hinted with Travelling: West-NW)
-        hp_gauge = self._format_gauge(self.character.hp, self.character.max_hp, config.hp_color)
-        mana_gauge = self._format_gauge(self.character.mana, self.character.max_mana, config.mana_color)
-        energy_gauge = self._format_gauge(self.character.energy, self.character.max_energy, config.energy_color,
-                                          ailment_score=self.character.current_max_energy,
-                                          ailment_color=config.famine_color)
-        load_gauge = self._format_gauge(self.character.load, self.character.max_load, config.load_color)
-        hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | Load [{load_gauge}]\n'
+        hp_gauge = self._format_filled_gauge(self.character.hp, self.character.max_hp, config.hp_color)
+        mana_gauge = self._format_filled_gauge(self.character.mana, self.character.max_mana, config.mana_color)
+        energy_gauge = self._format_filled_gauge(self.character.energy, self.character.max_energy, config.energy_color,
+                                                 ailment_score=self.character.current_max_energy,
+                                                 ailment_color=config.famine_color)
+        load_gauge = self._format_filled_gauge(self.character.load, self.character.max_load, config.load_color)
+        day_time, phase = self._time_of_day()
+        time_gauge = self._format_marker_gauge(day_time,
+                                               config.day_phases[phase][config.phase_length],
+                                               config.day_phases[phase][config.phase_background],
+                                               config.day_phases[phase][config.phase_marker],
+                                               config.day_phases[phase][config.phase_marker_color]
+                                               )
+        hud = f'HP [{hp_gauge}] | Mana [{mana_gauge}] | Energy [{energy_gauge}] | {phase} [{time_gauge}]\n'
         # Target and message line
         if self.substate == Game.looking_substate:
             message = self._current_location.tile_at(self._observed_target).description
@@ -709,9 +725,8 @@ class Game:
             target_text = ''
             target_creature = self._last_character_target or self.character.ranged_target
             if isinstance(target_creature, (go.Creature, go.Tile)):
-                target_hp_gauge = self._format_gauge(target_creature.hp,
-                                                     target_creature.max_hp,
-                                                     config.hp_color, show_numbers=False)
+                target_hp_gauge = self._format_filled_gauge(target_creature.hp, target_creature.max_hp, config.hp_color,
+                                                            show_numbers=False)
                 target_text = f'Target: {target_creature.name} [{target_hp_gauge}]'
             statuses = '|'.join(self.character.get_statuses())
             inner_padding = ' ' * (config.location_width - raw_length(target_text) - raw_length(statuses))
@@ -720,8 +735,24 @@ class Game:
         return hud
 
     @staticmethod
-    def _format_gauge(current_stat, max_stat, color, show_numbers: bool = True,
-                      ailment_score: int = 0, ailment_color: str = console.fg.default) -> str:
+    def _format_marker_gauge(current_stat: int, max_stat: int, background_color: str, marker: str,
+                             marker_color: str = console.fg.default) -> str:
+        if current_stat >= max_stat:
+            raise ValueError(f"Current stat cannot be equal to max when formatting marker gauge!")
+        if len(marker) != 1:
+            raise ValueError(f"Gauge marker icon must be exactly one character!")
+        passed_spots = int(current_stat / max_stat * 10)
+        colored_marker = marker_color + marker
+        colored_gauge = (background_color
+                         + ' ' * passed_spots
+                         + colored_marker
+                         + ' ' * (10 - passed_spots - 1)
+                         + console.fx.end)
+        return colored_gauge
+
+    @staticmethod
+    def _format_filled_gauge(current_stat, max_stat, color, show_numbers: bool = True,
+                             ailment_score: int = 0, ailment_color: str = console.fg.default) -> str:
         current_max = max_stat - ailment_score
         if show_numbers:
             raw_gauge = f'{current_stat}/{current_max}'.center(10, ' ')

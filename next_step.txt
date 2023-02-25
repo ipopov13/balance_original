@@ -1,18 +1,23 @@
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
+BUG: Energy bar expands when a new fraction is taken by ailment! Becomes 11 chars long
+Day/night cycle
+    How "long" is an area in turns?
+    Each creature is night or day, thus switching to a sleep/rest AI or out of it completely during the rest cycle
+    Creatures should have a rest AI active, unless a target is available - replace the random movement with rest
+    When hungry, creatures should have a search AI
+    Creatures should wake up based on the character approaching - Stealth skill
+    Creatures should try hiding on a favorite terrain before sleeping - Hiding skill and visibility
+    cave terrain for bears?
 Gnomes
     Should get extra armor when inside a rock!
-Magic schools
-    Nature: protection (get armor when standing under a tree, like gnomes)
-Day/night cycle
-    Creatures should have a base per turn energy cost: they need sleep at some point anyway!
-    Add day/night cycle
-    Clock? Some display of the time of day
-    Each creature is night or day, thus switching to a sleep AI or out of it
-    Creatures should have a resting AI step! -> sleep!!!
-    Creatures should wake up based on the character approaching
-    Stealth skill
+        terrain effects that are applied every turn you reside on them
+         (extra armor, swimming, drowning (on energy condition))
+        rocks should have an extra effect: "rock armor": 0
+        gnomes have an affinity to it, giving it a value
+        armor calculation should check the active effects for the config.armor_prefix
+    Other climbing creatures should not!
 Shaper
     Animals don't attack (in the selection of targets?)
 Water Elemental
@@ -24,6 +29,19 @@ Fae
     doesn't wake sleeping creatures
     can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
 
+Items
+    Standardization of icons:
+    { - ranged weapon with ammo
+    } - thrown weapon
+    */- - ammo
+    [( - armors (heavy/light)
+    ) - boots
+    ] - shield
+    | - small/large weapon (one hand)
+    / - two-handed weapon
+    ^ - helmet/cap
+    = - bags/containers
+    $ - money (yellow for the gold, brown for the paper?)
 Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
@@ -165,21 +183,6 @@ Map screen:
     Set destination command, add destination directions to HUD
 Flavored descriptions
     Add adjectives to some items based on the race of the character (for a fay, meat is "disgusting")
-World:
-    turns as a clock with daytime - day and night
-    (2400 turns=1 day,1200 turns day and 1200 turns night)
-    Early morning	200	topaz
-    Morning		200	emerald
-    Midday		150	opal
-    High noon	100	ruby
-    Afternoon	150	amethyst
-    Early evening	200	lapis lazuli
-    Evening		200	aquamarine
-    After dark	250	tourmaline
-    Deep night	300	garnet
-    Midnight	100	sapphire
-    After midnight	300	diamond
-    Before dawn	250	turquoise
 Races
     -fairy invisibility flower crown
     fairy2:
