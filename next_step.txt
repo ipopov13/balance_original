@@ -4,16 +4,39 @@ BUG: Trying to add an effect item on the specific tile will break if the tile is
     Only location puts items, the method should return the targeted Tile!
     Items are only removed through PhysicalContainer.provide_item()
     Make remove_item() a private method?
+BUG: Predators freeze as soon as the target cannot be reached with a straight move
+    May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
+     regular behaviors (add a chase_target behavior at the front of the goal list and clear the target once reached)
 
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
-Add AI goal handling in the Game._move_creatures(), instead of the Location!
-    BUG: Predators freeze as soon as the target cannot be reached with a straight move
+Modes
+    Modes can change the command/callback combo for the movement keys, as well as add modifiers and affinities
+     to the character (detection modifier based on skill) (move/work/creep are the command hints)
+Stealth and detection
+    Implement LoS and LoS-blocking terrains
+    A creature can hide on any tile if it is actively trying (i.e., has a detection modifier < 1)
+    The modifier depends on the stealth skill
+    The modifier determines the chance to be discovered
+    The resistance/affinity applies directly to the detection radius of non-alies (+ or -)
+        Noisy or bright items have a detection affinity
+        Items that decrease noise and visibility have a detection resistance
+    A creature is either visible to all others, or not visible to anyone
+    The detection calculation is run on every turn for each non-ally in whose detection radius the creature is
+    The hidden/visible property belongs to the creature
+        For the PC this is denoted by the color of the icon (becomes light black)
+    Chance for discovery
+        The chance for discovery without hiding is 100% in any spot inside the detection radius
+        The affinity/resistance still applies, even if the creature is not hiding actively
+        When hiding with skill 0, detection chance is 30% at the outermost layer of the detection radius,
+            up to 100% right next to the creature
+        Each point of skill makes the modifier of those numbers lower, from x1.0 at 0 skill to x0.2 at 100 skill
+    Once discovered, a creature cannot simply become hidden again, unless it goes out of LoS of any non-ally creatures
 Day/night cycle
     Each creature is night or day, thus switching to a sleep/rest AI or out of it completely during the rest cycle
     Creatures should have a rest AI active, unless a target is available - replace the random movement with rest
-    When hungry, creatures should have a search AI
+    When hungry, creatures should have a search AI (choose a visible coordinate target and go there, then choose another)
     Creatures should wake up based on the character approaching - Stealth skill
     Creatures should try hiding on a favorite terrain before sleeping - Hiding skill and visibility
     cave terrain for bears?
