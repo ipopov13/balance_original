@@ -605,11 +605,7 @@ Game Over!
             if other_creature is self.character and self.substate == Game.working_substate:
                 self.substate = Game.scene_substate
         else:
-            try:
-                self._creature_coords.pop(old_coords)
-            except KeyError:
-                names = {c:cr.name for c, cr in self._creature_coords.items()}
-                input(f'{old_coords}\n{names}')
+            self._creature_coords.pop(old_coords)
             self._creature_coords[next_coords] = creature
             creature.traverse(self._current_location.tile_at(next_coords))
 
