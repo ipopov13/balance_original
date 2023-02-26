@@ -228,6 +228,9 @@ Game Over!
                 for effect in self._turn_effects[coords]:
                     if isinstance(effect, effects.Campfire):
                         effect.duration += effect_size
+                        return
+                self._turn_effects[coords].append(effects.Campfire(duration=effect_size,
+                                                                   tile=self._current_location.tile_at(coords)))
             else:
                 self._turn_effects[coords] = [effects.Campfire(duration=effect_size,
                                                                tile=self._current_location.tile_at(coords))]
