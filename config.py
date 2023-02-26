@@ -50,14 +50,15 @@ empty_string = '(empty)'
 indifferent_disposition = 'indifferent'
 aggressive_disposition = 'aggressive'
 fearful_disposition = 'fearful'
-chase_humanoid_behavior = 'chase_humanoid'
-random_behavior = 'random'
+movement_behavior = 'movement_'
+chase_humanoid_behavior = movement_behavior + 'chase_humanoid'
+random_behavior = movement_behavior + 'random'
+run_from_humanoid_behavior = movement_behavior + 'run_from_humanoid'
 resting_behavior = 'resting'
-run_from_humanoid_behavior = 'run_from_humanoid'
 
 basic_ai = {indifferent_disposition: [random_behavior],
             fearful_disposition: [run_from_humanoid_behavior, random_behavior],
-            aggressive_disposition: [chase_humanoid_behavior, random_behavior]}
+            aggressive_disposition: [chase_humanoid_behavior, resting_behavior]}
 # Races
 Human = "Human"
 Dwarf = "Dwarf"

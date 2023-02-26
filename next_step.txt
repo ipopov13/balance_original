@@ -9,8 +9,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Add AI goal handling in the Game._move_creatures(), instead of the Location!
-    Filter goals in the Game based on what they do
-    Only pass movement goals to Location.get_goal_step
+    BUG: Predators freeze as soon as the target cannot be reached with a straight move
 Day/night cycle
     Each creature is night or day, thus switching to a sleep/rest AI or out of it completely during the rest cycle
     Creatures should have a rest AI active, unless a target is available - replace the random movement with rest
@@ -58,6 +57,7 @@ Terrain/travel
      the right next tile! They should be done in the Game and default to resting/choosing a different tile
       if not enough energy!
     Add SmallAnimal class that adds plant passage, Bird for others?
+        Use the SmallAnimal and other classes to set up the feeding chain in nature (who chases who)
     Add more shoes/boots to decrease the travel cost (different resistance/modifier combos)
         hiking boots (sand/ice - 1)
     Make the Well drinkable

@@ -281,25 +281,17 @@ class Location(Container):
                     return coords
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
-                      goals: list[str], other_creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
-        for goal in goals:
-            if goal is config.chase_humanoid_behavior:
-                step = self._find_prey(current_coords, other_creatures=other_creatures,
-                                       hunter=creature, target_type=HumanoidSpecies)
-                if step == current_coords:
-                    continue
-                else:
-                    return step
-            if goal is config.run_from_humanoid_behavior:
-                step = self._run_from_humanoids(current_coords, other_creatures=other_creatures, runner=creature)
-                if step == current_coords:
-                    continue
-                else:
-                    return step
-            elif goal is config.random_behavior:
-                return self._choose_random_passable_neighbor(creature, current_coords)
-            else:
-                raise ValueError(f'Unhandled behaviour: "{goal}" of creature "{creature.name}"!')
+                      goal: str, other_creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
+        if goal is config.chase_humanoid_behavior:
+            step = self._find_prey(current_coords, other_creatures=other_creatures,
+                                   hunter=creature, target_type=HumanoidSpecies)
+        elif goal is config.run_from_humanoid_behavior:
+            step = self._run_from_humanoids(current_coords, other_creatures=other_creatures, runner=creature)
+        elif goal is config.random_behavior:
+            step = self._choose_random_passable_neighbor(creature, current_coords)
+        else:
+            raise ValueError(f'Unhandled behaviour: "{goal}" of creature "{creature.name}"!')
+        return step
 
     def _run_from_humanoids(self, coords: tuple[int, int],
                             other_creatures: dict[tuple[int, int], Creature],

@@ -582,9 +582,19 @@ Game Over!
                 continue
             creature.live()
             goals = creature.get_goals()
-            next_coords = self._current_location.get_goal_step(creature, old_coords,
-                                                               goals, self._creature_coords)
-            self._move_npc(creature, old_coords, next_coords)
+            for goal in goals:
+                if goal.startswith(config.movement_behavior):
+                    next_coords = self._current_location.get_goal_step(creature, old_coords,
+                                                                       goal, self._creature_coords)
+                    if next_coords == old_coords and goal != goals[-1]:
+                        continue
+                    self._move_npc(creature, old_coords, next_coords)
+                    break
+                elif goal == config.resting_behavior:
+                    creature.rest()
+                    break
+                else:
+                    raise ValueError(f'Unhandled behaviour: "{goal}" of creature "{creature.name}"!')
 
     def _move_npc(self, creature: go.Creature, old_coords: tuple[int, int], next_coords: tuple[int, int]) -> None:
         if next_coords in self._creature_coords and next_coords != old_coords:
@@ -595,7 +605,11 @@ Game Over!
             if other_creature is self.character and self.substate == Game.working_substate:
                 self.substate = Game.scene_substate
         else:
-            self._creature_coords.pop(old_coords)
+            try:
+                self._creature_coords.pop(old_coords)
+            except KeyError:
+                names = {c:cr.name for c, cr in self._creature_coords.items()}
+                input(f'{old_coords}\n{names}')
             self._creature_coords[next_coords] = creature
             creature.traverse(self._current_location.tile_at(next_coords))
 
