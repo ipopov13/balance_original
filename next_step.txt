@@ -1,4 +1,9 @@
 BUG: Trying to add an effect item on the specific tile will break if the tile is full!
+    Think about having the coords&location in the effect too, not only the tile. Then the effect
+    can talk to the location and get an applicable tile, even if it doesn't match its coords.
+    Only location puts items, the method should return the targeted Tile!
+    Items are only removed through PhysicalContainer.provide_item()
+    Make remove_item() a private method?
 
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge

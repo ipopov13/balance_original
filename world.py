@@ -508,9 +508,6 @@ class Location(Container):
                     break
             raise NotImplementedError(f'Implement Overflow achievement here!')
 
-    def remove_item(self, item: Item, coords: tuple[int, int]) -> None:
-        self.tile_at(coords).remove_item(item)
-
 
 # TODO: PoI selection and randomization
 # TODO: Init the locations with the PoI/force/base terrains (handles gradients)
