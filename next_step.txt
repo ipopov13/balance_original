@@ -54,6 +54,9 @@ Knowledge
     Add lighting fires and getting firewood entries
     Add getting water entry, containers
 Terrain/travel
+    Cannot merge movement methods in Game, as the Location is doing the traversal checks for NPCs to select
+     the right next tile! They should be done in the Game and default to resting/choosing a different tile
+      if not enough energy!
     Add SmallAnimal class that adds plant passage, Bird for others?
     Add more shoes/boots to decrease the travel cost (different resistance/modifier combos)
         hiking boots (sand/ice - 1)
@@ -66,7 +69,6 @@ Skills
         Some transforms are faster/easier than others
     Implement scavenging skill (monster dens, monster spawns)
 Usability
-    Add the Highscore screen and cycle to the beginning when the character dies
     Add "from scene" commands: consume, equip, pick up acting on the first applicable item
     Add automatic collection of ammo items if there is a stack in the offhand, or there is a suitable weapon equipped
 Interface

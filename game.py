@@ -495,7 +495,7 @@ Game Over!
         self._current_message = self._new_message
         self._new_message = ''
         self._turn += 1
-        self._move_npcs()
+        self._play_npcs()
         self.character.live()
         for (position, effect_list) in list(self._turn_effects.items()):
             for effect in effect_list[:]:
@@ -571,7 +571,7 @@ Game Over!
         else:
             self._last_character_target = tile
 
-    def _move_npcs(self):
+    def _play_npcs(self) -> None:
         for old_coords in list(self._creature_coords.keys()):
             creature = self._creature_coords.get(old_coords)
             if creature is self.character or creature is None:
@@ -584,17 +584,51 @@ Game Over!
             goals = creature.get_goals()
             next_coords = self._current_location.get_goal_step(creature, old_coords,
                                                                goals, self._creature_coords)
-            if next_coords in self._creature_coords and next_coords != old_coords:
-                other_creature = self._creature_coords[next_coords]
-                creature.bump_with(other_creature)
-                if other_creature.is_dead:
-                    self._creature_died(other_creature)
-                if other_creature is self.character and self.substate == Game.working_substate:
-                    self.substate = Game.scene_substate
+            self._move_npc(creature, old_coords, next_coords)
+
+    def _move_npc(self, creature: go.Creature, old_coords: tuple[int, int], next_coords: tuple[int, int]) -> None:
+        if next_coords in self._creature_coords and next_coords != old_coords:
+            other_creature = self._creature_coords[next_coords]
+            creature.bump_with(other_creature)
+            if other_creature.is_dead:
+                self._creature_died(other_creature)
+            if other_creature is self.character and self.substate == Game.working_substate:
+                self.substate = Game.scene_substate
+        else:
+            self._creature_coords.pop(old_coords)
+            self._creature_coords[next_coords] = creature
+            creature.traverse(self._current_location.tile_at(next_coords))
+
+    def _move_character(self, direction: str) -> None:
+        direction = self.character.confirm_movement_direction(direction)
+        old_coords = self._get_coords_of_creature(self.character)
+        new_coords = calculate_new_position(old_coords, direction, *self.World.size)
+        if new_coords in self._creature_coords and new_coords != old_coords:
+            self._last_character_target = self._creature_coords[new_coords]
+            self.character.bump_with(self._last_character_target)
+            if self._last_character_target.is_dead:
+                self._creature_died(self._last_character_target)
+            return
+        else:
+            self._last_character_target = None
+        old_location = self._current_location
+        new_location = self.World.get_location(new_coords)
+        new_tile = new_location.tile_at(new_coords)
+        if problem_with_passage := self.character.can_traverse(new_tile):
+            self._add_message(problem_with_passage)
+        else:
+            self._creature_coords.pop(old_coords)
+            self._creature_coords[new_coords] = self.character
+            self._current_location = new_location
+            if self._current_location is not old_location:
+                old_location.stored_creatures = []
+                for coords in list(self._creature_coords):
+                    if self._creature_coords[coords] is not self.character:
+                        old_location.stored_creatures.append(self._creature_coords.pop(coords))
+                self.character.ranged_target = None
+                self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
             else:
-                self._creature_coords.pop(old_coords)
-                self._creature_coords[next_coords] = creature
-                creature.traverse(self._current_location.tile_at(next_coords))
+                self.character.traverse(self._current_location.tile_at(new_coords))
 
     def _get_coords_of_creature(self, creature: go.Creature) -> tuple[int, int]:
         for coords in self._creature_coords:
@@ -841,34 +875,3 @@ Game Over!
         region = self.World.contents[region_coords[0]][region_coords[1]]
         location = region.contents[location_coords[0]][location_coords[1]]
         return location.map_details
-
-    def _move_character(self, direction: str) -> None:
-        direction = self.character.confirm_movement_direction(direction)
-        old_coords = self._get_coords_of_creature(self.character)
-        new_coords = calculate_new_position(old_coords, direction, *self.World.size)
-        if new_coords in self._creature_coords:
-            self._last_character_target = self._creature_coords[new_coords]
-            self.character.bump_with(self._last_character_target)
-            if self._last_character_target.is_dead:
-                self._creature_died(self._last_character_target)
-            return
-        else:
-            self._last_character_target = None
-        old_location = self._current_location
-        new_location = self.World.get_location(new_coords)
-        new_tile = new_location.tile_at(new_coords)
-        if problem_with_passage := self.character.can_traverse(new_tile):
-            self._add_message(problem_with_passage)
-        else:
-            self._creature_coords.pop(old_coords)
-            self._creature_coords[new_coords] = self.character
-            self._current_location = new_location
-            if self._current_location is not old_location:
-                old_location.stored_creatures = []
-                for coords in list(self._creature_coords):
-                    if self._creature_coords[coords] is not self.character:
-                        old_location.stored_creatures.append(self._creature_coords.pop(coords))
-                self.character.ranged_target = None
-                self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
-            else:
-                self.character.traverse(self._current_location.tile_at(new_coords))
