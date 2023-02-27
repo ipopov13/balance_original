@@ -106,9 +106,15 @@ class InventoryConsume(Command):
     description = 'Eat/drink the selected item'
 
 
-class Map(Command):
+class Mode(Command):
     character = 'M'
-    hint = '(M)ap'
+    hint = '(M)ode'
+    description = 'Change mode: normal|work|stealth'
+
+
+class Map(Command):
+    character = 'm'
+    hint = '(m)ap'
     description = 'Open the world map'
     changes_window = True
 
@@ -194,6 +200,7 @@ class NumberSelection(Command):
 
     def __init__(self, choice_cap):
         self.character = ''.join([str(x) for x in range(choice_cap)])
+        self.hint = f' (0-{choice_cap-1}) Choose an option '
 
     def __eq__(self, other):
         return other in self.character
