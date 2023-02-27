@@ -1,4 +1,5 @@
 import string
+import console
 
 
 class Command:
@@ -137,7 +138,7 @@ class TextInput(CharacterRangeCommand):
 
 class Move(CharacterRangeCommand):
     character = '12346789'
-    hint = '(1-9)Move'
+    hint = f'(1-9){console.fg.green}Move{console.fx.end}'
     description = 'Walk in a num-pad direction'
 
 
@@ -149,13 +150,13 @@ class Sneak(CharacterRangeCommand):
 
 class Work(CharacterRangeCommand):
     character = '12346789'
-    hint = '(1-9)Work'
+    hint = f'(1-9){console.fg.blue}Work{console.fx.end}'
     description = 'Work on the terrain around you'
 
 
 class Look(CharacterRangeCommand):
     character = '12346789'
-    hint = '(1-9)Look'
+    hint = f'(1-9){console.fg.yellow}Look{console.fx.end}'
     description = 'Look around'
 
 
@@ -167,7 +168,7 @@ class Rest(Command):
 
 class Target(Command):
     character = 't'
-    hint = '(t)arget'
+    hint = f'({console.fg.yellow}t{console.fx.end}){console.fg.yellow}arget{console.fx.end}'
     description = 'Select your target'
 
 

@@ -134,8 +134,8 @@ Game Over!
                                   commands.Work(): self._player_work}
             elif self.substate == Game.looking_substate:
                 scene_commands = {**interface_commands,
-                                  commands.Target(): self._set_character_ranged_target,
-                                  commands.Look(): self._move_observed_target}
+                                  commands.Look(): self._move_observed_target,
+                                  commands.Target(): self._set_character_ranged_target}
             else:
                 raise ValueError(f"Unhandled scene substate: {self.substate}!")
             return scene_commands

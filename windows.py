@@ -1,6 +1,7 @@
 from abc import ABC
 from time import sleep
 
+import utils
 from content_types import DescriptionList
 import commands
 from utils import strip_ansi_escape_sequences, left_justify_ansi_multiline
@@ -51,10 +52,10 @@ class Window(ABC):
     def _apply_hints(self, content_data):
         hints = [c.hint for c in self._available_commands() if c.hint]
         hint_string = ' '.join(hints)
-        if len(hint_string) > self.size[-1]:
+        if utils.raw_length(hint_string) > self.size[-1]:
             raise ValueError(f'Hint string too long to fit into window {self.__class__}')
         fill_character = list(set(content_data[-1]))[0]
-        last_row = hint_string.center(self.size[-1], fill_character)
+        last_row = utils.center_ansi_multiline([hint_string], self.size[-1], fill_character)[0]
         content_data[-1] = last_row
         return content_data
 
