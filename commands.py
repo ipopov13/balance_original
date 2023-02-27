@@ -18,6 +18,15 @@ class Command:
         return {}
 
 
+class CharacterRangeCommand(Command):
+
+    def __eq__(self, other):
+        return other in self.character
+
+    def __hash__(self):
+        return hash(self.character)
+
+
 class CharacterSheet(Command):
     character = '@'
     hint = '(@)You'
@@ -132,28 +141,16 @@ class Close(Command):
     changes_window = True
 
 
-class TextInput(Command):
+class TextInput(CharacterRangeCommand):
     character = string.ascii_letters + '- '
     hint = ''
     description = 'Enter text'
 
-    def __eq__(self, other):
-        return other in self.character
 
-    def __hash__(self):
-        return hash(self.character)
-
-
-class Move(Command):
+class Move(CharacterRangeCommand):
     character = '12346789'
     hint = '(1-9)Move'
     description = 'Move in a num-pad direction'
-
-    def __eq__(self, other):
-        return other in self.character
-
-    def __hash__(self):
-        return hash(self.character)
 
 
 class Rest(Command):
@@ -192,7 +189,7 @@ class PreviousPage(Command):
     description = 'Go to the previous page'
 
 
-class NumberSelection(Command):
+class NumberSelection(CharacterRangeCommand):
     character = string.digits
     hint = ' (0-9) Choose an option '
     description = 'Enter a number'
@@ -201,12 +198,6 @@ class NumberSelection(Command):
     def __init__(self, choice_cap):
         self.character = ''.join([str(x) for x in range(choice_cap)])
         self.hint = f' (0-{choice_cap-1}) Choose an option '
-
-    def __eq__(self, other):
-        return other in self.character
-
-    def __hash__(self):
-        return hash(self.character)
 
 
 class CompleteInput(Command):
