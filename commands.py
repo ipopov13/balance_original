@@ -59,18 +59,6 @@ class InventoryEmpty(Command):
     description = 'Empty the selected container'
 
 
-class Work(Command):
-    character = 'W'
-    hint = '(W)ork'
-    description = 'Start working on the terrain around you'
-
-
-class Look(Command):
-    character = 'L'
-    hint = '(L)ook'
-    description = 'Look around'
-
-
 class InventoryFill(Command):
     character = 'f'
     hint = '(f)ill'
@@ -150,7 +138,25 @@ class TextInput(CharacterRangeCommand):
 class Move(CharacterRangeCommand):
     character = '12346789'
     hint = '(1-9)Move'
-    description = 'Move in a num-pad direction'
+    description = 'Walk in a num-pad direction'
+
+
+class Sneak(CharacterRangeCommand):
+    character = '12346789'
+    hint = '(1-9)Sneak'
+    description = 'Try to move silently'
+
+
+class Work(CharacterRangeCommand):
+    character = '12346789'
+    hint = '(1-9)Work'
+    description = 'Work on the terrain around you'
+
+
+class Look(CharacterRangeCommand):
+    character = '12346789'
+    hint = '(1-9)Look'
+    description = 'Look around'
 
 
 class Rest(Command):

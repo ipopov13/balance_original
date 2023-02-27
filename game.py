@@ -30,6 +30,7 @@ class Game:
     character_sheet_substate = 'character_sheet_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
+    scene_substates = [scene_substate, working_substate, looking_substate]
     races = go.sentient_races
 
     def __init__(self):
@@ -116,23 +117,28 @@ Game Over!
             return {commands.Close(): self._close_game}
         elif self.state == Game.playing_state and self.character.is_dead:
             return {commands.Close(): self._end_game}
-        elif self.state == Game.playing_state and self.substate == Game.working_substate:
-            return {commands.Stop(): self._go_to_normal_mode,
-                    commands.Rest(): self._character_rests,
-                    commands.Move(): self._player_work}
-        elif self.state == Game.playing_state and self.substate == Game.looking_substate:
-            return {commands.Stop(): self._go_to_normal_mode,
-                    commands.Move(): self._move_observed_target,
-                    commands.Target(): self._set_character_ranged_target}
-        elif self.state == Game.playing_state and self.substate == Game.scene_substate:
-            return {commands.Move(): self._character_moves,
-                    commands.Rest(): self._character_rests,
-                    commands.Map(): self._open_map,
-                    commands.Inventory(): self._open_inventory,
-                    commands.Work(): self._go_to_work_mode,
-                    commands.Look(): self._go_to_look_mode,
-                    commands.Shoot(): self._character_shoots,
-                    commands.CharacterSheet(): self._open_character_sheet}
+        elif self.state == Game.playing_state and self.substate in Game.scene_substates:
+            turn_commands = {commands.Rest(): self._character_rests,
+                             commands.Shoot(): self._character_shoots}
+            interface_commands = {commands.Map(): self._open_map,
+                                  commands.Inventory(): self._open_inventory,
+                                  commands.Mode(): self._cycle_modes,
+                                  commands.CharacterSheet(): self._open_character_sheet}
+            if self.substate == Game.scene_substate:
+                scene_commands = {**turn_commands,
+                                  **interface_commands,
+                                  commands.Move(): self._character_moves}
+            elif self.substate == Game.working_substate:
+                scene_commands = {**turn_commands,
+                                  **interface_commands,
+                                  commands.Work(): self._player_work}
+            elif self.substate == Game.looking_substate:
+                scene_commands = {**interface_commands,
+                                  commands.Target(): self._set_character_ranged_target,
+                                  commands.Look(): self._move_observed_target}
+            else:
+                raise ValueError(f"Unhandled scene substate: {self.substate}!")
+            return scene_commands
         elif self.state == Game.playing_state and self.substate == Game.map_substate:
             return {commands.Close(): self._back_to_scene}
         elif self.state == Game.playing_state and self.substate == Game.character_sheet_substate:
@@ -301,11 +307,6 @@ Game Over!
                                                                  self._observed_target)
         return True
 
-    def _go_to_look_mode(self, _) -> bool:
-        self.substate = Game.looking_substate
-        self._observed_target = self._get_coords_of_creature(self.character)
-        return True
-
     def _move_observed_target(self, direction) -> bool:
         new_coords = calculate_new_position(self._observed_target, direction, *self.World.size)
         if self.World.get_location(new_coords) is not self._current_location:
@@ -319,12 +320,13 @@ Game Over!
         self._living_world()
         return True
 
-    def _go_to_normal_mode(self, _) -> bool:
-        self.substate = Game.scene_substate
-        return True
-
-    def _go_to_work_mode(self, _) -> bool:
-        self.substate = Game.working_substate
+    def _cycle_modes(self, _) -> bool:
+        current_substate_index = Game.scene_substates.index(self.substate)
+        new_substate_index = current_substate_index + 1
+        if new_substate_index == len(Game.scene_substates):
+            new_substate_index = 0
+        self._observed_target = self._get_coords_of_creature(self.character)
+        self.substate = Game.scene_substates[new_substate_index]
         return True
 
     def _empty_from_bag_in_inventory_screen(self, _) -> bool:
