@@ -17,6 +17,7 @@ Rebalance energy
     rebalance traversal items
     rebalance terrain transforms
 Stealth and detection
+    working on _check_if_character_is_detected
     Add/remove stealth modifiers on mode change
     Implement LoS and LoS-blocking terrains
     A creature can hide on any tile if it is actively trying (i.e., has a detection modifier < 1)

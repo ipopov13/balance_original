@@ -480,8 +480,21 @@ Game Over!
             return True
         self.character.energy -= 2
         self._move_character(direction)
+        self._check_if_character_is_detected()
         self._living_world()
         return True
+
+    def _check_if_character_is_detected(self) -> None:
+        # For each creature, check detection radius, then apply % based on distance and change the character property
+        self.character.is_detected = False
+        for pos, creature in self._creature_coords.items():
+            if creature is self.character:
+                continue
+            distance = coord_distance(pos, self._get_coords_of_creature(self.character))
+            detection_radius =self.character.get_final_effect_size(config.detection_radius_affinity,
+                                                                   creature.perception_radius)
+            if detection_radius >= distance:
+                self.character.is_detected = True
 
     def _new_game(self, _):
         self.World = World()

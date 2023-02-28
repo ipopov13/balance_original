@@ -112,6 +112,7 @@ physical_damage = damage_effect_prefix + 'Physical damage'
 fire_damage = damage_effect_prefix + 'Fire damage'
 #  Resistances, affinities, and modifiers
 resistances_and_affinities = 'resistances_and_affinities'
+detection_radius_affinity = 'Detection radius'
 effect_modifiers = 'effect_modifiers'
 max_mana_modifier = 'Max mana'
 max_hp_modifier = 'Max HP'

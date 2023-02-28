@@ -619,6 +619,7 @@ class Creature(GameObject):
         self._sustenance_needs: int = 0
         self._age: int = 0
         self.ranged_target: Optional[Union[Creature, tuple[int, int]]] = None
+        self.is_detected: bool = True
 
     @property
     def effective_equipment(self) -> dict:
@@ -780,10 +781,10 @@ class Creature(GameObject):
                 local_effects.pop(config.dodge_difficulty)
                 self._react_to_hit()
         for name, effect_size in local_effects.items():
-            final_effect_size = self._get_final_effect_size(name, effect_size)
+            final_effect_size = self.get_final_effect_size(name, effect_size)
             self._apply_effect(name, final_effect_size)
 
-    def _get_final_effect_size(self, effect_name: str, effect_size: int) -> int:
+    def get_final_effect_size(self, effect_name: str, effect_size: int) -> int:
         modified_effect_size = int(effect_size * self._get_effect_modifier(effect_name))
         final_effect_size = modified_effect_size + self._get_effect_resistance_or_affinity(effect_name)
         return final_effect_size
@@ -999,7 +1000,7 @@ class Creature(GameObject):
 
     def can_traverse(self, tile: 'Tile') -> str:
         cost_type, passage_cost = list(tile.effects[config.terrain_passage_cost].items())[0]
-        final_cost = self._get_final_effect_size(cost_type, passage_cost)
+        final_cost = self.get_final_effect_size(cost_type, passage_cost)
         if self.max_energy < final_cost:
             return 'You cannot go there!'
         if self.energy < final_cost:
