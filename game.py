@@ -20,7 +20,7 @@ class Game:
     character_name_substate = 'getting_character_name'
     race_selection_substate = 'character_race_selection'
     playing_state = 'playing'
-    scene_substate = 'game_scene'
+    moving_substate = 'game_scene'
     map_substate = 'world_map'
     equip_for_substate = 'equip_for_screen'
     inventory_substate = 'inventory_substate'
@@ -31,7 +31,7 @@ class Game:
     character_sheet_substate = 'character_sheet_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
-    scene_substates = [scene_substate, sneaking_substate, working_substate, looking_substate]
+    scene_substates = [moving_substate, sneaking_substate, working_substate, looking_substate]
     races = go.sentient_races
 
     def __init__(self):
@@ -57,7 +57,7 @@ class Game:
         self._turn_effects: dict[tuple[int, int], list[go.Effect]] = {}
         self._sub_turn_effects: dict = {}
         self._chosen_transformation: Optional[dict[str, int]] = None
-        self._last_scene_state = Game.scene_substate
+        self._last_scene_state = Game.moving_substate
 
     @staticmethod
     def game_over_screen() -> str:
@@ -99,7 +99,7 @@ Game Over!
         self._current_location.put_item(items.PlateArmor(), character_coords)
 
         self.state = Game.playing_state
-        self.substate = Game.scene_substate
+        self.substate = Game.moving_substate
 
     def set_character_name(self, character_name):
         if self.state is Game.new_game_state:
@@ -108,7 +108,7 @@ Game Over!
         elif self.state is Game.loading_state:
             self._load_saved_game(character_name)
             self.state = Game.playing_state
-            self.substate = Game.scene_substate
+            self.substate = Game.moving_substate
         return True
 
     def commands(self) -> dict:
@@ -126,7 +126,7 @@ Game Over!
                                   commands.Inventory(): self._open_inventory,
                                   commands.Mode(): self._cycle_modes,
                                   commands.CharacterSheet(): self._open_character_sheet}
-            if self.substate == Game.scene_substate:
+            if self.substate == Game.moving_substate:
                 scene_commands = {**turn_commands,
                                   **interface_commands,
                                   commands.Move(): self._character_moves}
@@ -475,6 +475,10 @@ Game Over!
         return True
 
     def _character_sneaks(self, direction) -> bool:
+        if self.character.energy < 20:
+            self.substate = Game.moving_substate
+            return True
+        self.character.energy -= 2
         self._move_character(direction)
         self._living_world()
         return True
@@ -568,7 +572,7 @@ Game Over!
         work_coords = calculate_new_position(self._get_coords_of_creature(self.character),
                                              direction, *self.World.size)
         if work_coords in self._creature_coords:
-            self.substate = Game.scene_substate
+            self.substate = Game.moving_substate
             self._move_character(direction)
             return
         try:
@@ -617,7 +621,7 @@ Game Over!
             if other_creature.is_dead:
                 self._creature_died(other_creature)
             if other_creature is self.character and self.substate == Game.working_substate:
-                self.substate = Game.scene_substate
+                self.substate = Game.moving_substate
         else:
             self._creature_coords.pop(old_coords)
             self._creature_coords[next_coords] = creature

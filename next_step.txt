@@ -11,8 +11,13 @@ BUG: Predators freeze as soon as the target cannot be reached with a straight mo
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
+Rebalance energy
+    traversing is easy
+    combat and hard terrains like rocks/jungle are medium hard
+    rebalance traversal items
+    rebalance terrain transforms
 Stealth and detection
-    Add/remove stealth & movement energy modifiers on mode change
+    Add/remove stealth modifiers on mode change
     Implement LoS and LoS-blocking terrains
     A creature can hide on any tile if it is actively trying (i.e., has a detection modifier < 1)
     The modifier depends on the stealth skill
