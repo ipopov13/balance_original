@@ -136,6 +136,12 @@ class TextInput(CharacterRangeCommand):
     description = 'Enter text'
 
 
+class Select(CharacterRangeCommand):
+    character = '12346789'
+    hint = f'(1-9)Select'
+    description = 'Change the examined item'
+
+
 class Move(CharacterRangeCommand):
     character = '12346789'
     hint = f'(1-9){console.fg.green}Move{console.fx.end}'

@@ -155,7 +155,7 @@ class MultiContainerScreen(WindowContent):
 
     @property
     def _own_commands(self):
-        return {commands.Move(): self._move_item_focus,
+        return {commands.Select(): self._move_item_focus,
                 commands.SwitchContainers(): self._switch_containers}
 
     def _get_initial_selected_position(self) -> list[tuple[int, int]]:
