@@ -27,10 +27,11 @@ class Game:
     fill_container_substate = 'fill_container_substate'
     working_substate = 'working_substate'
     looking_substate = 'looking_substate'
+    sneaking_substate = 'sneaking_substate'
     character_sheet_substate = 'character_sheet_substate'
     high_score_state = 'high_score'
     ended_state = 'ended'
-    scene_substates = [scene_substate, working_substate, looking_substate]
+    scene_substates = [scene_substate, sneaking_substate, working_substate, looking_substate]
     races = go.sentient_races
 
     def __init__(self):
@@ -128,6 +129,10 @@ Game Over!
                 scene_commands = {**turn_commands,
                                   **interface_commands,
                                   commands.Move(): self._character_moves}
+            elif self.substate == Game.sneaking_substate:
+                scene_commands = {**turn_commands,
+                                  **interface_commands,
+                                  commands.Sneak(): self._character_sneaks}
             elif self.substate == Game.working_substate:
                 scene_commands = {**turn_commands,
                                   **interface_commands,
@@ -463,6 +468,11 @@ Game Over!
         return True
 
     def _character_moves(self, direction):
+        self._move_character(direction)
+        self._living_world()
+        return True
+
+    def _character_sneaks(self, direction) -> bool:
         self._move_character(direction)
         self._living_world()
         return True

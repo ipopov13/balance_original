@@ -11,10 +11,9 @@ BUG: Predators freeze as soon as the target cannot be reached with a straight mo
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
-Modes
-    Modes can change the command/callback combo for the movement keys, as well as add modifiers and affinities
-     to the character (detection modifier based on skill) (move/work/creep are the command hints)
 Stealth and detection
+    Add stealth mode
+    Add/remove stealth & movement energy modifiers on mode change
     Implement LoS and LoS-blocking terrains
     A creature can hide on any tile if it is actively trying (i.e., has a detection modifier < 1)
     The modifier depends on the stealth skill

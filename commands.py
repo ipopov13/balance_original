@@ -144,7 +144,7 @@ class Move(CharacterRangeCommand):
 
 class Sneak(CharacterRangeCommand):
     character = '12346789'
-    hint = '(1-9)Sneak'
+    hint = f'(1-9){console.fg.lightblack}Sneak{console.fx.end}'
     description = 'Try to move silently'
 
 
