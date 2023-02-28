@@ -12,7 +12,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Stealth and detection
-    Add stealth mode
     Add/remove stealth & movement energy modifiers on mode change
     Implement LoS and LoS-blocking terrains
     A creature can hide on any tile if it is actively trying (i.e., has a detection modifier < 1)

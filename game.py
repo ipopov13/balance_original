@@ -57,6 +57,7 @@ class Game:
         self._turn_effects: dict[tuple[int, int], list[go.Effect]] = {}
         self._sub_turn_effects: dict = {}
         self._chosen_transformation: Optional[dict[str, int]] = None
+        self._last_scene_state = Game.scene_substate
 
     @staticmethod
     def game_over_screen() -> str:
@@ -332,6 +333,7 @@ Game Over!
             new_substate_index = 0
         self._observed_target = self._get_coords_of_creature(self.character)
         self.substate = Game.scene_substates[new_substate_index]
+        self._last_scene_state = self.substate
         return True
 
     def _empty_from_bag_in_inventory_screen(self, _) -> bool:
@@ -460,7 +462,7 @@ Game Over!
         return True
 
     def _back_to_scene(self, _) -> bool:
-        self.substate = Game.scene_substate
+        self.substate = self._last_scene_state
         return True
 
     def _open_map(self, _) -> bool:
