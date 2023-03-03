@@ -417,15 +417,17 @@ class DescriptionList(WindowContent):
 
 
 class TextInputField:
-    def __init__(self):
+    def __init__(self, max_length: int):
         self._data = ''
+        self._max_length = max_length
 
     def commands(self) -> dict:
         return {commands.TextInput(): self._add_character,
                 commands.Backspace(): self._remove_last_character}
 
     def _add_character(self, character):
-        self._data += character
+        if len(self._data) < self._max_length:
+            self._data += character
 
     def _remove_last_character(self, _):
         self._data = self._data[:-1]

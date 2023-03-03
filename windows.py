@@ -158,7 +158,7 @@ class InputWindow(Window):
 if __name__ == '__main__':
     from content_types import TextInputField
 
-    window = Window(ui=1, content=TextInputField())
+    window = Window(ui=1, content=TextInputField(10))
     test_content = window.get_display_data()[0]
     for v in test_content.values():
         assert len(v) == window.size[1], str(v)

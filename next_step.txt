@@ -1,4 +1,3 @@
-BUG: Character name input breaks when window size is exceeded! Set a hard limit
 BUG: Ammo misses creatures when they are not the target!
 BUG: Predators freeze as soon as the target cannot be reached with a straight move
     May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
