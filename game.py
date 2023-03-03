@@ -112,8 +112,8 @@ Game Over!
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
-        # for i in range(10):
-        #     self._current_location.put_item(items.Acorn(), character_coords)
+        for i in range(10):
+            self._current_location.put_item(items.Acorn(), character_coords)
         self._current_location.put_item(items.FlintAndSteel(), character_coords)
         self._current_location.put_item(items.PlateArmor(), character_coords)
 

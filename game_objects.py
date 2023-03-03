@@ -163,6 +163,9 @@ class ItemStack(Item):
     def __getattr__(self, item):
         return getattr(self.items[0], item)
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
     @property
     def size(self) -> int:
         return len(self.items)

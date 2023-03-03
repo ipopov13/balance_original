@@ -13,10 +13,8 @@ BUG: The choose an option hint breaks with double dashes when the selection list
 
 FEATURES (following the spreadsheet roadmap)
 Adding Save/Load
-    BUG: ItemStack gets a __setstate__ call during unpickle before being created, leading to infinite recursion
-        (since self.items doesn't exist yet, so it calls the __getattr__ again)
-    Check for and fix other __getattr__ usages!
     BUG: pickle.dump() fails because of the items mascarading as another type: liquid containers
+    saved game is too big: 100k per location, would be 8.1MBb/region and 640Mb/world for a 9x9 world/regions
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
