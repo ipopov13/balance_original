@@ -1,7 +1,6 @@
 BUG: Predators freeze as soon as the target cannot be reached with a straight move
     May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
      regular behaviors (add a chase_target behavior at the front of the goal list and clear the target once reached)
-BUG: The choose an option hint breaks with double dashes when the selection list is empty
 BUG: Trying to add an effect item on the specific tile will break if the tile is full!
     Think about having the coords&location in the effect too, not only the tile. Then the effect
     can talk to the location and get an applicable tile, even if it doesn't match its coords.

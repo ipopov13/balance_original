@@ -216,7 +216,10 @@ class NumberSelection(CharacterRangeCommand):
 
     def __init__(self, choice_cap):
         self.character = ''.join([str(x) for x in range(choice_cap)])
-        self.hint = f' (0-{choice_cap-1}) Choose an option '
+        if choice_cap:
+            self.hint = f' (0-{choice_cap-1}) Choose an option '
+        else:
+            self.hint = ''
 
 
 class CompleteInput(Command):
