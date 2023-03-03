@@ -2,7 +2,7 @@ from typing import Optional, Type, Union
 import random
 import console
 import config
-from utils import make_stats, add_dicts
+from utils import make_stats, add_dicts, get_console_color
 
 
 class GameObject:
@@ -28,7 +28,8 @@ class GameObject:
 
     @property
     def blinking_icon(self):
-        return console.fx.blink + self.color + self.raw_icon + console.fx.end
+        console_color = get_console_color(self.color)
+        return console.fx.blink + console_color + self.raw_icon + console.fx.end
 
     @staticmethod
     def commands() -> dict:
@@ -309,13 +310,6 @@ class LiquidContainer(Item):
     @property
     def weight(self):
         return self._own_weight + self.liquid.weight * self.contained_amount
-
-    # @property
-    # def __class__(self) -> Type:
-    #     if self.liquid is Item.empty_space:
-    #         return LiquidContainer
-    #     else:
-    #         return self.liquid.__class__
 
     @property
     def empty_volume(self) -> int:

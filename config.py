@@ -19,6 +19,47 @@ load_color = console.bg.white + console.fg.lightblack
 brown_fg_color = console.fg.t_7b3f00
 brown_bg_color = console.bg.t_7b3f00
 
+console_colors = [console.fg.lightgreen,
+                  console.fg.lightmagenta,
+                  console.fg.lightpurple,
+                  console.fg.lightblack,
+                  console.fg.lightyellow,
+                  console.fg.lightred,
+                  console.fg.lightwhite,
+                  console.fg.lightcyan,
+                  console.fg.lightblue,
+                  console.fg.green,
+                  console.fg.magenta,
+                  console.fg.purple,
+                  console.fg.black,
+                  console.fg.yellow,
+                  console.fg.red,
+                  console.fg.white,
+                  console.fg.cyan,
+                  console.fg.blue,
+                  console.fg.default,
+                  console.bg.lightgreen,
+                  console.bg.lightmagenta,
+                  console.bg.lightpurple,
+                  console.bg.lightblack,
+                  console.bg.lightyellow,
+                  console.bg.lightred,
+                  console.bg.lightwhite,
+                  console.bg.lightcyan,
+                  console.bg.lightblue,
+                  console.bg.green,
+                  console.bg.magenta,
+                  console.bg.purple,
+                  console.bg.black,
+                  console.bg.yellow,
+                  console.bg.red,
+                  console.bg.white,
+                  console.bg.cyan,
+                  console.bg.blue,
+                  console.bg.default,
+                  brown_fg_color,
+                  brown_bg_color]
+
 # Forces and climate
 order_color = console.fg.lightblue
 nature_color = console.fg.lightgreen

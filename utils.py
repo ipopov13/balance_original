@@ -16,6 +16,12 @@ def strip_ansi_escape_sequences(colored_string: str) -> str:
     return strip_sub("", colored_string)
 
 
+def get_console_color(color_string: str):
+    for color in config.console_colors:
+        if str(color) == color_string:
+            return color
+
+
 def raw_length(colored_string: str) -> int:
     return len(strip_ansi_escape_sequences(colored_string))
 
