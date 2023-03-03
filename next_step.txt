@@ -12,8 +12,13 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
-    traversing is easy
-    combat and hard terrains like rocks/jungle are medium hard
+    *increased energy
+    *traversing is easy
+    push combat exhaustion into a combat costs part of the effects (melee and ranged separate)
+    drop the argument and put the calculations below into the __init__
+    make melee combat exhaustion = weight * 2
+    make ranged combat exhaustion = weight / 2
+    make hard terrains traversable at 50 energy
     rebalance traversal items
     rebalance terrain transforms
 Stealth and detection
