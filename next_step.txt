@@ -1,4 +1,3 @@
-BUG: Ammo misses creatures when they are not the target!
 BUG: Predators freeze as soon as the target cannot be reached with a straight move
     May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
      regular behaviors (add a chase_target behavior at the front of the goal list and clear the target once reached)

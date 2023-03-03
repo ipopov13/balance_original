@@ -565,7 +565,7 @@ Game Over!
             if position not in self._sub_turn_effects:
                 continue
             effect = self._sub_turn_effects.pop(position)
-            if position == effect['path'][-1]:
+            if position == effect['path'][-1] or position in self._creature_coords:
                 next_position = position
             else:
                 current_pos_index = effect['path'].index(position)
