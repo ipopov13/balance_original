@@ -1,20 +1,19 @@
-BUG: Trying to add an effect item on the specific tile will break if the tile is full!
-    Think about having the coords&location in the effect too, not only the tile. Then the effect
-    can talk to the location and get an applicable tile, even if it doesn't match its coords.
-    Only location puts items, the method should return the targeted Tile!
-    Items are only removed through PhysicalContainer.provide_item()
-    Make remove_item() a private method?
+BUG: Map breaks when looking around due to the icon colors!
+    (probably related to the GameObject color property that was made a string to support pickling)
 BUG: Character name input breaks when window size is exceeded! Set a hard limit
 BUG: Ammo misses creatures when they are not the target!
 BUG: Predators freeze as soon as the target cannot be reached with a straight move
     May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
      regular behaviors (add a chase_target behavior at the front of the goal list and clear the target once reached)
 BUG: The choose an option hint breaks with double dashes when the selection list is empty
+BUG: Trying to add an effect item on the specific tile will break if the tile is full!
+    Think about having the coords&location in the effect too, not only the tile. Then the effect
+    can talk to the location and get an applicable tile, even if it doesn't match its coords.
+    Only location puts items, the method should return the targeted Tile!
+    Items are only removed through PhysicalContainer.provide_item()
+    Make remove_item() a private method?
 
 FEATURES (following the spreadsheet roadmap)
-Adding Save/Load
-    BUG: pickle.dump() fails because of the items mascarading as another type: liquid containers
-    saved game is too big: 100k per location, would be 8.1MBb/region and 640Mb/world for a 9x9 world/regions
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
@@ -69,6 +68,8 @@ Fae
     doesn't wake sleeping creatures
     can steal dream shards from creatures (even animals: primal shards! fleeting shard, pouncing shard, raging shard, etc.)
 
+Save/Load
+    saved game is too big: 100k per location, would be 8.1MBb/region and 640Mb/world for a 9x9 world/regions
 Items
     Standardization of icons:
     { - ranged weapon with ammo

@@ -310,12 +310,12 @@ class LiquidContainer(Item):
     def weight(self):
         return self._own_weight + self.liquid.weight * self.contained_amount
 
-    @property
-    def __class__(self) -> Type:
-        if self.liquid is Item.empty_space:
-            return LiquidContainer
-        else:
-            return self.liquid.__class__
+    # @property
+    # def __class__(self) -> Type:
+    #     if self.liquid is Item.empty_space:
+    #         return LiquidContainer
+    #     else:
+    #         return self.liquid.__class__
 
     @property
     def empty_volume(self) -> int:
@@ -759,6 +759,8 @@ class Creature(GameObject):
                 self._active_effects.pop(effect)
 
     def can_consume(self, item: Item) -> bool:
+        if isinstance(item, LiquidContainer):
+            item = item.liquid
         return any([isinstance(item, consumable_type) for consumable_type in self.species.consumable_types])
 
     @property

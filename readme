@@ -1,3 +1,7 @@
+Implementation details:
+    Cannot override __class__ in objects as it breaks pickling
+    When overriding __getattr__ you must also implement __setstate__ in order to enable unpickling
+
 The GameSequence defines:
   the sequence of windows that the UI should display
   the objects to be passed to the windows as input
