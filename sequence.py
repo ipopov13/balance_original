@@ -14,6 +14,9 @@ class GameSequence:
         elif ui.game.state == Game.new_game_state and ui.game.substate == Game.character_name_substate:
             return InputWindow(size=(3, 20), top_left=(11, 30), ui=ui, border=True, title='Enter your name',
                                content=ct.TextInputField(), target=ui.game.set_character_name)
+        elif ui.game.state == Game.loading_state and ui.game.substate == Game.saved_game_selection_substate:
+            return SelectionWindow(ui=ui, border=True, title=config.saved_game_selection_title,
+                                   content=ct.SavedGamesList(ui.game), target=ui.game.load_game)
         elif ui.game.state == Game.new_game_state and ui.game.substate == Game.race_selection_substate:
             return SelectionWindow(ui=ui, border=True, title=config.race_selection_title,
                                    content=ct.SentientSpeciesList(ui.game), target=ui.game.start_game)

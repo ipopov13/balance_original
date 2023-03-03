@@ -10,7 +10,7 @@ class GameObject:
                  description=config.empty_string, sort_key=0):
         self._name = name
         self.raw_icon = icon
-        self.color = color
+        self.color: str = str(color)
         self._description = description
         self.sort_key = sort_key
 
@@ -114,6 +114,8 @@ class Container(GameObject):
 
 
 class Item(GameObject):
+    empty_space = None
+    
     def __init__(self, weight: int = 0, effects: dict = None,
                  is_stackable: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -131,6 +133,9 @@ class Item(GameObject):
     @property
     def effects(self) -> dict:
         return self._effects
+
+
+Item.empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
 
 
 class Immobile:
@@ -170,10 +175,6 @@ class ItemStack(Item):
             return self.items[0].name
 
     @property
-    def __class__(self) -> Type:
-        return self.items[0].__class__
-
-    @property
     def is_empty(self) -> bool:
         return len(self.items) == 0
 
@@ -191,9 +192,6 @@ class ItemStack(Item):
         return len(self.items) * self.items[0].weight
 
 
-empty_space = Item(icon='.', color=console.fg.lightblack, name=config.empty_string)
-
-
 class PhysicalContainer(Container, Item):
     @property
     def weight(self):
@@ -204,7 +202,7 @@ class PhysicalContainer(Container, Item):
         self._data_prep()
         padded_contents = [row[:] for row in self._contents]
         for row in padded_contents:
-            row += [empty_space] * (self._width - len(row))
+            row += [Item.empty_space] * (self._width - len(row))
         return padded_contents
 
     def add_item(self, item: Item, ignore_stackability: bool = False) -> None:
@@ -212,8 +210,8 @@ class PhysicalContainer(Container, Item):
             raise ValueError(f"Container {self.name} cannot contain itself!")
         if not self.has_space():
             raise IndexError(f"Container {self.name} has no space for items!")
-        if item is empty_space:
-            raise TypeError(f"Cannot add empty_space to container {self.name}!")
+        if item is Item.empty_space:
+            raise TypeError(f"Cannot add Item.empty_space to container {self.name}!")
         if item.is_stackable and not ignore_stackability:
             for possible_stack in self.item_list:
                 try:
@@ -230,8 +228,8 @@ class PhysicalContainer(Container, Item):
                 break
 
     def remove_item(self, item: Item) -> None:
-        if item is empty_space:
-            raise TypeError(f"Cannot remove empty_space from container!")
+        if item is Item.empty_space:
+            raise TypeError(f"Cannot remove Item.empty_space from container!")
         for row in self._contents:
             if item in row:
                 row.remove(item)
@@ -281,21 +279,21 @@ class LiquidContainer(Item):
     def __init__(self, max_volume: int = 0, **kwargs):
         super().__init__(**kwargs)
         self._max_volume: int = max_volume
-        self.liquid: Union[Liquid, Item] = empty_space
+        self.liquid: Union[Liquid, Item] = Item.empty_space
         self.contained_amount: int = 0
         if '/' not in kwargs.get('name', '') or '{' not in kwargs.get('name', ''):
             raise ValueError("LiquidContainer name must support splitting and formatting!")
 
     @property
     def name(self) -> str:
-        if self.liquid is empty_space:
+        if self.liquid is Item.empty_space:
             return self._name.split('/')[0]
         else:
             return self._name.split('/')[1].format(self.liquid.name)
 
     @property
     def description(self) -> str:
-        if self.liquid is empty_space:
+        if self.liquid is Item.empty_space:
             return f"It can hold {self.empty_volume} units of liquid."
         else:
             return f"It holds {self.contained_amount} units of {self.liquid.name}," \
@@ -311,7 +309,7 @@ class LiquidContainer(Item):
 
     @property
     def __class__(self) -> Type:
-        if self.liquid is empty_space:
+        if self.liquid is Item.empty_space:
             return LiquidContainer
         else:
             return self.liquid.__class__
@@ -325,15 +323,15 @@ class LiquidContainer(Item):
 
     def can_hold(self, substance: Item) -> bool:
         return isinstance(substance, Liquid) and \
-            (self.liquid is empty_space or self.liquid is substance)
+            (self.liquid is Item.empty_space or self.liquid is substance)
 
     def fill(self, liquid: Liquid, volume: int) -> None:
         """Fills the container and returns the remainder amount to update the other container"""
-        if self.liquid is not empty_space and liquid is not self.liquid:
+        if self.liquid is not Item.empty_space and liquid is not self.liquid:
             raise ValueError("Container cannot hold more than one Liquid!")
         if volume < 1:
             raise ValueError(f"Container cannot be filled with {volume} volume of {liquid.name}!")
-        if self.liquid is empty_space:
+        if self.liquid is Item.empty_space:
             self.liquid = liquid
         if volume > self.empty_volume:
             raise ValueError(f"Container {self.name} cannot exceed max volume!")
@@ -345,7 +343,7 @@ class LiquidContainer(Item):
                              f" but {self.contained_amount} available!")
         self.contained_amount -= volume_to_decant
         if self.contained_amount == 0:
-            self.liquid = empty_space
+            self.liquid = Item.empty_space
 
 
 class ResourceSource(Item, Immobile):
@@ -453,6 +451,8 @@ class RangedWeapon(Weapon, MainHand):
             raise ValueError(f"Item {self.name} must have a combat/ranged effect dictionary!")
 
     def can_shoot(self, ammo: Optional[Item]) -> bool:
+        if isinstance(ammo, ItemStack):
+            ammo = ammo.items[0]
         return isinstance(ammo, RangedAmmo) and ammo.ranged_ammo_type == self.ranged_weapon_type
 
 
@@ -608,7 +608,7 @@ class Creature(GameObject):
         self._resistances_and_affinities = self.species.base_resistances_and_affinities
         self._active_effects: dict[str, int] = self.species.active_effects
         self.equipment_slots = self.species.equipment_slots
-        self.equipped_items = {k: empty_space for k in self.equipment_slots}
+        self.equipped_items = {k: Item.empty_space for k in self.equipment_slots}
         for item_type in self.species.initial_equipment:
             self.swap_equipment(item_type())
         self._hp = self.max_hp
@@ -893,6 +893,8 @@ class Creature(GameObject):
         return False
 
     def weight_gained_by_swapping_equipment(self, item: Item) -> int:
+        if isinstance(item, ItemStack):
+            item = item.items[0]
         for slot, slot_type in self.equipment_slots.items():
             if isinstance(item, slot_type):
                 weight_gained = self.equipped_items[slot].weight
@@ -906,24 +908,29 @@ class Creature(GameObject):
 
     def swap_equipment(self, item: Item) -> list[Item]:
         removed_items = []
+        if isinstance(item, ItemStack):
+            item_for_slot = item.items[0]
+        else:
+            item_for_slot = Item.empty_space
         for slot, slot_type in self.equipment_slots.items():
-            if isinstance(item, slot_type):
+            if isinstance(item, slot_type) or isinstance(item_for_slot, slot_type):
                 removed_items.append(self.equipped_items[slot])
                 self.equipped_items[slot] = item
                 if isinstance(item, TwoHandedWeapon):
                     removed_items.append(self.equipped_items[config.offhand_slot])
-                    self.equipped_items[config.offhand_slot] = empty_space
+                    self.equipped_items[config.offhand_slot] = Item.empty_space
                 elif isinstance(item, Offhand) \
                         and isinstance(self.equipped_items[config.main_hand_slot], TwoHandedWeapon):
                     removed_items.append(self.equipped_items[config.main_hand_slot])
-                    self.equipped_items[config.main_hand_slot] = empty_space
+                    self.equipped_items[config.main_hand_slot] = Item.empty_space
                 return removed_items
+        raise TypeError(f"Item {item.name} cannot be equipped in any slot!")
 
     def get_goals(self) -> list[str]:
         return self._ai[self._disposition]
 
     def get_drops(self):
-        return [item for item in self.equipped_items.values() if item is not empty_space]
+        return [item for item in self.equipped_items.values() if item is not Item.empty_space]
 
     def melee_with(self, enemy: 'Creature', weapon: Weapon) -> None:
         skill = self._effective_skill(weapon.melee_weapon_skill)
@@ -1046,7 +1053,7 @@ class Humanoid(Creature):
     @property
     def available_tools(self) -> list[str]:
         tools = []
-        bag_items = [] if self.bag is empty_space else self.bag.item_list
+        bag_items = [] if self.bag is Item.empty_space else self.bag.item_list
         for item in bag_items + list(self.effective_equipment.values()):
             tag = item.effects.get(config.tool_tag, '')
             if tag:
@@ -1063,11 +1070,11 @@ class Humanoid(Creature):
     @property
     def effective_equipment(self) -> dict:
         effective_items = {**self.equipped_items}
-        if effective_items[config.main_hand_slot] is empty_space:
+        if effective_items[config.main_hand_slot] is Item.empty_space:
             effective_items[config.main_hand_slot] = self.species.fist_weapon
         elif isinstance(effective_items[config.main_hand_slot], TwoHandedWeapon):
             effective_items[config.offhand_slot] = effective_items[config.main_hand_slot]
-        if effective_items[config.armor_slot] is empty_space:
+        if effective_items[config.armor_slot] is Item.empty_space:
             effective_items[config.armor_slot] = self.species.clothes
         return effective_items
 
@@ -1140,7 +1147,10 @@ class Humanoid(Creature):
     def _get_ranged_ammo(self) -> Optional[RangedAmmo]:
         for slot in [config.main_hand_slot, config.offhand_slot]:
             item = self.effective_equipment[slot]
-            if isinstance(item, RangedAmmo):
+            item_for_slot = Item.empty_space
+            if isinstance(item, ItemStack):
+                item_for_slot = item.items[0]
+            if isinstance(item, RangedAmmo) or isinstance(item_for_slot, RangedAmmo):
                 return item
         return None
 
@@ -1178,9 +1188,9 @@ class Humanoid(Creature):
                 if isinstance(item, ItemStack):
                     ammo = item.split(1)
                     if item.is_empty:
-                        self.equipped_items[slot] = empty_space
+                        self.equipped_items[slot] = Item.empty_space
                 else:
-                    self.equipped_items[slot] = empty_space
+                    self.equipped_items[slot] = Item.empty_space
         self.energy -= self._combat_exhaustion // 2
         return ammo, current_skill, effects
 

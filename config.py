@@ -43,6 +43,8 @@ target_path_icon = console.fg.yellow + '*' + console.fx.end
 race_selection_title = (f' In a world of {order_color}Order{console.fx.end}, '
                         f'{nature_color}Nature{console.fx.end}, '
                         f'and {chaos_color}Chaos{console.fx.end}, who are you? ')
+saved_game_selection_title = "Which game would you like to continue?"
+saved_game_extension = 'bal'
 ground = 'Ground'
 equipment_title = 'Equipment'
 empty_string = '(empty)'

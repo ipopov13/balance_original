@@ -47,6 +47,12 @@ class AddToFire(Command):
     description = 'Fuel the existing fire'
 
 
+class Save(Command):
+    character = 'S'
+    hint = '(S)ave'
+    description = 'Save the current game'
+
+
 class Inventory(Command):
     character = 'I'
     hint = '(I)nventory'

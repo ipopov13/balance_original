@@ -1,6 +1,8 @@
+import pickle
 from typing import Optional, Union
 import console
 import random
+
 from utils import coord_distance, calculate_new_position, dim, direct_path, raw_length
 import game_objects as go
 from world import Location, World
@@ -19,6 +21,7 @@ class Game:
     loading_state = 'loading_existing_game'
     character_name_substate = 'getting_character_name'
     race_selection_substate = 'character_race_selection'
+    saved_game_selection_substate = 'saved_game_selection_substate'
     playing_state = 'playing'
     moving_substate = 'game_scene'
     map_substate = 'world_map'
@@ -36,13 +39,14 @@ class Game:
 
     def __init__(self):
         self._turn = 0
+        self._empty_space = go.Item.empty_space
         self.character: Optional[go.Humanoid] = None
         self._current_location: Optional[Location] = None
         self.character_name: Optional[str] = None
         self._last_character_target = None
         self._equipping_slot: Optional[str] = None
-        self._selected_ground_item: go.Item = go.empty_space
-        self._selected_bag_item: go.Item = go.empty_space
+        self._selected_ground_item: go.Item = self._empty_space
+        self._selected_bag_item: go.Item = self._empty_space
         self.selected_equipped_item_index: int = 0
         self._ground_container: Optional[go.PhysicalContainer] = None
         self._container_to_fill: Optional[go.LiquidContainer] = None
@@ -59,6 +63,18 @@ class Game:
         self._chosen_transformation: Optional[dict[str, int]] = None
         self._last_scene_state = Game.moving_substate
 
+    @property
+    def name(self) -> str:
+        return self.character_name
+
+    @property
+    def color(self) -> str:
+        return self.character.species.color
+
+    @property
+    def description(self) -> str:
+        return f"{self.character.species.name}, {self._turn} turns"
+
     @staticmethod
     def game_over_screen() -> str:
         return r'''
@@ -71,6 +87,7 @@ Game Over!
 
     def start_game(self, character_race) -> None:
         if character_race is None:
+            self.state = Game.welcome_state
             return
         self.character = go.Humanoid(name=self.character_name, species=character_race,
                                      description='You are standing here.', color=console.fg.default,
@@ -83,32 +100,29 @@ Game Over!
         self._creature_coords = self._current_location.load_creatures(self._creature_coords, self._turn)
 
         self._current_location.put_item(items.Bag(), character_coords)
-        self._current_location.put_item(items.IcePick(), character_coords)
-        self._current_location.put_item(items.IcePick(), character_coords)
+        self._current_location.put_item(items.LongSword(), character_coords)
+        self._current_location.put_item(items.GreatSword(), character_coords)
+        self._current_location.put_item(items.RoundShield(), character_coords)
+        self._current_location.put_item(items.LeatherArmor(), character_coords)
         self._current_location.put_item(items.SnowShoes(), character_coords)
         water_skin = items.WaterSkin()
         water_skin.fill(items.water_liquid, 2)
-        self._current_location.put_item(water_skin, character_coords)
+        # self._current_location.put_item(water_skin, character_coords)
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.Firewood(), character_coords)
         self._current_location.put_item(items.AcornGun(), character_coords)
-        for i in range(10):
-            self._current_location.put_item(items.Acorn(), character_coords)
+        # for i in range(10):
+        #     self._current_location.put_item(items.Acorn(), character_coords)
         self._current_location.put_item(items.FlintAndSteel(), character_coords)
         self._current_location.put_item(items.PlateArmor(), character_coords)
 
         self.state = Game.playing_state
         self.substate = Game.moving_substate
 
-    def set_character_name(self, character_name):
-        if self.state is Game.new_game_state:
-            self.character_name = character_name
-            self.substate = Game.race_selection_substate
-        elif self.state is Game.loading_state:
-            self._load_saved_game(character_name)
-            self.state = Game.playing_state
-            self.substate = Game.moving_substate
+    def set_character_name(self, character_name) -> bool:
+        self.character_name = character_name
+        self.substate = Game.race_selection_substate
         return True
 
     def commands(self) -> dict:
@@ -122,7 +136,8 @@ Game Over!
         elif self.state == Game.playing_state and self.substate in Game.scene_substates:
             turn_commands = {commands.Rest(): self._character_rests,
                              commands.Shoot(): self._character_shoots}
-            interface_commands = {commands.Map(): self._open_map,
+            interface_commands = {commands.Save(): self._save_game,
+                                  commands.Map(): self._open_map,
                                   commands.Inventory(): self._open_inventory,
                                   commands.Mode(): self._cycle_modes,
                                   commands.CharacterSheet(): self._open_character_sheet}
@@ -157,10 +172,10 @@ Game Over!
                     transformation = self._get_item_transformation(self._selected_ground_item)
                     self._chosen_transformation = transformation[config.transformation_effects]
                     inventory_commands[transformation[config.transformation_command]()] = self._transform_ground_item
-                if self.character.bag is not go.empty_space \
+                if self.character.bag is not self._empty_space \
                         and self.character.bag.has_space() \
                         and self.character.can_carry_stack_or_item(self._selected_ground_item) \
-                        and self._selected_ground_item is not go.empty_space:
+                        and self._selected_ground_item is not self._empty_space:
                     inventory_commands[commands.InventoryPickUp()] = self._pick_up_item
                 if self.character.can_stack_equipment(self._selected_ground_item) \
                         and self.character.can_carry_stack_or_item(self._selected_ground_item):
@@ -181,7 +196,7 @@ Game Over!
                     transformation = self._get_item_transformation(self._selected_bag_item)
                     self._chosen_transformation = transformation[config.transformation_effects]
                     inventory_commands[transformation[config.transformation_command]()] = self._transform_bag_item
-                if self._selected_bag_item is not go.empty_space \
+                if self._selected_bag_item is not self._empty_space \
                         and (self._ground_container.has_space()
                              or isinstance(self._ground_container, go.Tile)):
                     inventory_commands[commands.InventoryDrop()] = self._drop_from_inventory_screen
@@ -199,12 +214,12 @@ Game Over!
                     inventory_commands[commands.InventoryEmpty()] = self._empty_from_bag_in_inventory_screen
             # "From equipment" commands
             if self.active_inventory_container_name == config.equipment_title:
-                if self._selected_equipped_item is not go.empty_space \
-                        and ((self.character.bag is not go.empty_space and self.character.bag.has_space())
+                if self._selected_equipped_item is not self._empty_space \
+                        and ((self.character.bag is not self._empty_space and self.character.bag.has_space())
                              or (self._ground_container.has_space()
                                  or isinstance(self._ground_container, go.Tile))):
                     inventory_commands[commands.InventoryUnequip()] = self._unequip_from_inventory_screen
-                if self._selected_equipped_item is go.empty_space:
+                if self._selected_equipped_item is self._empty_space:
                     inventory_commands[commands.InventoryEquipSlot()] = self._equip_for_slot_from_inventory_screen
             return inventory_commands
         else:
@@ -371,9 +386,9 @@ Game Over!
         item = self._selected_equipped_item
         for slot, i in self.character.equipped_items.items():
             if i is item:
-                self.character.equipped_items[slot] = go.empty_space
+                self.character.equipped_items[slot] = self._empty_space
                 break
-        if self.character.bag is not go.empty_space and self.character.bag.has_space():
+        if self.character.bag is not self._empty_space and self.character.bag.has_space():
             self.character.bag.add_item(item)
         else:
             if isinstance(self._ground_container, go.Tile):
@@ -419,9 +434,9 @@ Game Over!
         self.character.bag.remove_item(self._selected_bag_item)
         unequipped_items = self.character.swap_equipment(self._selected_bag_item)
         for unequipped_item in unequipped_items:
-            if unequipped_item is not go.empty_space and self.character.bag.has_space():
+            if unequipped_item is not self._empty_space and self.character.bag.has_space():
                 self.character.bag.add_item(unequipped_item)
-            elif unequipped_item is not go.empty_space:
+            elif unequipped_item is not self._empty_space:
                 self._current_location.put_item(unequipped_item,
                                                 self._get_coords_of_creature(self.character))
         return True
@@ -433,7 +448,7 @@ Game Over!
                                                             self._selected_ground_item)
         dropped_items = self.character.swap_equipment(item_to_equip)
         for dropped_item in dropped_items:
-            if dropped_item is not go.empty_space:
+            if dropped_item is not self._empty_space:
                 self._ground_container.add_item(dropped_item)
         return True
 
@@ -491,25 +506,34 @@ Game Over!
             if creature is self.character:
                 continue
             distance = coord_distance(pos, self._get_coords_of_creature(self.character))
-            detection_radius =self.character.get_final_effect_size(config.detection_radius_affinity,
-                                                                   creature.perception_radius)
+            detection_radius = self.character.get_final_effect_size(config.detection_radius_affinity,
+                                                                    creature.perception_radius)
             if detection_radius >= distance:
                 self.character.is_detected = True
 
-    def _new_game(self, _):
+    def _new_game(self, _) -> bool:
         self.World = World()
         self.state = Game.new_game_state
         self.substate = Game.character_name_substate
         return True
 
-    def _initiate_load(self, _):
-        self.state = Game.loading_state
-        self.substate = Game.character_name_substate
+    def _save_game(self, _) -> bool:
+        with open(f"./{self.character.name}.{config.saved_game_extension}", "wb") as outfile:
+            pickle.dump(self, outfile, -1)
+        self._current_message = "Game saved!"
         return True
 
-    def _load_saved_game(self, name):
-        # TODO: Implement loading
-        raise NotImplementedError("Implement loading games!")
+    def _initiate_load(self, _) -> bool:
+        self.state = Game.loading_state
+        self.substate = Game.saved_game_selection_substate
+        return True
+
+    def load_game(self, saved_game: 'Game'):
+        if saved_game is None:
+            self.state = Game.welcome_state
+        else:
+            self.__dict__.update(saved_game.__dict__)
+            go.Item.empty_space = self._empty_space
 
     @staticmethod
     def data() -> str:
@@ -690,7 +714,7 @@ Game Over!
 
     def get_available_substances(self) -> list[Union[go.LiquidContainer, go.LiquidSource]]:
         tile_items = self._current_location.items_at(self._get_coords_of_creature(self.character))
-        bag_items = [] if self.character.bag is go.empty_space else self.character.bag.item_list
+        bag_items = [] if self.character.bag is self._empty_space else self.character.bag.item_list
         compatible_substance_sources = []
         for item in tile_items + bag_items:
             if (isinstance(item, go.LiquidContainer) or isinstance(item, go.LiquidSource)) \
@@ -712,14 +736,14 @@ Game Over!
     def get_available_equipment(self) -> list[go.GameObject]:
         all_ground_items = self._ground_container.item_list
         allowed_ground_items = [item for item in all_ground_items if self.character.can_carry_stack_or_item(item)]
-        bag_items = [] if self.character.bag is go.empty_space else self.character.bag.item_list
+        bag_items = [] if self.character.bag is self._empty_space else self.character.bag.item_list
         if self._equipping_slot is None:
             raise ValueError(f'Game _equipping_slot cannot be None while searching for equipment!')
         else:
             item_type = self.character.equipment_slots[self._equipping_slot]
         filtered_items = [item for item in allowed_ground_items + bag_items if isinstance(item, item_type)]
         if self._equipping_slot == config.main_hand_slot \
-                and self.character.equipped_items[config.offhand_slot] is not go.empty_space:
+                and self.character.equipped_items[config.offhand_slot] is not self._empty_space:
             filtered_items = [item for item in filtered_items if not isinstance(item, go.TwoHandedWeapon)]
         return filtered_items
 
@@ -739,7 +763,7 @@ Game Over!
         self.active_inventory_container_name = container_name
 
     def get_bag_name(self) -> str:
-        return '(no bag)' if self.character.bag is go.empty_space else f'Your {self.character.bag.name}'
+        return '(no bag)' if self.character.bag is self._empty_space else f'Your {self.character.bag.name}'
 
     @staticmethod
     def get_ground_name() -> str:
@@ -749,10 +773,10 @@ Game Over!
         return self._current_location.get_items_data_at(self._get_coords_of_creature(self.character))
 
     def get_bag_items(self) -> str:
-        return '' if self.character.bag is go.empty_space else self.character.bag.data()
+        return '' if self.character.bag is self._empty_space else self.character.bag.data()
 
     def get_bag_size(self) -> tuple[int, int]:
-        return (0, 0) if self.character.bag is go.empty_space else self.character.bag.size
+        return (0, 0) if self.character.bag is self._empty_space else self.character.bag.size
 
     def get_ground_item_details(self, item_coords: tuple[int, int]) -> list[str]:
         weight_color = console.fg.default
@@ -773,7 +797,7 @@ Game Over!
         try:
             self._selected_bag_item = self.character.bag.contents[item_coords[0]][item_coords[1]]
         except AttributeError:
-            self._selected_bag_item = go.empty_space
+            self._selected_bag_item = self._empty_space
         load_gauge = self._format_filled_gauge(self.character.load, self.character.max_load, config.load_color)
         load_line = f'Load [{load_gauge}]'
         return self._selected_bag_item.details() + [load_line]

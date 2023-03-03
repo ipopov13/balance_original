@@ -4,11 +4,19 @@ BUG: Trying to add an effect item on the specific tile will break if the tile is
     Only location puts items, the method should return the targeted Tile!
     Items are only removed through PhysicalContainer.provide_item()
     Make remove_item() a private method?
+BUG: Character name input breaks when window size is exceeded! Set a hard limit
+BUG: Ammo misses creatures when they are not the target!
 BUG: Predators freeze as soon as the target cannot be reached with a straight move
     May add a last_target_position and use it while the target is not in LoS or until reached, then revert to the
      regular behaviors (add a chase_target behavior at the front of the goal list and clear the target once reached)
+BUG: The choose an option hint breaks with double dashes when the selection list is empty
 
 FEATURES (following the spreadsheet roadmap)
+Adding Save/Load
+    BUG: ItemStack gets a __setstate__ call during unpickle before being created, leading to infinite recursion
+        (since self.items doesn't exist yet, so it calls the __getattr__ again)
+    Check for and fix other __getattr__ usages!
+    BUG: pickle.dump() fails because of the items mascarading as another type: liquid containers
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy

@@ -1,3 +1,6 @@
+import glob
+import pickle
+
 import commands
 import config
 import console
@@ -185,7 +188,7 @@ class MultiContainerScreen(WindowContent):
 
     def _prettify_container(self, container_index: int = None) -> list[str]:
         container_data = self._data[container_index].split('\n')
-        border_color = console.fg.default if container_index is self._active_container_index else console.fx.dim
+        border_color = console.fg.default if container_index == self._active_container_index else console.fx.dim
         name = self._names[container_index]
         longest_line = utils.longest_raw_line_len(container_data)
         top_border_raw = name.center(max(longest_line + 2, len(name) + 2), '-')
@@ -241,7 +244,7 @@ class InventoryScreen(MultiContainerScreen):
         object_state = self.game_object.active_inventory_container_name
         if object_state in self._names:
             self._active_container_index = self._names.index(object_state)
-        if object_state is config.equipment_title:
+        if object_state == config.equipment_title:
             self._selected_pos[2] = (self.game_object.selected_equipped_item_index,
                                      self._selected_pos[2][1])
 
@@ -370,6 +373,20 @@ class PagedList(WindowContent):
             return len(self._current_page_content())
         else:
             return 0
+
+
+class SavedGamesList(PagedList):
+    def __init__(self, game_object):
+        super().__init__(game_object)
+        self._empty_list_message = 'No saved games found.'
+
+    def _get_items(self) -> list:
+        game_file_names = glob.glob(f"*.{config.saved_game_extension}")
+        saved_games = []
+        for file_name in game_file_names:
+            with open(file_name, "rb") as save_file:
+                saved_games.append(pickle.load(save_file))
+        return saved_games
 
 
 class SentientSpeciesList(PagedList):

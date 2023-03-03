@@ -282,12 +282,12 @@ class Location(Container):
 
     def get_goal_step(self, creature: Creature, current_coords: tuple[int, int],
                       goal: str, other_creatures: dict[tuple[int, int], Creature]) -> tuple[int, int]:
-        if goal is config.chase_humanoid_behavior:
+        if goal == config.chase_humanoid_behavior:
             step = self._find_prey(current_coords, other_creatures=other_creatures,
                                    hunter=creature, target_type=HumanoidSpecies)
-        elif goal is config.run_from_humanoid_behavior:
+        elif goal == config.run_from_humanoid_behavior:
             step = self._run_from_humanoids(current_coords, other_creatures=other_creatures, runner=creature)
-        elif goal is config.random_behavior:
+        elif goal == config.random_behavior:
             step = self._choose_random_passable_neighbor(creature, current_coords)
         else:
             raise ValueError(f'Unhandled behaviour: "{goal}" of creature "{creature.name}"!')
