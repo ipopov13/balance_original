@@ -99,7 +99,7 @@ class Fist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
+                         work_exhaustion=5, work_skill=config.scavenging_skill, work_stat=config.Per,
                          melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=5,
@@ -111,7 +111,7 @@ class TrollFist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, work_skill=config.mining_skill, work_stat=config.Str,
+                         work_exhaustion=20, work_skill=config.mining_skill, work_stat=config.Str,
                          melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=8,
@@ -123,7 +123,7 @@ class ImpFist(go.Tool, go.RangedWeapon):
     def __init__(self):
         super().__init__(name="Your fist", description="Joyful flames dance over your fingers",
                          weight=0, icon='.', color=console.fg.lightblack,
-                         work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
+                         work_exhaustion=5, work_skill=config.scavenging_skill, work_stat=config.Per,
                          melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=5,
@@ -137,7 +137,7 @@ class Pickaxe(go.Tool):
     def __init__(self):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
-                         work_exhaustion=5, work_skill=config.mining_skill, work_stat=config.Str,
+                         work_exhaustion=40, work_skill=config.mining_skill, work_stat=config.Str,
                          melee_weapon_skill=config.twohanded_axes_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}}})
 

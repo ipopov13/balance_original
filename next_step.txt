@@ -11,8 +11,6 @@ BUG: Trying to add an effect item on the specific tile will break if the tile is
 FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
-Rebalance energy
-    rebalance terrain transforms
 Stealth and detection
     working on _check_if_character_is_detected
     Add/remove stealth modifiers on mode change
