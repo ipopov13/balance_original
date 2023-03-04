@@ -349,6 +349,8 @@ Game Over!
         self._observed_target = self._get_coords_of_creature(self.character)
         self.substate = Game.scene_substates[new_substate_index]
         self._last_scene_state = self.substate
+        if self.substate in [Game.moving_substate, Game.working_substate]:
+            self.character.is_detected = True
         return True
 
     def _empty_from_bag_in_inventory_screen(self, _) -> bool:
@@ -495,21 +497,21 @@ Game Over!
             return True
         self.character.energy -= 2
         self._move_character(direction)
-        self._check_if_character_is_detected()
+        self._check_if_creature_is_detected(self.character)
         self._living_world()
         return True
 
-    def _check_if_character_is_detected(self) -> None:
+    def _check_if_creature_is_detected(self, creature: go.Creature) -> None:
         # For each creature, check detection radius, then apply % based on distance and change the character property
-        self.character.is_detected = False
-        for pos, creature in self._creature_coords.items():
-            if creature is self.character:
+        creature.is_detected = False
+        for pos, other_creature in self._creature_coords.items():
+            if other_creature is creature:
                 continue
-            distance = coord_distance(pos, self._get_coords_of_creature(self.character))
-            detection_radius = self.character.get_final_effect_size(config.detection_radius_affinity,
-                                                                    creature.perception_radius)
+            distance = coord_distance(pos, self._get_coords_of_creature(creature))
+            detection_radius = creature.get_final_effect_size(config.detection_radius_affinity,
+                                                              other_creature.perception_radius)
             if detection_radius >= distance:
-                self.character.is_detected = True
+                creature.is_detected = True
 
     def _new_game(self, _) -> bool:
         self.World = World()
@@ -626,6 +628,11 @@ Game Over!
         else:
             self._last_character_target = tile
 
+    def _filter_detected_creatures(self, creature: go.Creature) -> dict[tuple[int, int], go.Creature]:
+        filtered_creatures = {pos: cr for pos, cr in self._creature_coords.items()
+                              if cr.is_detected and cr is not creature}
+        return filtered_creatures
+
     def _play_npcs(self) -> None:
         for old_coords in list(self._creature_coords.keys()):
             creature = self._creature_coords.get(old_coords)
@@ -639,8 +646,9 @@ Game Over!
             goals = creature.get_goals()
             for goal in goals:
                 if goal.startswith(config.movement_behavior):
+                    other_creatures = self._filter_detected_creatures(creature)
                     next_coords = self._current_location.get_goal_step(creature, old_coords,
-                                                                       goal, self._creature_coords)
+                                                                       goal, other_creatures)
                     if next_coords == old_coords and goal != goals[-1]:
                         continue
                     self._move_npc(creature, old_coords, next_coords)

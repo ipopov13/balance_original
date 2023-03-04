@@ -12,6 +12,7 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Stealth and detection
+    filter the list of creatures passed to the Location for display by their detected state
     working on _check_if_character_is_detected
     Add/remove stealth modifiers on mode change
     Implement LoS and LoS-blocking terrains
