@@ -74,7 +74,7 @@ class SpikedBoots(go.Boots):
     def __init__(self):
         super().__init__(name='spiked boots', weight=4, icon=']',
                          color=console.fg.default, description='Spiked boots for walking on slippery ice.',
-                         effects={config.effect_modifiers: {config.ice_climbing_cost: 0.05,
+                         effects={config.effect_modifiers: {config.ice_climbing_cost: 0.9,
                                                             config.ice_passage_cost: 0.5}})
 
 
@@ -164,7 +164,7 @@ class Machete(go.LargeWeapon):
                          description="Passing through a thick jungle is easy with this heavy blade.",
                          melee_weapon_skill=config.onehanded_swords_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}},
-                                  config.effect_modifiers: {config.plant_passage_cost: 0.1}})
+                                  config.effect_modifiers: {config.plant_passage_cost: 0.5}})
 
 
 class BattleAxe(go.LargeWeapon):
@@ -199,7 +199,7 @@ class IcePick(go.SmallWeapon):
                          melee_weapon_skill=config.onehanded_hammers_skill,
                          melee_weapon_stat=config.Str,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
-                                  config.resistances_and_affinities: {config.ice_climbing_cost: -20}})
+                                  config.effect_modifiers: {config.ice_climbing_cost: 0.7}})
 
 
 class ShortSword(go.SmallWeapon):
@@ -444,7 +444,7 @@ class RopeAndHook(go.TwoHandedWeapon):
                          melee_weapon_skill=config.sling_skill,
                          melee_weapon_stat=config.Dex,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
-                                  config.effect_modifiers: {config.rock_climbing_cost: 0.01}})
+                                  config.effect_modifiers: {config.rock_climbing_cost: 0.5}})
 
 
 class GreatSword(go.TwoHandedWeapon):

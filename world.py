@@ -36,11 +36,11 @@ frozen_tree = Terrain(color=console.fg.lightblue, name='frozen tree', icon='T',
 ice_block = Terrain(color=console.fg.lightblue, name='ice block', icon='%',
                     description='A huge block of ice.',
                     spawned_creatures=[sp.winter_wolf_species, sp.ice_bear_species],
-                    effects={config.terrain_passage_cost: {config.ice_climbing_cost: 1000}})
+                    effects={config.terrain_passage_cost: {config.ice_climbing_cost: 100}})
 rocks = Terrain(color=console.fg.lightblack, name='rocks', icon='%',
                 description='A rock outcropping.',
                 spawned_creatures=[sp.bear_species, sp.eagle_species],
-                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 bush = Terrain(color=console.fg.lightgreen, name='bush', icon='#',
                description='A bush.', spawned_creatures=[sp.fox_species],
                effects={config.terrain_passage_cost: {config.plant_passage_cost: 3}})
@@ -79,19 +79,19 @@ lava = FlavorTerrain(color=console.fg.red, name='lava', icon='~',
 gold_vein = FlavorTerrain(color=console.fg.lightyellow, name='gold vein', icon='%',
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 silver_vein = FlavorTerrain(color=console.fg.lightcyan, name='silver vein', icon='%',
                             description='A rock outcropping.',
                             required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                            effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                            effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 iron_vein = FlavorTerrain(color=console.fg.lightblue, name='iron vein', icon='%',
                           description='A rock outcropping.',
                           required_base_terrains=[rocks], required_climates=config.ALL_CLIMATES,
-                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                          effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 mossy_rock = FlavorTerrain(color=console.fg.lightgreen, name='mossy rock', icon='%',
                            description='A moss-covered boulder.',
                            required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                           effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                           effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 lichen_clump = FlavorTerrain(color=console.fg.lightgreen, name='lichen clump', icon='o',
                              description='A big clump of lichen.',
                              required_base_terrains=all_base_terrains, required_climates=[config.COLD_CLIMATE])
@@ -104,11 +104,11 @@ old_pavement = FlavorTerrain(color=console.fg.lightyellow, name='old pavement',
 ruined_wall = FlavorTerrain(color=config.brown_fg_color, name='ruined wall', icon='#',
                             description='Ancient wall.',
                             required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                            effects={config.terrain_passage_cost: {config.wall_climbing_cost: 1000}})
+                            effects={config.terrain_passage_cost: {config.wall_climbing_cost: 100}})
 engraved_column = FlavorTerrain(color=config.brown_fg_color, name='engraved column', icon='|',
                                 description='An engraved column.',
                                 required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES,
-                                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 1000}})
+                                effects={config.terrain_passage_cost: {config.rock_climbing_cost: 100}})
 fireplace = FlavorTerrain(color=console.fg.lightyellow, name='fireplace', icon='o',
                           description='A fireplace.',
                           required_base_terrains=all_base_terrains, required_climates=config.ALL_CLIMATES)
@@ -123,7 +123,7 @@ water = Terrain(color=console.fg.blue, name='water', icon='~', description='Wate
                 effects={config.terrain_passage_cost: {config.wading_passage_cost: 2}})
 stilled_water = Terrain(color=console.fg.white, name='stilled water', icon='%',
                         description='A block of stilled water.',
-                        effects={config.terrain_passage_cost: {config.ice_climbing_cost: 1000}})
+                        effects={config.terrain_passage_cost: {config.ice_climbing_cost: 100}})
 well_terrain = Terrain(color=console.fg.blue, icon='o', name='well', description='A water well.',
                        substances=[
                            LiquidSource(resource=items.water_liquid, name='water well', description='A water well.')])

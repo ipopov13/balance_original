@@ -12,8 +12,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
-    make hard terrains traversable at 50 energy
-    rebalance traversal items
     rebalance terrain transforms
 Stealth and detection
     working on _check_if_character_is_detected
@@ -159,7 +157,6 @@ Combat
     Make projectiles stop at unpassable terrain if there is no living target visible
     Attacked creatures should go into aggressive mode
     Creature disposition
-    Normal mode
     Item rarity (chance to drop to the ground inherent for the item)
 AI
     Make aggressive creatures keep their previous direction when the character is suddenly out of sight/behind
