@@ -14,10 +14,14 @@ Adding the racial passives and documenting them in knowledge
 Rebalance energy
     *increased energy
     *traversing is easy
-    push combat exhaustion into a combat costs part of the effects (melee and ranged separate)
-    drop the argument and put the calculations below into the __init__
-    make melee combat exhaustion = weight * 2
-    make ranged combat exhaustion = weight / 2
+    *put the calculations below into the __init__
+    *make melee combat exhaustion = weight * config rate
+    *make ranged combat exhaustion = weight * config rate
+    add mechanics: push combat exhaustion into a combat costs part of the effects (melee and ranged separate)
+    drop the attribute
+    test
+    drop the argument
+    Adjust resting rate to a higher value based on End
     make hard terrains traversable at 50 energy
     rebalance traversal items
     rebalance terrain transforms

@@ -428,6 +428,11 @@ class Weapon(Item):
         self.melee_weapon_skill = melee_weapon_skill
         self.melee_weapon_stat = melee_weapon_stat
         self.combat_exhaustion = combat_exhaustion or self.weight
+        if config.combat_exhaustion not in self.effects:
+            self.effects[config.combat_exhaustion] = {}
+        if config.melee_combat not in self.effects[config.combat_exhaustion]:
+            self.effects[config.combat_exhaustion][config.melee_combat] = \
+                self.weight * config.melee_weapon_exhaustion_rate
         if config.melee_combat not in self.effects.get(config.combat_effects, {}):
             raise ValueError(f"Item {self.name} must have a combat/melee effect dictionary!")
 
@@ -444,6 +449,11 @@ class RangedWeapon(Weapon, MainHand):
         self.max_distance = max_distance
         self.ranged_weapon_skill = ranged_weapon_skill
         self.ranged_weapon_stat = ranged_weapon_stat
+        if config.combat_exhaustion not in self.effects:
+            raise ValueError(f"Weapon {self.name} failed to get a combat exhaustion dictionary!")
+        if config.ranged_combat not in self.effects[config.combat_exhaustion]:
+            self.effects[config.combat_exhaustion][config.ranged_combat] = \
+                self.weight * config.ranged_weapon_exhaustion_rate
         if config.ranged_combat not in self.effects.get(config.combat_effects, {}):
             raise ValueError(f"Item {self.name} must have a combat/ranged effect dictionary!")
 

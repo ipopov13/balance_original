@@ -147,6 +147,7 @@ thirst_effect_prefix = 'thirst_'
 thirst_water_effect = thirst_effect_prefix + 'water'
 thirst_rock_effect = thirst_effect_prefix + 'Rock drinking'
 #  Combat
+combat_exhaustion = 'combat_exhaustion'
 combat_effects = 'combat_effects'
 ranged_combat = 'ranged_combat'
 melee_combat = 'melee_combat'
@@ -172,6 +173,11 @@ light_a_fire = 'light_a_fire'
 # Melee combat
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'
+#  Exhaustion rates are used to calculate exhaustion with the item weight
+melee_weapon_exhaustion_rate = 2
+ranged_weapon_exhaustion_rate = 0.5
+#  Above this load ratio the exhaustion is multiplied by ratio/threshold (max x2 at full load)
+load_ratio_threshold = 0.5
 # Active character effects
 sick_effect = 'Sick'
 drunk_effect = 'Drunk'
