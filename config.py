@@ -174,10 +174,10 @@ light_a_fire = 'light_a_fire'
 max_dodge_chance = 0.8  # 1 = 100%
 dodge_difficulty = 'dodge_difficulty'
 #  Exhaustion rates are used to calculate exhaustion with the item weight
-melee_weapon_exhaustion_rate = 2
-ranged_weapon_exhaustion_rate = 0.5
+weapon_exhaustion_rate = 2
+min_combat_exhaustion = 2
 #  Above this load ratio the exhaustion is multiplied by ratio/threshold (max x2 at full load)
-load_ratio_threshold = 0.5
+load_exhaustion_threshold = 0.5
 # Active character effects
 sick_effect = 'Sick'
 drunk_effect = 'Drunk'

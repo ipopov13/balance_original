@@ -404,7 +404,7 @@ class Armor(Item):
         super().__init__(**kwargs)
         self.armor_skill = armor_skill
         self.armor_stat = armor_stat
-        self.combat_exhaustion = combat_exhaustion
+        self.combat_exhaustion = self.weight
 
 
 class Back(PhysicalContainer):
@@ -427,12 +427,8 @@ class Weapon(Item):
         super().__init__(**kwargs)
         self.melee_weapon_skill = melee_weapon_skill
         self.melee_weapon_stat = melee_weapon_stat
-        self.combat_exhaustion = combat_exhaustion or self.weight
-        if config.combat_exhaustion not in self.effects:
-            self.effects[config.combat_exhaustion] = {}
-        if config.melee_combat not in self.effects[config.combat_exhaustion]:
-            self.effects[config.combat_exhaustion][config.melee_combat] = \
-                self.weight * config.melee_weapon_exhaustion_rate
+        self.combat_exhaustion = self.weight * config.weapon_exhaustion_rate
+        self.combat_exhaustion = max(self.combat_exhaustion, config.min_combat_exhaustion)
         if config.melee_combat not in self.effects.get(config.combat_effects, {}):
             raise ValueError(f"Item {self.name} must have a combat/melee effect dictionary!")
 
@@ -449,11 +445,6 @@ class RangedWeapon(Weapon, MainHand):
         self.max_distance = max_distance
         self.ranged_weapon_skill = ranged_weapon_skill
         self.ranged_weapon_stat = ranged_weapon_stat
-        if config.combat_exhaustion not in self.effects:
-            raise ValueError(f"Weapon {self.name} failed to get a combat exhaustion dictionary!")
-        if config.ranged_combat not in self.effects[config.combat_exhaustion]:
-            self.effects[config.combat_exhaustion][config.ranged_combat] = \
-                self.weight * config.ranged_weapon_exhaustion_rate
         if config.ranged_combat not in self.effects.get(config.combat_effects, {}):
             raise ValueError(f"Item {self.name} must have a combat/ranged effect dictionary!")
 
@@ -480,7 +471,7 @@ class Shield(Item, Offhand):
         super().__init__(**kwargs)
         self.shield_skill = config.shield_skill
         self.shield_stat = config.End
-        self.combat_exhaustion = combat_exhaustion
+        self.combat_exhaustion = self.weight * config.weapon_exhaustion_rate
 
 
 class RangedAmmo(Item, Offhand):
@@ -506,7 +497,7 @@ class TwoHandedWeapon(Weapon, MainHand):
 class AnimalWeapon(Weapon):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.combat_exhaustion = 1
+        self.combat_exhaustion = config.min_combat_exhaustion
         self.melee_weapon_skill = config.animal_innate_weapon_skill
         self.melee_weapon_stat = config.Str
 
@@ -1110,6 +1101,8 @@ class Humanoid(Creature):
                     exhaustion += item.combat_exhaustion * (1 - 0.5 * skill_mod)
                 else:
                     exhaustion += item.combat_exhaustion
+        load_modifier = max(1, (self.load/self.max_load) / config.load_exhaustion_threshold)
+        exhaustion *= load_modifier
         return int(exhaustion)
 
     def _get_weapons(self) -> list[Weapon]:

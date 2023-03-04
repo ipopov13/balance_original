@@ -3,8 +3,8 @@ import config
 knowledge = {
     "general": [
         "Travelling with a heavy load on your back has caused many an explorer sizeable"
-        " discomfort. Meeting a hungry wolf right after arriving in a new place is not a"
-        " pleasant experience.",
+        " discomfort. Meeting a hungry wolf while lugging a mountain of goods is not a"
+        " pleasant experience, even for seasoned fighters.",
         "Some advice for beginner archers: always wield your bow in your strong hand. A"
         " knife thrower might be able to throw with both hands, but you are limited to"
         " your main if you want to hit anything smaller than a mountain.",
