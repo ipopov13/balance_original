@@ -657,14 +657,21 @@ class Creature(GameObject):
             self._get_hungry(difference)
         self._energy = min(self.max_energy - self.unusable_energy, max(0, value))
 
-    def _get_hungry(self, change):
-        """Add hunger and thirst on every 100 points of energy spent or every 100 turns"""
+    def _get_hungry(self, change: int = config.default_sustenance_per_turn):
+        """
+        Add hunger and thirst
+        Every X points of energy spent increase it by 1
+        Every Y turns increase it by 1, using the default argument value
+        X = config.default_sustenance_per_turn * config.endurance_to_energy_rate
+        Y = config.endurance_to_energy_rate
+        """
         self._sustenance_needs += change
-        if self._sustenance_needs >= 100:
-            famine = self._sustenance_needs // 100
+        sustenance_rate = config.default_sustenance_per_turn * config.endurance_to_energy_rate
+        if self._sustenance_needs >= sustenance_rate:
+            famine = self._sustenance_needs // sustenance_rate
             self.hunger += famine
             self.thirst += famine
-            self._sustenance_needs = self._sustenance_needs % 100
+            self._sustenance_needs = self._sustenance_needs % sustenance_rate
             self._energy = min(self.max_energy - self.unusable_energy, self._energy)
 
     @property
@@ -709,7 +716,7 @@ class Creature(GameObject):
 
     @property
     def max_energy(self) -> int:
-        base_energy = int(self.stats[config.End] * 100)
+        base_energy = int(self.stats[config.End] * config.endurance_to_energy_rate)
         modifier = self._get_effect_modifier(config.max_energy_modifier)
         return int(base_energy * modifier)
 
@@ -735,7 +742,7 @@ class Creature(GameObject):
         Effects with values of 0 or lower are removed
         """
         self._age += 1
-        self._get_hungry(1)
+        self._get_hungry()
         for effect, value in self._active_effects.items():
             if effect in [config.sick_effect, config.drunk_effect]:
                 if random.random() > value / (value + self.stats[config.End]):
@@ -958,7 +965,7 @@ class Creature(GameObject):
             self.energy -= self._combat_exhaustion
 
     def rest(self):
-        self.energy += random.randint(1, max(int(self.stats[config.End] / 5), 1))
+        self.energy += random.randint(1, int(self.stats[config.End] * 2))
         if random.random() < (self.stats[config.End] / config.max_stat_value / 2) * (self.energy / self.max_energy):
             self.hp += 1
 

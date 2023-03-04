@@ -123,6 +123,8 @@ Dex = "Dexterity"
 Per = "Perception"
 Wil = "Willpower"
 stats_order = [Str, End, Dex, Per, Wil]
+endurance_to_energy_rate = 100
+default_sustenance_per_turn = 10
 # Item effects
 #  Terrains
 terrain_passage_cost = 'terrain_passage_cost_'

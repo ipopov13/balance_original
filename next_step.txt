@@ -12,7 +12,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
-    Adjust resting rate to a higher value based on End
     make hard terrains traversable at 50 energy
     rebalance traversal items
     rebalance terrain transforms
