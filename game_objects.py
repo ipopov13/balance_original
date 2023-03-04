@@ -400,7 +400,7 @@ class Helmet(Item):
 
 
 class Armor(Item):
-    def __init__(self, armor_skill: str, armor_stat: str, combat_exhaustion: int, **kwargs):
+    def __init__(self, armor_skill: str, armor_stat: str, **kwargs):
         super().__init__(**kwargs)
         self.armor_skill = armor_skill
         self.armor_stat = armor_stat
@@ -422,8 +422,7 @@ class MainHand:
 
 class Weapon(Item):
     def __init__(self, melee_weapon_skill: str = config.improvised_combat_skill,
-                 melee_weapon_stat: str = config.Str,
-                 combat_exhaustion: int = None, **kwargs):
+                 melee_weapon_stat: str = config.Str, **kwargs):
         super().__init__(**kwargs)
         self.melee_weapon_skill = melee_weapon_skill
         self.melee_weapon_stat = melee_weapon_stat
@@ -467,7 +466,7 @@ class Offhand:
 
 
 class Shield(Item, Offhand):
-    def __init__(self, combat_exhaustion: int, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.shield_skill = config.shield_skill
         self.shield_stat = config.End
@@ -1193,7 +1192,7 @@ class Humanoid(Creature):
                         self.equipped_items[slot] = Item.empty_space
                 else:
                     self.equipped_items[slot] = Item.empty_space
-        self.energy -= self._combat_exhaustion // 2
+        self.energy -= self._combat_exhaustion
         return ammo, current_skill, effects
 
     def _increase_skill(self, skill_name: str) -> None:

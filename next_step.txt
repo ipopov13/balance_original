@@ -12,14 +12,6 @@ FEATURES (following the spreadsheet roadmap)
 Adding the racial passives and documenting them in knowledge
     Done: humans, dwarves, elves, orcs, trolls, goblins, kraken, imps, dryads
 Rebalance energy
-    *increased energy
-    *traversing is easy
-    *put the calculations below into the __init__
-    *make melee combat exhaustion = weight * config rate
-    *make ranged combat exhaustion = weight * config rate
-    *add the load ratio exhaustion
-    *test
-    drop the argument from weapons and armor
     Adjust resting rate to a higher value based on End
     make hard terrains traversable at 50 energy
     rebalance traversal items
@@ -125,6 +117,7 @@ Interface
     13 = rozovo (#fc54fc)
     14 = yellow (#fcfc54)
     15 = white (#fcfcfc)
+    Add combat exhaustion to the equipment view
     Visual bug for the hunger/thirst in energy bar when the max energy is 51 (empty space appears)
     Hide the blinking cursor on some screens
     Rename "pick up" to "take"

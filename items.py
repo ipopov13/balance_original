@@ -28,7 +28,7 @@ class Clothes(go.Armor):
     def __init__(self):
         super().__init__(name='simple clothes', weight=0, icon='.', color=console.fg.lightblack,
                          description="Commoner's shirt and pants.",
-                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=0)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex)
 
 
 class HideArmor(go.Armor):
@@ -36,7 +36,7 @@ class HideArmor(go.Armor):
         super().__init__(name='hide armor', weight=5, icon='(', color=config.brown_fg_color,
                          description='Armor made from light hide',
                          effects={config.resistances_and_affinities: {config.physical_damage: -1}},
-                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex)
 
 
 class LeatherArmor(go.Armor):
@@ -44,7 +44,7 @@ class LeatherArmor(go.Armor):
         super().__init__(name='leather armor', weight=6, icon='(', color=config.brown_fg_color,
                          description='Armor made from leather',
                          effects={config.resistances_and_affinities: {config.physical_damage: -3}},
-                         armor_skill=config.light_armor_skill, armor_stat=config.Dex, combat_exhaustion=1)
+                         armor_skill=config.light_armor_skill, armor_stat=config.Dex)
 
 
 class ChainMail(go.Armor):
@@ -52,7 +52,7 @@ class ChainMail(go.Armor):
         super().__init__(name='chain mail', weight=9, icon='[', color=console.fg.lightblack,
                          description='A shirt of woven iron links.',
                          effects={config.resistances_and_affinities: {config.physical_damage: -5}},
-                         armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=3)
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End)
 
 
 class PlateArmor(go.Armor):
@@ -60,7 +60,7 @@ class PlateArmor(go.Armor):
         super().__init__(name='plate armor', weight=15, icon='[', color=console.fg.default,
                          description='Armor made from metal plates',
                          effects={config.resistances_and_affinities: {config.physical_damage: -7}},
-                         armor_skill=config.heavy_armor_skill, armor_stat=config.End, combat_exhaustion=5)
+                         armor_skill=config.heavy_armor_skill, armor_stat=config.End)
 
 
 class Bag(go.Back):
@@ -100,7 +100,7 @@ class Fist(go.Tool, go.RangedWeapon):
         super().__init__(name="Your fist", description="Useful when you don't have a sword at hand.",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
-                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=5,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
@@ -112,7 +112,7 @@ class TrollFist(go.Tool, go.RangedWeapon):
         super().__init__(name="Your fist", description="You can break rocks for eating with it!",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, work_skill=config.mining_skill, work_stat=config.Str,
-                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=8,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 4},
@@ -124,7 +124,7 @@ class ImpFist(go.Tool, go.RangedWeapon):
         super().__init__(name="Your fist", description="Joyful flames dance over your fingers",
                          weight=0, icon='.', color=console.fg.lightblack,
                          work_exhaustion=2, work_skill=config.scavenging_skill, work_stat=config.Per,
-                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=1,
+                         melee_weapon_skill=config.unarmed_combat_skill,
                          ranged_weapon_stat=config.Str, ranged_weapon_skill=config.grenades_skill,
                          ranged_weapon_type=config.hand_thrown_type, max_distance=5,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
@@ -138,7 +138,7 @@ class Pickaxe(go.Tool):
         super().__init__(name="a pickaxe", description="Used to extract stone and ores",
                          weight=6, icon='/', color=console.fg.lightblack,
                          work_exhaustion=5, work_skill=config.mining_skill, work_stat=config.Str,
-                         melee_weapon_skill=config.twohanded_axes_skill, combat_exhaustion=5,
+                         melee_weapon_skill=config.twohanded_axes_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}}})
 
 
@@ -153,7 +153,7 @@ class LongSword(go.LargeWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='long sword', weight=5, icon='|', color=color,
                          description="The soldier's weapon of choice.",
-                         melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=4,
+                         melee_weapon_skill=config.onehanded_swords_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 5}}})
 
 
@@ -162,7 +162,7 @@ class Machete(go.LargeWeapon):
     def __init__(self, color=console.fg.lightwhite):
         super().__init__(name='machete', weight=7, icon='|', color=color,
                          description="Passing through a thick jungle is easy with this heavy blade.",
-                         melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=6,
+                         melee_weapon_skill=config.onehanded_swords_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}},
                                   config.effect_modifiers: {config.plant_passage_cost: 0.1}})
 
@@ -171,7 +171,7 @@ class BattleAxe(go.LargeWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='battle axe', weight=5, icon='|', color=color,
                          description='Often considered barbaric, but also very effective.',
-                         melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=5,
+                         melee_weapon_skill=config.onehanded_axes_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 6}}})
 
 
@@ -179,7 +179,7 @@ class Morningstar(go.LargeWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='morningstar', weight=6, icon='|', color=color,
                          description='Metal handle and a wicked-looking ball with spikes.',
-                         melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=6,
+                         melee_weapon_skill=config.onehanded_hammers_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 6}}})
 
 
@@ -187,7 +187,7 @@ class Spear(go.LargeWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='spear', weight=5, icon='|', color=color,
                          description='A long pole with a sharp metal head.',
-                         melee_weapon_skill=config.spear_skill, combat_exhaustion=4,
+                         melee_weapon_skill=config.spear_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}}})
 
 
@@ -197,7 +197,7 @@ class IcePick(go.SmallWeapon):
         super().__init__(name='ice pick', weight=3, icon='|', color=color,
                          description='Too small to mine, but great for climbing icy surfaces.',
                          melee_weapon_skill=config.onehanded_hammers_skill,
-                         melee_weapon_stat=config.Str, combat_exhaustion=2,
+                         melee_weapon_stat=config.Str,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
                                   config.resistances_and_affinities: {config.ice_climbing_cost: -20}})
 
@@ -206,7 +206,7 @@ class ShortSword(go.SmallWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='short sword', weight=3, icon='|', color=color,
                          description='Made for stabbing.',
-                         melee_weapon_skill=config.onehanded_swords_skill, combat_exhaustion=3,
+                         melee_weapon_skill=config.onehanded_swords_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 3}}})
 
 
@@ -214,7 +214,7 @@ class Hatchet(go.SmallWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='hatchet', weight=2, icon='|', color=color,
                          description="Cut wood or chop limbs, it's your choice.",
-                         melee_weapon_skill=config.onehanded_axes_skill, combat_exhaustion=2,
+                         melee_weapon_skill=config.onehanded_axes_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}}})
 
 
@@ -222,7 +222,7 @@ class Mace(go.SmallWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='mace', weight=4, icon='|', color=color,
                          description='A wooden handle with a metal ball on one end.',
-                         melee_weapon_skill=config.onehanded_hammers_skill, combat_exhaustion=4,
+                         melee_weapon_skill=config.onehanded_hammers_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 4}}})
 
 
@@ -230,7 +230,7 @@ class PunchKnife(go.SmallWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='punch knife', weight=1, icon='|', color=color,
                          description='A blade with a cross handle, made for punching through armor.',
-                         melee_weapon_skill=config.unarmed_combat_skill, combat_exhaustion=2,
+                         melee_weapon_skill=config.unarmed_combat_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}}})
 
 
@@ -239,7 +239,7 @@ class Claws(go.SmallWeapon):
         super().__init__(name='claws', weight=1, icon='|', color=color,
                          description='Metal claws that can be gripped in a fist.',
                          melee_weapon_skill=config.unarmed_combat_skill,
-                         melee_weapon_stat=config.Dex, combat_exhaustion=4,
+                         melee_weapon_stat=config.Dex,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}}})
 
 
@@ -247,28 +247,28 @@ class Buckler(go.Shield):
     def __init__(self):
         super().__init__(name='buckler', weight=3, icon=']', color=console.fg.lightblack,
                          description='A small, round shield made of iron.',
-                         effects={config.effect_modifiers: {config.evasion_modifier: 1.3}}, combat_exhaustion=1)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 1.3}})
 
 
 class RoundShield(go.Shield):
     def __init__(self):
         super().__init__(name='round shield', weight=4, icon=']', color=config.brown_fg_color,
                          description='A round, wooden shield. Can carry a coat of arms.',
-                         effects={config.effect_modifiers: {config.evasion_modifier: 1.6}}, combat_exhaustion=2)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 1.6}})
 
 
 class TowerShield(go.Shield):
     def __init__(self):
         super().__init__(name='tower shield', weight=7, icon=']', color=console.fg.lightblack,
                          description='A tall, rectangular metal shield.',
-                         effects={config.effect_modifiers: {config.evasion_modifier: 2.1}}, combat_exhaustion=4)
+                         effects={config.effect_modifiers: {config.evasion_modifier: 2.1}})
 
 
 class AcornGun(go.RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='acorn gun', weight=4, icon='{', color=color,
                          description='A gun of dryadic design.',
-                         combat_exhaustion=2, ranged_weapon_type=config.acorn_gun_type,
+                         ranged_weapon_type=config.acorn_gun_type,
                          ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
                          max_distance=15,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 3},
@@ -287,7 +287,7 @@ class ShortBow(go.RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='short bow', weight=2, icon='{', color=color,
                          description='A wooden bow stringed with tendon.',
-                         combat_exhaustion=3, ranged_weapon_type=config.bow_type,
+                         ranged_weapon_type=config.bow_type,
                          ranged_weapon_skill=config.bow_skill, ranged_weapon_stat=config.Dex,
                          max_distance=10,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
@@ -298,7 +298,7 @@ class LongBow(go.RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='long bow', weight=4, icon='{', color=color,
                          description='A combat-ready bow.',
-                         combat_exhaustion=4, ranged_weapon_type=config.bow_type,
+                         ranged_weapon_type=config.bow_type,
                          ranged_weapon_skill=config.bow_skill, ranged_weapon_stat=config.Dex,
                          max_distance=20,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 3},
@@ -317,7 +317,7 @@ class Handgun(go.RangedWeapon):
     def __init__(self, color=console.fg.lightblack):
         super().__init__(name='hand gun', weight=3, icon='{', color=color,
                          description='A mechanical contraption that fires combustible ammunition.',
-                         combat_exhaustion=1, ranged_weapon_type=config.gun_type,
+                         ranged_weapon_type=config.gun_type,
                          ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
                          max_distance=10,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 2},
@@ -328,7 +328,7 @@ class Rifle(go.RangedWeapon):
     def __init__(self, color=console.fg.lightblack):
         super().__init__(name='rifle', weight=6, icon='{', color=color,
                          description='A gun with a long barrel. Hunters and assassins love them.',
-                         combat_exhaustion=1, ranged_weapon_type=config.gun_type,
+                         ranged_weapon_type=config.gun_type,
                          ranged_weapon_skill=config.gun_skill, ranged_weapon_stat=config.Per,
                          max_distance=25,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 4},
@@ -347,7 +347,7 @@ class CrossBow(go.RangedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='crossbow', weight=4, icon='{', color=color,
                          description='A wood and metal contraption made to fire short bolts.',
-                         combat_exhaustion=1, ranged_weapon_type=config.crossbow_type,
+                         ranged_weapon_type=config.crossbow_type,
                          ranged_weapon_skill=config.crossbow_skill, ranged_weapon_stat=config.Per,
                          max_distance=14,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 2},
@@ -366,7 +366,7 @@ class Ballista(go.RangedWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='ballista', weight=9, icon='{', color=color,
                          description='A small siege engine. Some mercenaries lug these around.',
-                         combat_exhaustion=12, ranged_weapon_type=config.ballista_type,
+                         ranged_weapon_type=config.ballista_type,
                          ranged_weapon_skill=config.crossbow_skill, ranged_weapon_stat=config.Str,
                          max_distance=25,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 6},
@@ -385,7 +385,7 @@ class Sling(go.RangedWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='sling', weight=1, icon='{', color=color,
                          description='A couple of straps with a leather piece in the middle.',
-                         combat_exhaustion=2, ranged_weapon_type=config.sling_type,
+                         ranged_weapon_type=config.sling_type,
                          ranged_weapon_skill=config.sling_skill, ranged_weapon_stat=config.Dex,
                          max_distance=8,
                          effects={config.combat_effects: {config.ranged_combat: {config.physical_damage: 1},
@@ -404,7 +404,7 @@ class Dagger(go.ThrownWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='dagger', weight=2, icon='}', color=color,
                          description='A sharp blade for stabbing or throwing.',
-                         melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex, combat_exhaustion=1,
+                         melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex,
                          ranged_weapon_type=config.throwing_knife_skill, max_distance=5,
                          ranged_ammo_type=config.throwing_knife_skill, ranged_weapon_skill=config.throwing_knife_skill,
                          ranged_weapon_stat=config.Dex,
@@ -416,7 +416,7 @@ class ThrowingKnife(go.ThrownWeapon):
     def __init__(self, color=console.fg.white):
         super().__init__(name='throwing knife', weight=1, icon='}', color=color,
                          description='A light knife, balanced for throwing.',
-                         melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex, combat_exhaustion=1,
+                         melee_weapon_skill=config.daggers_skill, melee_weapon_stat=config.Dex,
                          ranged_weapon_type=config.throwing_knife_skill, max_distance=7,
                          ranged_ammo_type=config.throwing_knife_skill, ranged_weapon_skill=config.throwing_knife_skill,
                          ranged_weapon_stat=config.Dex,
@@ -428,7 +428,7 @@ class HuntingSpear(go.ThrownWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='hunting spear', weight=2, icon='}', color=color,
                          description='A light spear, perfect for hunting animals.',
-                         melee_weapon_skill=config.spear_skill, melee_weapon_stat=config.Dex, combat_exhaustion=3,
+                         melee_weapon_skill=config.spear_skill, melee_weapon_stat=config.Dex,
                          ranged_weapon_type=config.throwing_spear_skill, max_distance=10,
                          ranged_ammo_type=config.throwing_spear_skill, ranged_weapon_skill=config.throwing_spear_skill,
                          ranged_weapon_stat=config.Str,
@@ -442,7 +442,7 @@ class RopeAndHook(go.TwoHandedWeapon):
         super().__init__(name='rope and hook', weight=6, icon='^', color=color,
                          description='For scaling mountains.',
                          melee_weapon_skill=config.sling_skill,
-                         melee_weapon_stat=config.Dex, combat_exhaustion=7,
+                         melee_weapon_stat=config.Dex,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 2}},
                                   config.effect_modifiers: {config.rock_climbing_cost: 0.01}})
 
@@ -451,7 +451,7 @@ class GreatSword(go.TwoHandedWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name='great sword', weight=8, icon='/', color=color,
                          description='Cutting beasts in half is easy with this one.',
-                         melee_weapon_skill=config.twohanded_swords_skill, combat_exhaustion=7,
+                         melee_weapon_skill=config.twohanded_swords_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 8}}})
 
 
@@ -459,7 +459,7 @@ class Staff(go.TwoHandedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='staff', weight=4, icon='/', color=color,
                          description='A long stick is better than nothing.',
-                         melee_weapon_skill=config.staves_skill, combat_exhaustion=2,
+                         melee_weapon_skill=config.staves_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 3}},
                                   config.effect_modifiers: {config.evasion_modifier: 1.3}})
 
@@ -468,7 +468,7 @@ class BattleStaff(go.TwoHandedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name='battle staff', weight=7, icon='/', color=color,
                          description='The ends are capped with metal.',
-                         melee_weapon_skill=config.staves_skill, combat_exhaustion=5,
+                         melee_weapon_skill=config.staves_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 6}},
                                   config.effect_modifiers: {config.evasion_modifier: 1.1}})
 
@@ -477,7 +477,7 @@ class TravellerStaff(go.TwoHandedWeapon):
     def __init__(self, color=config.brown_fg_color):
         super().__init__(name="traveller's staff", weight=2, icon='/', color=color,
                          description='A stick to make walking easier.',
-                         melee_weapon_skill=config.staves_skill, combat_exhaustion=1,
+                         melee_weapon_skill=config.staves_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 1}},
                                   config.effect_modifiers: {config.evasion_modifier: 1.2}})
 
@@ -486,7 +486,7 @@ class GiantAxe(go.TwoHandedWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name="giant axe", weight=10, icon='/', color=color,
                          description='A huge axe with twin crescent blades.',
-                         melee_weapon_skill=config.twohanded_axes_skill, combat_exhaustion=12,
+                         melee_weapon_skill=config.twohanded_axes_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 10}}})
 
 
@@ -494,7 +494,7 @@ class WarHammer(go.TwoHandedWeapon):
     def __init__(self, color=console.fg.default):
         super().__init__(name="war hammer", weight=11, icon='/', color=color,
                          description='The head has a claw on one side and a plate on the other.',
-                         melee_weapon_skill=config.twohanded_hammers_skill, combat_exhaustion=14,
+                         melee_weapon_skill=config.twohanded_hammers_skill,
                          effects={config.combat_effects: {config.melee_combat: {config.physical_damage: 12}}})
 
 
